@@ -79,6 +79,7 @@ def run() -> None:
     tracks_added = 0
     no_track_match: list[str] = []
     no_genre_match: list[str] = []
+    add_failures: list[str] = []
     lookup_errors: list[str] = []
     for concert in new_concerts:
         track_ids: list[str] = []
@@ -98,8 +99,18 @@ def run() -> None:
             genre_errored = True
 
         if track_ids:
-            add_tracks(playlist_id, track_ids)
-            tracks_added += len(track_ids)
+            added_ok = False
+            add_tracks_errored = False
+            try:
+                added_ok = add_tracks(playlist_id, track_ids)
+            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+                lookup_errors.append(f"{concert.band} (add tracks): {exc}")
+                add_tracks_errored = True
+
+            if added_ok:
+                tracks_added += len(track_ids)
+            elif not add_tracks_errored:
+                add_failures.append(concert.band)
         elif not tracks_errored:
             no_track_match.append(concert.band)
 
@@ -113,6 +124,8 @@ def run() -> None:
     print(f"Tracks added to '{config.PLAYLIST_NAME}': {tracks_added}")
     if no_track_match:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
+    if add_failures:
+        print(f"Failed to add tracks for: {', '.join(add_failures)}")
     if no_genre_match:
         print(f"No Last.fm genre tag for: {', '.join(no_genre_match)}")
     if lookup_errors:
