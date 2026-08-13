@@ -22,7 +22,7 @@ from ytmusic_client import (
     top_tracks,
 )
 
-OAUTH_PATH = Path("auth/ytmusic_oauth.json")
+AUTH_PATH = Path("auth/ytmusic_auth.json")
 
 
 def _lookup_tracks(band: str) -> list[str]:
@@ -40,33 +40,28 @@ def _lookup_genre(band: str) -> str | None:
 def run() -> None:
     load_dotenv()
     try:
-        client_id = os.environ["YTMUSIC_OAUTH_CLIENT_ID"]
-        client_secret = os.environ["YTMUSIC_OAUTH_CLIENT_SECRET"]
         lastfm_api_key = os.environ["LASTFM_API_KEY"]
     except KeyError:
-        print(
-            "Missing YTMUSIC_OAUTH_CLIENT_ID/YTMUSIC_OAUTH_CLIENT_SECRET/LASTFM_API_KEY — "
-            "copy .env.example to .env and fill in your credentials."
-        )
+        print("Missing LASTFM_API_KEY — copy .env.example to .env and fill in your credentials.")
         sys.exit(1)
 
     try:
-        load_client(OAUTH_PATH, client_id, client_secret)
+        load_client(AUTH_PATH)
         # get_or_create_playlist is the first real YouTube Music API call.
-        # ytmusicapi's OAuth token refresh is lazy, so an expired/revoked
-        # refresh token isn't detected by load_client at all: it only
-        # surfaces here, and with an exception type that does not subclass
-        # ytmusicapi's own YTMusicError hierarchy. Guard it the same way as
-        # load_client so that failure also gets the fatal auth-failure
-        # message instead of an uncaught traceback.
+        # Browser auth headers aren't validated when the client is built, so
+        # an expired/invalid cookie isn't detected by load_client at all: it
+        # only surfaces here, and with an exception type that does not
+        # subclass ytmusicapi's own YTMusicError hierarchy. Guard it the same
+        # way as load_client so that failure also gets the fatal
+        # auth-failure message instead of an uncaught traceback.
         playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
     except YTMusicAuthError as exc:
         print(f"YouTube Music authentication failed: {exc}")
-        print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
+        print(f"Fix: run `ytmusicapi browser --file {AUTH_PATH}` again.")
         sys.exit(1)
-    except Exception as exc:  # noqa: BLE001 - expired/revoked token surfaces here as a non-YTMusicError type
+    except Exception as exc:  # noqa: BLE001 - expired/invalid cookie surfaces here as a non-YTMusicError type
         print(f"YouTube Music authentication failed (during startup): {exc}")
-        print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
+        print(f"Fix: run `ytmusicapi browser --file {AUTH_PATH}` again.")
         sys.exit(1)
 
     set_api_key(lastfm_api_key)

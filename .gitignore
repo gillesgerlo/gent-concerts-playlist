@@ -3,4 +3,4 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
-auth/ytmusic_oauth.json
+auth/ytmusic_auth.json

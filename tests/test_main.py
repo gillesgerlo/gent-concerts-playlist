@@ -56,19 +56,15 @@ def _stub_venue_scrapers(monkeypatch, concerts):
 
 
 def _stub_env_and_auth(monkeypatch):
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
-    monkeypatch.setattr(main, "load_client", lambda oauth_path, client_id, client_secret: None)
+    monkeypatch.setattr(main, "load_client", lambda auth_path: None)
     monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: True)
 
 
 def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
-    monkeypatch.delenv("YTMUSIC_OAUTH_CLIENT_ID", raising=False)
-    monkeypatch.delenv("YTMUSIC_OAUTH_CLIENT_SECRET", raising=False)
     monkeypatch.delenv("LASTFM_API_KEY", raising=False)
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
 
@@ -77,17 +73,15 @@ def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
-    assert "YTMUSIC_OAUTH_CLIENT_ID" in out
+    assert "LASTFM_API_KEY" in out
     assert ".env" in out
 
 
 def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
 
-    def _fail(oauth_path, client_id, client_secret):
+    def _fail(auth_path):
         raise main.YTMusicAuthError("Invalid auth JSON string or file path provided.")
 
     monkeypatch.setattr(main, "load_client", _fail)
@@ -101,17 +95,15 @@ def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
 
 
 def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypatch, capsys):
-    # An expired/revoked refresh token isn't detected by load_client itself
-    # (ytmusicapi's token refresh is lazy), it only fails on the first real
-    # API call, which is get_or_create_playlist. That failure's exception
-    # type does not subclass ytmusicapi's own YTMusicError hierarchy, so
-    # this must be caught by a broad Exception handler around the same
-    # call, not just YTMusicAuthError.
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
-    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
+    # An expired/invalid cookie isn't detected by load_client itself (browser
+    # auth headers aren't validated at construction time), it only fails on
+    # the first real API call, which is get_or_create_playlist. That
+    # failure's exception type does not subclass ytmusicapi's own
+    # YTMusicError hierarchy, so this must be caught by a broad Exception
+    # handler around the same call, not just YTMusicAuthError.
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
-    monkeypatch.setattr(main, "load_client", lambda oauth_path, client_id, client_secret: None)
+    monkeypatch.setattr(main, "load_client", lambda auth_path: None)
 
     def _fail(title):
         raise RuntimeError("Server returned HTTP 401: Unauthorized")
