@@ -1,8 +1,9 @@
 # Gent Concerts Playlist
 
 Manually-triggered CLI: scrapes Missy Sippy, VIERNULVIER, and Wintercircus for
-concerts in the next 30 days, adds each new one's top 2 Deezer tracks to the
-"Upcoming Concerts" Deezer playlist, and logs a row to `data/concerts.csv`.
+concerts in the next 30 days, adds each new one's top 2 YouTube Music tracks
+to the "Upcoming Concerts" YouTube Music playlist, looks up a genre tag via
+Last.fm, and logs a row to `data/concerts.csv`.
 
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
@@ -10,31 +11,37 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 1. `python3 -m venv .venv && source .venv/bin/activate`
 2. `pip install -r requirements.txt`
-3. Register an app at https://developers.deezer.com — set its redirect URI to
-   `http://localhost:8888/callback`.
-4. `cp .env.example .env` and fill in `DEEZER_APP_ID` / `DEEZER_APP_SECRET`.
-5. `python main.py`
+3. Create a Google Cloud Console project, then under "APIs & Services" ->
+   "Credentials" -> "Create Credentials" -> "OAuth client ID", choose
+   application type "TVs and Limited Input devices". Note the client ID and
+   client secret.
+4. Register a free Last.fm API account at https://www.last.fm/api/account/create
+   and note the API key.
+5. `cp .env.example .env` and fill in `YTMUSIC_OAUTH_CLIENT_ID` /
+   `YTMUSIC_OAUTH_CLIENT_SECRET` / `LASTFM_API_KEY`.
+6. Run the one-time interactive OAuth flow (opens a browser tab to approve):
 
-The first run opens a browser tab for Deezer's OAuth approval; the resulting
-token is cached to `auth/deezer_token.json` and reused on later runs.
+   ```
+   ytmusicapi oauth --client-id <id> --client-secret <secret> --file auth/ytmusic_oauth.json
+   ```
+
+7. `python main.py`
 
 ### Forcing re-authentication
 
-If Deezer reports an expired or invalid access token (or you just want a
-fresh login), delete the cached token and re-run:
+If YouTube Music reports an invalid/expired token (or you just want a fresh
+login), delete the cached token and re-run the oauth command from step 6:
 
 ```
-rm auth/deezer_token.json
-python main.py
+rm auth/ytmusic_oauth.json
+ytmusicapi oauth --client-id <id> --client-secret <secret> --file auth/ytmusic_oauth.json
 ```
-
-This opens a new browser tab for OAuth approval, same as the first run.
 
 ## After each run
 
-Manually transfer the Deezer playlist to Qobuz via https://soundiiz.com
-(Deezer → Qobuz, select "Upcoming Concerts", confirm). The free Soundiiz tier
-supports up to 200 tracks per transfer.
+Manually transfer the YouTube Music playlist to Qobuz via
+https://soundiiz.com (YouTube Music → Qobuz, select "Upcoming Concerts",
+confirm). The free Soundiiz tier supports up to 200 tracks per transfer.
 
 Once you've done that transfer, open `data/concerts.csv` and change the
 `Qobuz Status` column from `Pending transfer` to `Transferred` for each row
