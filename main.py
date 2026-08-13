@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 import config
 from csv_store import CsvStore
+from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
@@ -27,16 +28,25 @@ from ytmusic_client import (
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
 
-def _lookup_artist_info(band: str) -> tuple[list[str], str | None]:
+def _lookup_artist_info(band: str) -> list[str]:
     artist = search_artist(band)
     if artist is None:
-        return [], None
-    songs, description = get_artist_info(artist["browseId"], track_limit=2)
-    return [s["videoId"] for s in songs], description
+        return []
+    songs, _description = get_artist_info(artist["browseId"], track_limit=2)
+    return [s["videoId"] for s in songs]
 
 
 def _lookup_genre(band: str) -> str | None:
     return genre_for_artist(band)
+
+
+def _lookup_event_description(concert: Concert) -> str | None:
+    description = fetch_description(concert.ticket_link)
+    if description:
+        return description
+    if concert.description:
+        return truncate_at_word_boundary(concert.description)
+    return None
 
 
 def run() -> None:
@@ -86,26 +96,34 @@ def run() -> None:
 
     tracks_added = 0
     no_track_match: list[str] = []
+    no_genre_match: list[str] = []
     no_description_match: list[str] = []
     add_failures: list[str] = []
     lookup_errors: list[str] = []
     for concert in new_concerts:
         track_ids: list[str] = []
-        description: str | None = None
         tracks_errored = False
         try:
-            track_ids, description = _lookup_artist_info(concert.band)
+            track_ids = _lookup_artist_info(concert.band)
         except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
             lookup_errors.append(f"{concert.band} (artist info): {exc}")
             tracks_errored = True
 
+        genre: str | None = None
         genre_errored = False
-        if not description:
-            try:
-                description = _lookup_genre(concert.band)
-            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-                lookup_errors.append(f"{concert.band} (genre): {exc}")
-                genre_errored = True
+        try:
+            genre = _lookup_genre(concert.band)
+        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+            lookup_errors.append(f"{concert.band} (genre): {exc}")
+            genre_errored = True
+
+        event_description_value: str | None = None
+        description_errored = False
+        try:
+            event_description_value = _lookup_event_description(concert)
+        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+            lookup_errors.append(f"{concert.band} (event description): {exc}")
+            description_errored = True
 
         if track_ids:
             added_ok = False
@@ -123,10 +141,13 @@ def run() -> None:
         elif not tracks_errored:
             no_track_match.append(concert.band)
 
-        if not description and not genre_errored:
+        if not genre and not genre_errored:
+            no_genre_match.append(concert.band)
+
+        if not event_description_value and not description_errored:
             no_description_match.append(concert.band)
 
-        store.append_row(concert, music_description=description or "")
+        store.append_row(concert, genre=genre or "", event_description=event_description_value or "")
 
     write_html(config.CSV_PATH, config.HTML_PATH)
     webbrowser.open(config.HTML_PATH.resolve().as_uri())
@@ -138,6 +159,8 @@ def run() -> None:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
     if add_failures:
         print(f"Failed to add tracks for: {', '.join(add_failures)}")
+    if no_genre_match:
+        print(f"No genre found for: {', '.join(no_genre_match)}")
     if no_description_match:
         print(f"No description found for: {', '.join(no_description_match)}")
     if lookup_errors:

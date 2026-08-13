@@ -7,29 +7,62 @@ import main
 from scrapers.base import Concert
 
 
-def test_lookup_artist_info_returns_video_ids_and_description_on_a_match(monkeypatch):
+def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
         [{"videoId": "aaa"}, {"videoId": "bbb"}], "English rock band."
     ))
 
-    assert main._lookup_artist_info("Radiohead") == (["aaa", "bbb"], "English rock band.")
+    assert main._lookup_artist_info("Radiohead") == ["aaa", "bbb"]
 
 
 def test_lookup_artist_info_returns_empty_when_artist_not_found(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: None)
-    assert main._lookup_artist_info("Some Unknown Band") == ([], None)
+    assert main._lookup_artist_info("Some Unknown Band") == []
 
 
-def test_lookup_artist_info_returns_no_tracks_and_no_description_when_absent(monkeypatch):
+def test_lookup_artist_info_returns_empty_when_artist_has_no_tracks(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "X"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([], None))
-    assert main._lookup_artist_info("X") == ([], None)
+    assert main._lookup_artist_info("X") == []
 
 
 def test_lookup_genre_delegates_to_lastfm_client(monkeypatch):
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Alternative Rock")
     assert main._lookup_genre("Radiohead") == "Alternative Rock"
+
+
+def test_lookup_event_description_uses_the_ticket_page_meta_description_when_present(monkeypatch):
+    monkeypatch.setattr(main, "fetch_description", lambda url: "Page meta description.")
+    concert = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="X",
+                       description="Listing blurb.", ticket_link="http://x")
+
+    assert main._lookup_event_description(concert) == "Page meta description."
+
+
+def test_lookup_event_description_falls_back_to_the_listing_blurb(monkeypatch):
+    monkeypatch.setattr(main, "fetch_description", lambda url: None)
+    concert = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="X",
+                       description="Deep soul from Austin, Texas.", ticket_link="http://x")
+
+    assert main._lookup_event_description(concert) == "Deep soul from Austin, Texas."
+
+
+def test_lookup_event_description_truncates_the_listing_blurb_fallback(monkeypatch):
+    monkeypatch.setattr(main, "fetch_description", lambda url: None)
+    long_blurb = "A" * 45 + " " + "B" * 300
+    concert = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="X",
+                       description=long_blurb, ticket_link="http://x")
+
+    assert main._lookup_event_description(concert) == "A" * 45 + "…"
+
+
+def test_lookup_event_description_returns_none_when_both_sources_are_empty(monkeypatch):
+    monkeypatch.setattr(main, "fetch_description", lambda url: None)
+    concert = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="X",
+                       description="", ticket_link="http://x")
+
+    assert main._lookup_event_description(concert) is None
 
 
 class _FakeScraper:
@@ -62,6 +95,7 @@ def _stub_env_and_auth(monkeypatch):
     monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: True)
+    monkeypatch.setattr(main, "fetch_description", lambda url: None)
 
 
 def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
@@ -118,69 +152,92 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
     assert "YouTube Music authentication failed" in out
 
 
-def test_run_uses_the_youtube_description_when_present(monkeypatch, tmp_path):
+def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
     concerts = [
-        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Has YT Bio", description="", ticket_link="http://x"),
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Full Info Band",
+                description="Listing blurb text.", ticket_link="http://x"),
     ]
     _stub_venue_scrapers(monkeypatch, concerts)
 
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
-        [{"videoId": "vid1"}], "A great band from Ghent."
+        [{"videoId": "vid1"}], "Ignored YouTube bio."
     ))
+    monkeypatch.setattr(main, "fetch_description", lambda url: "Page meta description.")
 
-    def _fail_genre_for_artist(band):
-        raise AssertionError("Last.fm must not be called when YT already has a description")
+    genre_calls = []
 
-    monkeypatch.setattr(main, "genre_for_artist", _fail_genre_for_artist)
+    def _fake_genre(band):
+        genre_calls.append(band)
+        return "Alt Rock"
+
+    monkeypatch.setattr(main, "genre_for_artist", _fake_genre)
 
     main.run()
 
+    # Genre is looked up unconditionally now, no longer gated on a missing YouTube bio.
+    assert genre_calls == ["Full Info Band"]
+
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
-    row = next(r for r in rows if "Has YT Bio" in r)
-    assert row.split(",")[3] == "A great band from Ghent."
+    row = next(r for r in rows if "Full Info Band" in r).split(",")
+    assert row[3] == "Alt Rock"
+    assert row[4] == "Page meta description."
 
 
-def test_run_falls_back_to_lastfm_genre_when_youtube_has_no_description(monkeypatch, tmp_path):
+def test_run_falls_back_to_listing_blurb_when_page_fetch_has_no_description(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
     concerts = [
-        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Tracks No Bio", description="", ticket_link="http://x"),
-        Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Genre No Tracks", description="", ticket_link="http://y"),
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Blurb Band",
+                description="Deep soul from Austin Texas.", ticket_link="http://x"),
     ]
     _stub_venue_scrapers(monkeypatch, concerts)
 
-    def _fake_search_artist(band):
-        if band == "Tracks No Bio":
-            return {"browseId": "UC1", "artist": band}
-        return None
-
-    monkeypatch.setattr(main, "search_artist", _fake_search_artist)
-    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
-
-    def _fake_genre_for_artist(band):
-        if band == "Genre No Tracks":
-            return "Punk"
-        return None
-
-    monkeypatch.setattr(main, "genre_for_artist", _fake_genre_for_artist)
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Soul")
+    # fetch_description already stubbed to return None by _stub_env_and_auth.
 
     main.run()
 
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
-    tracks_row = next(r for r in rows if "Tracks No Bio" in r)
-    genre_row = next(r for r in rows if "Genre No Tracks" in r)
+    row = next(r for r in rows if "Blurb Band" in r).split(",")
+    assert row[4] == "Deep soul from Austin Texas."
 
-    assert tracks_row.split(",")[3] == ""  # matched on YT Music, no bio, no Last.fm tag -> blank
-    assert genre_row.split(",")[3] == "Punk"  # no YT Music match, Last.fm fallback used -> tracks still empty
+
+def test_run_leaves_columns_blank_when_no_genre_or_description_found(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Empty Band",
+                description="", ticket_link="http://x"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+    # fetch_description already stubbed to return None by _stub_env_and_auth.
+
+    main.run()
+
+    rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
+    row = next(r for r in rows if "Empty Band" in r).split(",")
+    assert row[3] == ""
+    assert row[4] == ""
+
+    out = capsys.readouterr().out
+    assert "No genre found for: Empty Band" in out
+    assert "No description found for: Empty Band" in out
 
 
 def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, capsys):
