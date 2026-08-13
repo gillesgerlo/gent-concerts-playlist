@@ -34,17 +34,24 @@ def _lookup_deezer(band: str) -> tuple[list[int], str | None]:
 
 def run() -> None:
     load_dotenv()
-    app_id = os.environ["DEEZER_APP_ID"]
-    app_secret = os.environ["DEEZER_APP_SECRET"]
+    try:
+        app_id = os.environ["DEEZER_APP_ID"]
+        app_secret = os.environ["DEEZER_APP_SECRET"]
+    except KeyError:
+        print(
+            "Missing DEEZER_APP_ID/DEEZER_APP_SECRET — copy .env.example to .env "
+            "and fill in your Deezer credentials."
+        )
+        sys.exit(1)
 
     try:
         access_token = get_access_token(app_id, app_secret)
+        client = DeezerClient(access_token)
+        playlist_id = client.get_or_create_playlist(config.PLAYLIST_NAME)
     except DeezerAuthError as exc:
         print(f"Deezer authentication failed: {exc}")
         sys.exit(1)
 
-    client = DeezerClient(access_token)
-    playlist_id = client.get_or_create_playlist(config.PLAYLIST_NAME)
     store = CsvStore(config.CSV_PATH)
 
     scrapers: list[Scraper] = [MissySippyScraper(), ViernulvierScraper(), WintercircusScraper()]
@@ -63,13 +70,27 @@ def run() -> None:
 
     tracks_added = 0
     no_match: list[str] = []
+    deezer_errors: list[str] = []
     for concert in new_concerts:
-        track_ids, genre = _lookup_deezer(concert.band)
+        genre = None
+        track_ids: list[int] = []
+        errored = False
+        try:
+            track_ids, genre = _lookup_deezer(concert.band)
+        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+            deezer_errors.append(f"{concert.band}: {exc}")
+            errored = True
+
         if track_ids:
-            client.add_tracks(playlist_id, track_ids)
-            tracks_added += len(track_ids)
-        else:
+            try:
+                client.add_tracks(playlist_id, track_ids)
+                tracks_added += len(track_ids)
+            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+                deezer_errors.append(f"{concert.band}: {exc}")
+                errored = True
+        elif not errored:
             no_match.append(concert.band)
+
         store.append_row(concert, music_description=genre or "")
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
@@ -77,6 +98,8 @@ def run() -> None:
     print(f"Tracks added to '{config.PLAYLIST_NAME}': {tracks_added}")
     if no_match:
         print(f"No Deezer match for: {', '.join(no_match)}")
+    if deezer_errors:
+        print(f"Deezer API errors (transient, not a genuine no-match): {'; '.join(deezer_errors)}")
     if scrape_failures:
         print(f"Venue scrape failures: {'; '.join(scrape_failures)}")
     print("Reminder: run the Deezer -> Qobuz transfer manually via Soundiiz (soundiiz.com).")

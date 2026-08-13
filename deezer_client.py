@@ -1,4 +1,5 @@
 import json
+import os
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -9,10 +10,28 @@ import requests
 BASE_URL = "https://api.deezer.com"
 
 
+class DeezerAuthError(Exception):
+    """Raised when the Deezer OAuth code-for-token exchange fails, or when
+    a Deezer API call returns an error payload (e.g. an expired/invalid
+    access token)."""
+
+
+def _check_error(payload: dict) -> None:
+    """Deezer returns HTTP 200 with an error JSON body (not a 4xx/5xx) for
+    problems like an expired token or a rate limit, so raise_for_status()
+    never catches these. Call this after every response.json() to turn
+    that error body into a DeezerAuthError instead of a confusing KeyError
+    further down the line."""
+    if isinstance(payload, dict) and "error" in payload:
+        raise DeezerAuthError(f"Deezer API error: {payload['error']}")
+
+
 def search_artist(name: str) -> dict | None:
     response = requests.get(f"{BASE_URL}/search/artist", params={"q": name}, timeout=10)
     response.raise_for_status()
-    results = response.json().get("data", [])
+    payload = response.json()
+    _check_error(payload)
+    results = payload.get("data", [])
     if not results:
         return None
 
@@ -24,7 +43,9 @@ def search_artist(name: str) -> dict | None:
 def top_tracks(artist_id: int, limit: int = 2) -> list[dict]:
     response = requests.get(f"{BASE_URL}/artist/{artist_id}/top", params={"limit": limit}, timeout=10)
     response.raise_for_status()
-    return response.json().get("data", [])
+    payload = response.json()
+    _check_error(payload)
+    return payload.get("data", [])
 
 
 def genre_for_track(track: dict) -> str | None:
@@ -33,7 +54,9 @@ def genre_for_track(track: dict) -> str | None:
         return None
     response = requests.get(f"{BASE_URL}/album/{album['id']}", timeout=10)
     response.raise_for_status()
-    genres = response.json().get("genres", {}).get("data", [])
+    payload = response.json()
+    _check_error(payload)
+    genres = payload.get("genres", {}).get("data", [])
     return genres[0]["name"] if genres else None
 
 
@@ -42,10 +65,6 @@ AUTHORIZE_URL = "https://connect.deezer.com/oauth/auth.php"
 TOKEN_URL = "https://connect.deezer.com/oauth/access_token.php"
 REDIRECT_URI = "http://localhost:8888/callback"
 PERMS = "basic_access,manage_library"
-
-
-class DeezerAuthError(Exception):
-    """Raised when the Deezer OAuth code-for-token exchange fails."""
 
 
 def load_token(path: Path = TOKEN_PATH) -> str | None:
@@ -57,6 +76,7 @@ def load_token(path: Path = TOKEN_PATH) -> str | None:
 def save_token(token: str, path: Path = TOKEN_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"access_token": token}))
+    os.chmod(path, 0o600)  # credential at rest — restrict to the owning user
 
 
 class _CallbackHandler(BaseHTTPRequestHandler):
@@ -76,9 +96,12 @@ def _capture_auth_code(app_id: str) -> str:
     server.auth_code = None
     authorize_url = f"{AUTHORIZE_URL}?{urlencode({'app_id': app_id, 'redirect_uri': REDIRECT_URI, 'perms': PERMS})}"
     webbrowser.open(authorize_url)
-    while server.auth_code is None:
-        server.handle_request()
-    return server.auth_code
+    try:
+        while server.auth_code is None:
+            server.handle_request()
+        return server.auth_code
+    finally:
+        server.server_close()
 
 
 def authenticate(app_id: str, app_secret: str) -> str:
@@ -90,6 +113,7 @@ def authenticate(app_id: str, app_secret: str) -> str:
     )
     response.raise_for_status()
     data = response.json()
+    _check_error(data)
     if "access_token" not in data:
         raise DeezerAuthError(f"Deezer authorization failed: {data}")
     token = data["access_token"]
@@ -116,7 +140,9 @@ class DeezerClient:
             timeout=10,
         )
         response.raise_for_status()
-        for playlist in response.json().get("data", []):
+        payload = response.json()
+        _check_error(payload)
+        for playlist in payload.get("data", []):
             if playlist["title"] == title:
                 return playlist["id"]
 
@@ -126,7 +152,9 @@ class DeezerClient:
             timeout=10,
         )
         response.raise_for_status()
-        return response.json()["id"]
+        payload = response.json()
+        _check_error(payload)
+        return payload["id"]
 
     def add_tracks(self, playlist_id: int, track_ids: list[int]) -> bool:
         response = requests.post(
@@ -135,4 +163,6 @@ class DeezerClient:
             timeout=10,
         )
         response.raise_for_status()
-        return response.json() is True
+        payload = response.json()
+        _check_error(payload)
+        return payload is True

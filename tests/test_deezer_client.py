@@ -1,4 +1,13 @@
+import stat
+
+import pytest
+
 import deezer_client
+
+# Deezer returns HTTP 200 with an error JSON body for problems like an
+# expired token or a rate limit (confirmed live), so raise_for_status()
+# never fires on these. Reused across the _check_error tests below.
+ERROR_PAYLOAD = {"error": {"type": "OAuthException", "message": "Invalid OAuth access token.", "code": 300}}
 
 
 def test_search_artist_returns_none_when_no_results(monkeypatch, fake_response):
@@ -143,3 +152,52 @@ def test_add_tracks_posts_comma_joined_track_ids_and_returns_true(monkeypatch, f
     assert result is True
     assert captured["params"]["songs"] == "111,222"
     assert captured["url"] == f"{deezer_client.BASE_URL}/playlist/555/tracks"
+
+
+def test_search_artist_raises_deezer_auth_error_on_error_payload(monkeypatch, fake_response):
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    with pytest.raises(deezer_client.DeezerAuthError):
+        deezer_client.search_artist("Some Band")
+
+
+def test_top_tracks_raises_deezer_auth_error_on_error_payload(monkeypatch, fake_response):
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    with pytest.raises(deezer_client.DeezerAuthError):
+        deezer_client.top_tracks(artist_id=399)
+
+
+def test_genre_for_track_raises_deezer_auth_error_on_error_payload(monkeypatch, fake_response):
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    with pytest.raises(deezer_client.DeezerAuthError):
+        deezer_client.genre_for_track({"id": 1, "album": {"id": 302127}})
+
+
+def test_get_or_create_playlist_raises_deezer_auth_error_on_expired_token(monkeypatch, fake_response):
+    # Live-confirmed: GET .../user/me/playlists?access_token=invalid
+    # returns HTTP 200 with an error JSON body, not a 4xx — this used to
+    # fall through to a bare KeyError: 'id' with no hint about the cause.
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    client = deezer_client.DeezerClient(access_token="expired")
+    with pytest.raises(deezer_client.DeezerAuthError):
+        client.get_or_create_playlist("Upcoming Concerts")
+
+
+def test_get_or_create_playlist_raises_deezer_auth_error_when_creation_fails(monkeypatch, fake_response):
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response({"data": []}))
+    monkeypatch.setattr(deezer_client.requests, "post", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    client = deezer_client.DeezerClient(access_token="expired")
+    with pytest.raises(deezer_client.DeezerAuthError):
+        client.get_or_create_playlist("Upcoming Concerts")
+
+
+def test_add_tracks_raises_deezer_auth_error_on_error_payload(monkeypatch, fake_response):
+    monkeypatch.setattr(deezer_client.requests, "post", lambda *a, **k: fake_response(ERROR_PAYLOAD))
+    client = deezer_client.DeezerClient(access_token="expired")
+    with pytest.raises(deezer_client.DeezerAuthError):
+        client.add_tracks(playlist_id=555, track_ids=[111])
+
+
+def test_save_token_restricts_file_permissions_to_owner_only(tmp_path):
+    path = tmp_path / "deezer_token.json"
+    deezer_client.save_token("abc123", path=path)
+    assert stat.S_IMODE(path.stat().st_mode) == 0o600
