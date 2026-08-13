@@ -12,8 +12,12 @@ from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
+from scrapers.bar_lume import BarLumeScraper
 from scrapers.base import Concert, Scraper
+from scrapers.charlatan import CharlatanScraper
 from scrapers.missy_sippy import MissySippyScraper
+from scrapers.ringo import RingoScraper
+from scrapers.trefpunt import TrefpuntScraper
 from scrapers.viernulvier import ViernulvierScraper
 from scrapers.wintercircus import WintercircusScraper
 from ytmusic_client import (
@@ -80,7 +84,10 @@ def run() -> None:
 
     store = CsvStore(config.CSV_PATH)
 
-    scrapers: list[Scraper] = [MissySippyScraper(), ViernulvierScraper(), WintercircusScraper()]
+    scrapers: list[Scraper] = [
+        MissySippyScraper(), ViernulvierScraper(), WintercircusScraper(), CharlatanScraper(),
+        TrefpuntScraper(), RingoScraper(), BarLumeScraper(),
+    ]
     today = date.today()
 
     all_concerts: list[Concert] = []
