@@ -39,3 +39,33 @@ def test_search_artist_falls_back_to_highest_fan_count_when_no_exact_match(monke
     artist = deezer_client.search_artist("Iza & The Wildcards")
 
     assert artist["id"] == 2
+
+
+def test_top_tracks_returns_the_track_list(monkeypatch, fake_response):
+    tracks = {"data": [{"id": 111, "title": "Creep", "album": {"id": 14880711}}]}
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: fake_response(tracks))
+
+    result = deezer_client.top_tracks(artist_id=399, limit=2)
+
+    assert result == tracks["data"]
+
+
+def test_genre_for_track_returns_the_first_genre_name(monkeypatch, fake_response):
+    album_response = fake_response({"genres": {"data": [{"id": 106, "name": "Electro"}]}})
+    monkeypatch.setattr(deezer_client.requests, "get", lambda *a, **k: album_response)
+
+    genre = deezer_client.genre_for_track({"id": 1, "album": {"id": 302127}})
+
+    assert genre == "Electro"
+
+
+def test_genre_for_track_returns_none_when_album_has_no_genres(monkeypatch, fake_response):
+    monkeypatch.setattr(
+        deezer_client.requests, "get",
+        lambda *a, **k: fake_response({"genres": {"data": []}}),
+    )
+    assert deezer_client.genre_for_track({"id": 1, "album": {"id": 302127}}) is None
+
+
+def test_genre_for_track_returns_none_when_track_has_no_album():
+    assert deezer_client.genre_for_track({"id": 1}) is None
