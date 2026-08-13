@@ -11,10 +11,12 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 1. `python3 -m venv .venv && source .venv/bin/activate`
 2. `pip install -r requirements.txt`
-3. Create a Google Cloud Console project, then under "APIs & Services" ->
-   "Credentials" -> "Create Credentials" -> "OAuth client ID", choose
-   application type "TVs and Limited Input devices". Note the client ID and
-   client secret.
+3. Create a Google Cloud Console project. Under "APIs & Services" ->
+   "Library", search for "YouTube Data API v3" and click "Enable" (skipping
+   this step is the most common cause of OAuth client failures). Then under
+   "APIs & Services" -> "Credentials" -> "Create Credentials" -> "OAuth
+   client ID", choose application type "TVs and Limited Input devices".
+   Note the client ID and client secret.
 4. Register a free Last.fm API account at https://www.last.fm/api/account/create
    and note the API key.
 5. `cp .env.example .env` and fill in `YTMUSIC_OAUTH_CLIENT_ID` /
