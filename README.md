@@ -2,8 +2,11 @@
 
 Manually-triggered CLI: scrapes Missy Sippy, VIERNULVIER, and Wintercircus for
 concerts in the next 30 days, adds each new one's top 2 YouTube Music tracks
-to the "Upcoming Concerts" YouTube Music playlist, looks up a genre tag via
-Last.fm, and logs a row to `data/concerts.csv`.
+to the "Upcoming Concerts" YouTube Music playlist, looks up the artist's
+YouTube Music bio (falling back to a Last.fm genre tag when YouTube has no
+bio), and logs a row to `data/concerts.csv`. Each run also regenerates
+`data/concerts.html` — a sortable table of the still-upcoming concerts with
+clickable ticket links — and opens it in your browser.
 
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 

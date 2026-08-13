@@ -32,10 +32,11 @@ def search_artist(name: str) -> dict | None:
     return candidates[0]
 
 
-def top_tracks(channel_id: str, limit: int = 2) -> list[dict]:
+def get_artist_info(channel_id: str, track_limit: int = 2) -> tuple[list[dict], str | None]:
     artist = _client.get_artist(channel_id)
     songs = artist.get("songs", {}).get("results", [])
-    return songs[:limit]
+    description = artist.get("description") or None
+    return songs[:track_limit], description
 
 
 def get_or_create_playlist(title: str) -> str:
