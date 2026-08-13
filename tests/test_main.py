@@ -1,3 +1,4 @@
+# tests/test_main.py
 from datetime import date
 
 import pytest
@@ -6,36 +7,29 @@ import main
 from scrapers.base import Concert
 
 
-def test_lookup_deezer_returns_track_ids_and_genre_on_a_match(monkeypatch):
-    monkeypatch.setattr(main, "search_artist", lambda band: {"id": 399, "name": "Radiohead"})
-    monkeypatch.setattr(main, "top_tracks", lambda artist_id, limit=2: [
-        {"id": 111, "album": {"id": 1}}, {"id": 222, "album": {"id": 1}},
+def test_lookup_tracks_returns_video_ids_on_a_match(monkeypatch):
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
+    monkeypatch.setattr(main, "top_tracks", lambda channel_id, limit=2: [
+        {"videoId": "aaa"}, {"videoId": "bbb"},
     ])
-    monkeypatch.setattr(main, "genre_for_track", lambda track: "Alternative Rock")
 
-    track_ids, genre = main._lookup_deezer("Radiohead")
-
-    assert track_ids == [111, 222]
-    assert genre == "Alternative Rock"
+    assert main._lookup_tracks("Radiohead") == ["aaa", "bbb"]
 
 
-def test_lookup_deezer_returns_empty_when_artist_not_found(monkeypatch):
+def test_lookup_tracks_returns_empty_when_artist_not_found(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: None)
-
-    track_ids, genre = main._lookup_deezer("Some Unknown Band")
-
-    assert track_ids == []
-    assert genre is None
+    assert main._lookup_tracks("Some Unknown Band") == []
 
 
-def test_lookup_deezer_returns_empty_when_artist_has_no_top_tracks(monkeypatch):
-    monkeypatch.setattr(main, "search_artist", lambda band: {"id": 1, "name": "X"})
-    monkeypatch.setattr(main, "top_tracks", lambda artist_id, limit=2: [])
+def test_lookup_tracks_returns_empty_when_artist_has_no_top_tracks(monkeypatch):
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "X"})
+    monkeypatch.setattr(main, "top_tracks", lambda channel_id, limit=2: [])
+    assert main._lookup_tracks("X") == []
 
-    track_ids, genre = main._lookup_deezer("X")
 
-    assert track_ids == []
-    assert genre is None
+def test_lookup_genre_delegates_to_lastfm_client(monkeypatch):
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Alternative Rock")
+    assert main._lookup_genre("Radiohead") == "Alternative Rock"
 
 
 class _FakeScraper:
@@ -44,17 +38,6 @@ class _FakeScraper:
 
     def scrape(self):
         return self._concerts
-
-
-class _FakeDeezerClient:
-    def __init__(self, access_token):
-        self.access_token = access_token
-
-    def get_or_create_playlist(self, title):
-        return 1
-
-    def add_tracks(self, playlist_id, track_ids):
-        return True
 
 
 def _run_with_frozen_today(monkeypatch, today):
@@ -66,9 +49,27 @@ def _run_with_frozen_today(monkeypatch, today):
     monkeypatch.setattr(main, "date", _FrozenDate)
 
 
-def test_run_exits_cleanly_when_deezer_credentials_are_missing(monkeypatch, capsys):
-    monkeypatch.delenv("DEEZER_APP_ID", raising=False)
-    monkeypatch.delenv("DEEZER_APP_SECRET", raising=False)
+def _stub_venue_scrapers(monkeypatch, concerts):
+    monkeypatch.setattr(main, "MissySippyScraper", lambda: _FakeScraper(concerts))
+    monkeypatch.setattr(main, "ViernulvierScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "WintercircusScraper", lambda: _FakeScraper([]))
+
+
+def _stub_env_and_auth(monkeypatch):
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("LASTFM_API_KEY", "key")
+    monkeypatch.setattr(main, "load_dotenv", lambda: None)
+    monkeypatch.setattr(main, "load_client", lambda oauth_path, client_id, client_secret: None)
+    monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
+    monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
+    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: True)
+
+
+def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
+    monkeypatch.delenv("YTMUSIC_OAUTH_CLIENT_ID", raising=False)
+    monkeypatch.delenv("YTMUSIC_OAUTH_CLIENT_SECRET", raising=False)
+    monkeypatch.delenv("LASTFM_API_KEY", raising=False)
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
 
     with pytest.raises(SystemExit) as exc_info:
@@ -76,17 +77,68 @@ def test_run_exits_cleanly_when_deezer_credentials_are_missing(monkeypatch, caps
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
-    assert "DEEZER_APP_ID" in out
-    assert "DEEZER_APP_SECRET" in out
+    assert "YTMUSIC_OAUTH_CLIENT_ID" in out
     assert ".env" in out
 
 
-def test_run_survives_a_single_artists_deezer_lookup_failure(monkeypatch, tmp_path, capsys):
-    monkeypatch.setenv("DEEZER_APP_ID", "id")
-    monkeypatch.setenv("DEEZER_APP_SECRET", "secret")
+def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
-    monkeypatch.setattr(main, "get_access_token", lambda app_id, app_secret: "token")
-    monkeypatch.setattr(main, "DeezerClient", _FakeDeezerClient)
+
+    def _fail(oauth_path, client_id, client_secret):
+        raise main.YTMusicAuthError("Invalid auth JSON string or file path provided.")
+
+    monkeypatch.setattr(main, "load_client", _fail)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main.run()
+
+    assert exc_info.value.code == 1
+    out = capsys.readouterr().out
+    assert "YouTube Music authentication failed" in out
+
+
+def test_run_decouples_track_and_genre_lookups(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Tracks No Genre", description="", ticket_link="http://x"),
+        Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Genre No Tracks", description="", ticket_link="http://y"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    def _fake_search_artist(band):
+        if band == "Tracks No Genre":
+            return {"browseId": "UC1", "artist": band}
+        return None
+
+    monkeypatch.setattr(main, "search_artist", _fake_search_artist)
+    monkeypatch.setattr(main, "top_tracks", lambda channel_id, limit=2: [{"videoId": "vid1"}])
+
+    def _fake_genre_for_artist(band):
+        if band == "Genre No Tracks":
+            return "Punk"
+        return None
+
+    monkeypatch.setattr(main, "genre_for_artist", _fake_genre_for_artist)
+
+    main.run()
+
+    rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
+    tracks_row = next(r for r in rows if "Tracks No Genre" in r)
+    genre_row = next(r for r in rows if "Genre No Tracks" in r)
+
+    assert tracks_row.split(",")[3] == ""  # matched on YT Music, no Last.fm tag -> blank genre
+    assert genre_row.split(",")[3] == "Punk"  # matched on Last.fm, no YT Music match -> tracks still empty
+
+
+def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
@@ -95,50 +147,24 @@ def test_run_survives_a_single_artists_deezer_lookup_failure(monkeypatch, tmp_pa
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band", description="", ticket_link="http://x"),
         Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Bad Band", description="", ticket_link="http://y"),
     ]
-    monkeypatch.setattr(main, "MissySippyScraper", lambda: _FakeScraper(concerts))
-    monkeypatch.setattr(main, "ViernulvierScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "WintercircusScraper", lambda: _FakeScraper([]))
+    _stub_venue_scrapers(monkeypatch, concerts)
 
     def _fake_search_artist(band):
         if band == "Bad Band":
-            raise RuntimeError("Deezer API error: Quota limit exceeded")
-        return {"id": 1, "name": band}
+            raise RuntimeError("YouTube Music API error: quota exceeded")
+        return {"browseId": "UC1", "artist": band}
 
     monkeypatch.setattr(main, "search_artist", _fake_search_artist)
-    monkeypatch.setattr(main, "top_tracks", lambda artist_id, limit=2: [{"id": 111, "album": {"id": 1}}])
-    monkeypatch.setattr(main, "genre_for_track", lambda track: "Rock")
+    monkeypatch.setattr(main, "top_tracks", lambda channel_id, limit=2: [{"videoId": "vid1"}])
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
 
-    # Must not raise: one artist's Deezer failure is non-fatal to the run.
-    main.run()
+    main.run()  # must not raise
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Good Band" in csv_content
-    assert "Bad Band" in csv_content  # still recorded despite the Deezer error
+    assert "Bad Band" in csv_content  # still recorded despite the lookup error
 
     out = capsys.readouterr().out
-    assert "Deezer API errors" in out
+    assert "Lookup errors" in out
     assert "Bad Band" in out
-    assert "No Deezer match for: Bad Band" not in out  # a transient error, not a genuine no-match
-
-
-def test_run_exits_cleanly_when_deezer_token_is_expired(monkeypatch, capsys):
-    monkeypatch.setenv("DEEZER_APP_ID", "id")
-    monkeypatch.setenv("DEEZER_APP_SECRET", "secret")
-    monkeypatch.setattr(main, "load_dotenv", lambda: None)
-    monkeypatch.setattr(main, "get_access_token", lambda app_id, app_secret: "expired-token")
-
-    class _ExpiredTokenDeezerClient:
-        def __init__(self, access_token):
-            pass
-
-        def get_or_create_playlist(self, title):
-            raise main.DeezerAuthError("Deezer API error: {'type': 'OAuthException', 'code': 300}")
-
-    monkeypatch.setattr(main, "DeezerClient", _ExpiredTokenDeezerClient)
-
-    with pytest.raises(SystemExit) as exc_info:
-        main.run()
-
-    assert exc_info.value.code == 1
-    out = capsys.readouterr().out
-    assert "Deezer authentication failed" in out
+    assert "No YouTube Music match for: Bad Band" not in out  # a transient error, not a genuine no-match
