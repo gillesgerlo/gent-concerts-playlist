@@ -3,7 +3,7 @@ import html
 from datetime import date
 from pathlib import Path
 
-COLUMNS = ["Venue", "Date", "Band", "Music Description", "Qobuz Status", "Ticket/Event Link"]
+COLUMNS = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
 
 
 def load_upcoming_rows(csv_path: Path, today: date) -> list[dict]:
