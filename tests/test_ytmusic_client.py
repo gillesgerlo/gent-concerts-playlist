@@ -28,8 +28,8 @@ class _FakeYTMusicClient:
         self.created_playlists.append((title, description))
         return "PLnew123"
 
-    def add_playlist_items(self, playlistId, videoIds):
-        self.added_items.append((playlistId, videoIds))
+    def add_playlist_items(self, playlistId, videoIds, duplicates=False):
+        self.added_items.append((playlistId, videoIds, duplicates))
         return {"status": "STATUS_SUCCEEDED", "playlistEditResults": []}
 
 
@@ -169,12 +169,12 @@ def test_add_tracks_returns_true_on_a_succeeded_status(monkeypatch):
     result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
 
     assert result is True
-    assert fake_client.added_items == [("PL1", ["v1", "v2"])]
+    assert fake_client.added_items == [("PL1", ["v1", "v2"], True)]
 
 
 def test_add_tracks_returns_false_when_status_is_not_succeeded(monkeypatch):
     class _FailingClient(_FakeYTMusicClient):
-        def add_playlist_items(self, playlistId, videoIds):
+        def add_playlist_items(self, playlistId, videoIds, duplicates=False):
             return {"error": "duplicate videos not allowed"}
 
     monkeypatch.setattr(ytmusic_client, "_client", _FailingClient())

@@ -50,5 +50,8 @@ def get_or_create_playlist(title: str) -> str:
 
 
 def add_tracks(playlist_id: str, track_ids: list[str]) -> bool:
-    response = _client.add_playlist_items(playlist_id, track_ids)
+    # duplicates=True: without it, add_playlist_items rejects the WHOLE call
+    # (adding nothing) if ANY given video ID is already in the playlist,
+    # which happens routinely since this playlist accumulates across runs.
+    response = _client.add_playlist_items(playlist_id, track_ids, duplicates=True)
     return isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")
