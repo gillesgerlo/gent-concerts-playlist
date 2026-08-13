@@ -1,56 +1,75 @@
 import os
 import sys
 from datetime import date
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 import config
 from csv_store import CsvStore
-from deezer_client import (
-    DeezerAuthError,
-    DeezerClient,
-    genre_for_track,
-    get_access_token,
-    search_artist,
-    top_tracks,
-)
 from filtering import filter_new, filter_upcoming
+from lastfm_client import genre_for_artist, set_api_key
 from scrapers.base import Concert, Scraper
 from scrapers.missy_sippy import MissySippyScraper
 from scrapers.viernulvier import ViernulvierScraper
 from scrapers.wintercircus import WintercircusScraper
+from ytmusic_client import (
+    YTMusicAuthError,
+    add_tracks,
+    get_or_create_playlist,
+    load_client,
+    search_artist,
+    top_tracks,
+)
+
+OAUTH_PATH = Path("auth/ytmusic_oauth.json")
 
 
-def _lookup_deezer(band: str) -> tuple[list[int], str | None]:
+def _lookup_tracks(band: str) -> list[str]:
     artist = search_artist(band)
     if artist is None:
-        return [], None
-    tracks = top_tracks(artist["id"], limit=2)
-    if not tracks:
-        return [], None
-    genre = genre_for_track(tracks[0])
-    return [t["id"] for t in tracks], genre
+        return []
+    tracks = top_tracks(artist["browseId"], limit=2)
+    return [t["videoId"] for t in tracks]
+
+
+def _lookup_genre(band: str) -> str | None:
+    return genre_for_artist(band)
 
 
 def run() -> None:
     load_dotenv()
     try:
-        app_id = os.environ["DEEZER_APP_ID"]
-        app_secret = os.environ["DEEZER_APP_SECRET"]
+        client_id = os.environ["YTMUSIC_OAUTH_CLIENT_ID"]
+        client_secret = os.environ["YTMUSIC_OAUTH_CLIENT_SECRET"]
+        lastfm_api_key = os.environ["LASTFM_API_KEY"]
     except KeyError:
         print(
-            "Missing DEEZER_APP_ID/DEEZER_APP_SECRET — copy .env.example to .env "
-            "and fill in your Deezer credentials."
+            "Missing YTMUSIC_OAUTH_CLIENT_ID/YTMUSIC_OAUTH_CLIENT_SECRET/LASTFM_API_KEY — "
+            "copy .env.example to .env and fill in your credentials."
         )
         sys.exit(1)
 
     try:
-        access_token = get_access_token(app_id, app_secret)
-        client = DeezerClient(access_token)
-        playlist_id = client.get_or_create_playlist(config.PLAYLIST_NAME)
-    except DeezerAuthError as exc:
-        print(f"Deezer authentication failed: {exc}")
+        load_client(OAUTH_PATH, client_id, client_secret)
+        # get_or_create_playlist is the first real YouTube Music API call.
+        # ytmusicapi's OAuth token refresh is lazy, so an expired/revoked
+        # refresh token isn't detected by load_client at all: it only
+        # surfaces here, and with an exception type that does not subclass
+        # ytmusicapi's own YTMusicError hierarchy. Guard it the same way as
+        # load_client so that failure also gets the fatal auth-failure
+        # message instead of an uncaught traceback.
+        playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
+    except YTMusicAuthError as exc:
+        print(f"YouTube Music authentication failed: {exc}")
+        print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
         sys.exit(1)
+    except Exception as exc:  # noqa: BLE001 - expired/revoked token surfaces here as a non-YTMusicError type
+        print(f"YouTube Music authentication failed (during startup): {exc}")
+        print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
+        sys.exit(1)
+
+    set_api_key(lastfm_api_key)
 
     store = CsvStore(config.CSV_PATH)
 
@@ -69,40 +88,62 @@ def run() -> None:
     new_concerts = filter_new(upcoming, store)
 
     tracks_added = 0
-    no_match: list[str] = []
-    deezer_errors: list[str] = []
+    no_track_match: list[str] = []
+    no_genre_match: list[str] = []
+    add_failures: list[str] = []
+    lookup_errors: list[str] = []
     for concert in new_concerts:
-        genre = None
-        track_ids: list[int] = []
-        errored = False
+        track_ids: list[str] = []
+        tracks_errored = False
         try:
-            track_ids, genre = _lookup_deezer(concert.band)
+            track_ids = _lookup_tracks(concert.band)
         except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            deezer_errors.append(f"{concert.band}: {exc}")
-            errored = True
+            lookup_errors.append(f"{concert.band} (tracks): {exc}")
+            tracks_errored = True
+
+        genre: str | None = None
+        genre_errored = False
+        try:
+            genre = _lookup_genre(concert.band)
+        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+            lookup_errors.append(f"{concert.band} (genre): {exc}")
+            genre_errored = True
 
         if track_ids:
+            added_ok = False
+            add_tracks_errored = False
             try:
-                client.add_tracks(playlist_id, track_ids)
-                tracks_added += len(track_ids)
+                added_ok = add_tracks(playlist_id, track_ids)
             except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-                deezer_errors.append(f"{concert.band}: {exc}")
-                errored = True
-        elif not errored:
-            no_match.append(concert.band)
+                lookup_errors.append(f"{concert.band} (add tracks): {exc}")
+                add_tracks_errored = True
+
+            if added_ok:
+                tracks_added += len(track_ids)
+            elif not add_tracks_errored:
+                add_failures.append(concert.band)
+        elif not tracks_errored:
+            no_track_match.append(concert.band)
+
+        if not genre and not genre_errored:
+            no_genre_match.append(concert.band)
 
         store.append_row(concert, music_description=genre or "")
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {len(new_concerts)}")
     print(f"Tracks added to '{config.PLAYLIST_NAME}': {tracks_added}")
-    if no_match:
-        print(f"No Deezer match for: {', '.join(no_match)}")
-    if deezer_errors:
-        print(f"Deezer API errors (transient, not a genuine no-match): {'; '.join(deezer_errors)}")
+    if no_track_match:
+        print(f"No YouTube Music match for: {', '.join(no_track_match)}")
+    if add_failures:
+        print(f"Failed to add tracks for: {', '.join(add_failures)}")
+    if no_genre_match:
+        print(f"No Last.fm genre tag for: {', '.join(no_genre_match)}")
+    if lookup_errors:
+        print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
         print(f"Venue scrape failures: {'; '.join(scrape_failures)}")
-    print("Reminder: run the Deezer -> Qobuz transfer manually via Soundiiz (soundiiz.com).")
+    print("Reminder: run the YouTube Music -> Qobuz transfer manually via Soundiiz (soundiiz.com).")
 
 
 if __name__ == "__main__":

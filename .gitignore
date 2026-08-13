@@ -3,4 +3,4 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
-auth/deezer_token.json
+auth/ytmusic_oauth.json
