@@ -14,29 +14,32 @@ def _parse(html: str, today: date) -> list[Concert]:
     soup = BeautifulSoup(html, "lxml")
     concerts = []
     for card in soup.find_all("li", class_="eventCard"):
-        title_el = card.find("h3", class_="title")
-        link_el = card.find("a", class_="desc")
-        date_container = card.find("div", class_="top-date")
-        if not (title_el and link_el and date_container):
+        try:
+            title_el = card.find("h3", class_="title")
+            link_el = card.find("a", class_="desc")
+            date_container = card.find("div", class_="top-date")
+            if not (title_el and link_el and date_container):
+                continue
+
+            date_span = date_container.find("span", class_="start")
+            day_text, month_text = date_span.get_text(strip=True).split(".")
+            event_date = resolve_year(int(day_text), int(month_text), today)
+
+            tagline_el = card.find("div", class_="tagline")
+            description = tagline_el.get_text(strip=True) if tagline_el else ""
+
+            href = link_el.get("href", "")
+            ticket_link = href if href.startswith("http") else f"{SITE_BASE_URL}{href}"
+
+            concerts.append(Concert(
+                venue=VENUE,
+                date=event_date,
+                band=title_el.get_text(strip=True),
+                description=description,
+                ticket_link=ticket_link,
+            ))
+        except Exception:  # noqa: BLE001 - one malformed entry must not drop the whole venue
             continue
-
-        date_span = date_container.find("span", class_="start")
-        day_text, month_text = date_span.get_text(strip=True).split(".")
-        event_date = resolve_year(int(day_text), int(month_text), today)
-
-        tagline_el = card.find("div", class_="tagline")
-        description = tagline_el.get_text(strip=True) if tagline_el else ""
-
-        href = link_el.get("href", "")
-        ticket_link = href if href.startswith("http") else f"{SITE_BASE_URL}{href}"
-
-        concerts.append(Concert(
-            venue=VENUE,
-            date=event_date,
-            band=title_el.get_text(strip=True),
-            description=description,
-            ticket_link=ticket_link,
-        ))
     return concerts
 
 

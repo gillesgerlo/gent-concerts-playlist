@@ -7,6 +7,10 @@ FIXTURE = (Path(__file__).parent / "fixtures" / "viernulvier.html").read_text(en
 
 
 def test_parses_two_concerts_from_the_fixture():
+    # The fixture also has a third entry ("Malformed Date Band") whose
+    # date span is "11.09.26" (three parts, not two) — a malformed entry
+    # that must be skipped, not raise. See
+    # test_malformed_date_entry_is_skipped_not_fatal below.
     concerts = _parse(FIXTURE, today=date(2026, 8, 13))
     assert len(concerts) == 2
 
@@ -37,3 +41,14 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
     monkeypatch.setattr(viernulvier, "_fetch_html", lambda: FIXTURE)
     concerts = viernulvier.ViernulvierScraper().scrape()
     assert len(concerts) == 2
+
+
+def test_malformed_date_entry_is_skipped_not_fatal():
+    # Before the per-entry try/except, "11.09.26".split(".") unpacking
+    # into `day_text, month_text` raised ValueError and dropped every
+    # entry in the venue for the run, not just this one.
+    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
+    bands = [c.band for c in concerts]
+    assert "Malformed Date Band" not in bands
+    assert "Beherit" in bands
+    assert "Fear Factory" in bands

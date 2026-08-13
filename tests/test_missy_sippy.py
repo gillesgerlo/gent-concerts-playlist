@@ -7,6 +7,9 @@ FIXTURE = (Path(__file__).parent / "fixtures" / "missy_sippy.html").read_text(en
 
 
 def test_parses_three_concerts_from_the_fixture():
+    # The fixture also has a fourth, malformed entry ("Malformed Day Band")
+    # whose day is "TBA" instead of a number — must be skipped, not raise.
+    # See test_malformed_day_entry_is_skipped_not_fatal below.
     concerts = _parse(FIXTURE, today=date(2026, 8, 13))
     assert len(concerts) == 3
 
@@ -48,3 +51,14 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
     monkeypatch.setattr(missy_sippy, "_fetch_html", lambda: FIXTURE)
     concerts = missy_sippy.MissySippyScraper().scrape()
     assert len(concerts) == 3
+
+
+def test_malformed_day_entry_is_skipped_not_fatal():
+    # Before the per-entry try/except, int("TBA") raised ValueError and
+    # dropped every entry in the venue for the run, not just this one.
+    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
+    bands = [c.band for c in concerts]
+    assert "Malformed Day Band" not in bands
+    assert "Donovan Keith Band (US)" in bands
+    assert "FROZE" in bands
+    assert "GUY VERLINDE & THE ARTISANS OF SOLACE" in bands
