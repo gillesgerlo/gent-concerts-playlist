@@ -32,6 +32,11 @@ def test_lookup_genre_delegates_to_lastfm_client(monkeypatch):
     assert main._lookup_genre("Radiohead") == "Alternative Rock"
 
 
+def test_lookup_is_cover_or_tribute_delegates_to_musicbrainz_client(monkeypatch):
+    monkeypatch.setattr(main, "is_cover_or_tribute", lambda band: True)
+    assert main._lookup_is_cover_or_tribute("Six Blade Knife") is True
+
+
 def test_lookup_event_description_uses_the_ticket_page_meta_description_when_present(monkeypatch):
     monkeypatch.setattr(main, "fetch_description", lambda url: "Page meta description.")
     concert = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="X",
@@ -100,6 +105,7 @@ def _stub_env_and_auth(monkeypatch):
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: True)
     monkeypatch.setattr(main, "fetch_description", lambda url: None)
+    monkeypatch.setattr(main, "is_cover_or_tribute", lambda band: False)
 
 
 def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
@@ -327,6 +333,122 @@ def test_run_writes_html_export_and_opens_it_in_the_browser(monkeypatch, tmp_pat
     html_path = tmp_path / "concerts.html"
     assert html_path.exists()
     assert opened_urls == [html_path.resolve().as_uri()]
+
+
+def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Charlatan", date=date(2026, 9, 4), band="Six Blade Knife",
+                description="Brengt een stomend eerbetoon aan de legendarische muziek van Dire Straits.",
+                ticket_link="http://x"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    search_calls = []
+    genre_calls = []
+    monkeypatch.setattr(main, "is_cover_or_tribute", lambda band: True)
+    monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: genre_calls.append(band) or "Rock")
+
+    main.run()
+
+    assert search_calls == []  # never even looked up on YouTube Music
+    assert genre_calls == []  # nor Last.fm — a confirmed cover skips every other lookup
+    assert not (tmp_path / "concerts.csv").exists()  # never logged at all
+
+    out = capsys.readouterr().out
+    assert "Excluded as cover/tribute gigs: Six Blade Knife" in out
+
+
+def test_run_excludes_a_metal_show_from_the_csv_and_the_playlist(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="VIERNULVIER", date=date(2026, 9, 5), band="Beherit",
+                description="De schaduw over Belgie.", ticket_link="http://x"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    search_calls = []
+    monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "black metal")
+
+    main.run()
+
+    assert search_calls == []
+    assert not (tmp_path / "concerts.csv").exists()  # never logged at all
+
+    out = capsys.readouterr().out
+    assert "Excluded for genre: Beherit" in out
+
+
+def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Ringo Music Bar", date=date(2026, 8, 14), band="BRITPOP! - A Night Out",
+                description="The ultimate Britpop party returns, our DJs will take you on a ride.",
+                ticket_link="http://x"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    search_calls = []
+    monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Britpop")
+
+    main.run()
+
+    assert search_calls == []  # party: never looked up on YouTube Music
+    csv_content = (tmp_path / "concerts.csv").read_text()
+    assert "BRITPOP! - A Night Out" in csv_content  # but still logged, per the CSV design
+
+    out = capsys.readouterr().out
+    assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 0" in out
+    assert "Skipped playlist add (party/DJ set): BRITPOP! - A Night Out" in out
+
+
+def test_run_treats_a_musicbrainz_lookup_failure_as_not_a_cover(monkeypatch, tmp_path, capsys):
+    # Fail open: a transient MusicBrainz error must not silently drop a real concert.
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band", description="", ticket_link="http://x"),
+    ]
+    _stub_venue_scrapers(monkeypatch, concerts)
+
+    def _fail(band):
+        raise RuntimeError("MusicBrainz rate limited")
+
+    monkeypatch.setattr(main, "is_cover_or_tribute", _fail)
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
+
+    main.run()  # must not raise
+
+    csv_content = (tmp_path / "concerts.csv").read_text()
+    assert "Good Band" in csv_content  # still recorded despite the lookup error
+
+    out = capsys.readouterr().out
+    assert "Lookup errors" in out
+    assert "Good Band (cover/tribute check)" in out
+    assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 1" in out
 
 
 def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatch, tmp_path, capsys):

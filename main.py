@@ -7,11 +7,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import config
+from content_filters import is_excluded_genre, is_party
 from csv_store import CsvStore
 from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
+from musicbrainz_client import is_cover_or_tribute
 from scrapers.bar_lume import BarLumeScraper
 from scrapers.base import Concert, Scraper
 from scrapers.charlatan import CharlatanScraper
@@ -42,6 +44,10 @@ def _lookup_artist_info(band: str) -> list[str]:
 
 def _lookup_genre(band: str) -> str | None:
     return genre_for_artist(band)
+
+
+def _lookup_is_cover_or_tribute(band: str) -> bool:
+    return is_cover_or_tribute(band)
 
 
 def _lookup_event_description(concert: Concert) -> str | None:
@@ -101,20 +107,36 @@ def run() -> None:
     upcoming = filter_upcoming(all_concerts, config.WINDOW_DAYS, today)
     new_concerts = filter_new(upcoming, store)
 
+    rows_written = 0
     tracks_added = 0
     no_track_match: list[str] = []
     no_genre_match: list[str] = []
     no_description_match: list[str] = []
     add_failures: list[str] = []
     lookup_errors: list[str] = []
+    excluded_cover: list[str] = []
+    excluded_genre: list[str] = []
+    excluded_party: list[str] = []
     for concert in new_concerts:
-        track_ids: list[str] = []
-        tracks_errored = False
+        is_cover = False
         try:
-            track_ids = _lookup_artist_info(concert.band)
+            is_cover = _lookup_is_cover_or_tribute(concert.band)
         except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            lookup_errors.append(f"{concert.band} (artist info): {exc}")
-            tracks_errored = True
+            lookup_errors.append(f"{concert.band} (cover/tribute check): {exc}")
+
+        if is_cover:
+            excluded_cover.append(concert.band)
+            continue
+
+        event_description_value: str | None = None
+        description_errored = False
+        try:
+            event_description_value = _lookup_event_description(concert)
+        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+            lookup_errors.append(f"{concert.band} (event description): {exc}")
+            description_errored = True
+
+        detection_text = f"{concert.description} {event_description_value or ''}"
 
         genre: str | None = None
         genre_errored = False
@@ -124,13 +146,20 @@ def run() -> None:
             lookup_errors.append(f"{concert.band} (genre): {exc}")
             genre_errored = True
 
-        event_description_value: str | None = None
-        description_errored = False
-        try:
-            event_description_value = _lookup_event_description(concert)
-        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            lookup_errors.append(f"{concert.band} (event description): {exc}")
-            description_errored = True
+        if is_excluded_genre(genre):
+            excluded_genre.append(concert.band)
+            continue
+
+        is_party_event = is_party(concert.band, detection_text)
+
+        track_ids: list[str] = []
+        tracks_errored = False
+        if not is_party_event:
+            try:
+                track_ids = _lookup_artist_info(concert.band)
+            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+                lookup_errors.append(f"{concert.band} (artist info): {exc}")
+                tracks_errored = True
 
         if track_ids:
             added_ok = False
@@ -145,6 +174,8 @@ def run() -> None:
                 tracks_added += len(track_ids)
             elif not add_tracks_errored:
                 add_failures.append(concert.band)
+        elif is_party_event:
+            excluded_party.append(concert.band)
         elif not tracks_errored:
             no_track_match.append(concert.band)
 
@@ -155,12 +186,13 @@ def run() -> None:
             no_description_match.append(concert.band)
 
         store.append_row(concert, genre=genre or "", event_description=event_description_value or "")
+        rows_written += 1
 
     write_html(config.CSV_PATH, config.HTML_PATH)
     webbrowser.open(config.HTML_PATH.resolve().as_uri())
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
-    print(f"New concerts recorded: {len(new_concerts)}")
+    print(f"New concerts recorded: {rows_written}")
     print(f"Tracks added to '{config.PLAYLIST_NAME}': {tracks_added}")
     if no_track_match:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
@@ -170,6 +202,12 @@ def run() -> None:
         print(f"No genre found for: {', '.join(no_genre_match)}")
     if no_description_match:
         print(f"No description found for: {', '.join(no_description_match)}")
+    if excluded_cover:
+        print(f"Excluded as cover/tribute gigs: {', '.join(excluded_cover)}")
+    if excluded_genre:
+        print(f"Excluded for genre: {', '.join(excluded_genre)}")
+    if excluded_party:
+        print(f"Skipped playlist add (party/DJ set): {', '.join(excluded_party)}")
     if lookup_errors:
         print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
