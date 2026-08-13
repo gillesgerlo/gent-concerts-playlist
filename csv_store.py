@@ -4,7 +4,7 @@ from pathlib import Path
 
 from scrapers.base import Concert
 
-CSV_HEADER = ["Venue", "Date", "Band", "Music Description", "Qobuz Status", "Ticket/Event Link"]
+CSV_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
 
 
 class CsvStore:
@@ -25,7 +25,8 @@ class CsvStore:
     def append_row(
         self,
         concert: Concert,
-        music_description: str = "",
+        genre: str = "",
+        event_description: str = "",
         qobuz_status: str = "Pending transfer",
     ) -> None:
         is_new_file = not self.path.exists()
@@ -38,7 +39,8 @@ class CsvStore:
                 concert.venue,
                 concert.date.isoformat(),
                 concert.band,
-                music_description,
+                genre,
+                event_description,
                 qobuz_status,
                 concert.ticket_link,
             ])
