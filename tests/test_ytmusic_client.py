@@ -114,10 +114,11 @@ def test_search_artist_falls_back_to_the_top_ranked_result_when_no_exact_match(m
     assert artist["browseId"] == "UC_top_ranked"
 
 
-def test_top_tracks_returns_the_songs_results_up_to_the_limit(monkeypatch):
+def test_get_artist_info_returns_songs_up_to_the_limit_and_the_description(monkeypatch):
     artist_by_id = {
         "UC_real": {
             "name": "Radiohead",
+            "description": "English rock band formed in Abingdon in 1985.",
             "songs": {
                 "results": [
                     {"videoId": "v1", "title": "Creep"},
@@ -129,16 +130,32 @@ def test_top_tracks_returns_the_songs_results_up_to_the_limit(monkeypatch):
     }
     monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(artist_by_id=artist_by_id))
 
-    tracks = ytmusic_client.top_tracks("UC_real", limit=2)
+    songs, description = ytmusic_client.get_artist_info("UC_real", track_limit=2)
 
-    assert [t["videoId"] for t in tracks] == ["v1", "v2"]
+    assert [s["videoId"] for s in songs] == ["v1", "v2"]
+    assert description == "English rock band formed in Abingdon in 1985."
 
 
-def test_top_tracks_returns_empty_list_when_artist_has_no_songs_section(monkeypatch):
+def test_get_artist_info_returns_empty_songs_when_artist_has_no_songs_section(monkeypatch):
     artist_by_id = {"UC_video_only_artist": {"name": "Some Artist", "videos": {"results": []}}}
     monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(artist_by_id=artist_by_id))
 
-    assert ytmusic_client.top_tracks("UC_video_only_artist") == []
+    songs, description = ytmusic_client.get_artist_info("UC_video_only_artist")
+
+    assert songs == []
+    assert description is None
+
+
+def test_get_artist_info_returns_none_description_when_ytmusicapi_gives_an_empty_string(monkeypatch):
+    # ytmusicapi defaults "description" to None, but some artist pages come
+    # back with an empty string instead — both mean "no bio", so normalize
+    # to None rather than writing a blank string vs. None inconsistently.
+    artist_by_id = {"UC_no_bio": {"name": "Some Artist", "description": "", "songs": {"results": []}}}
+    monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(artist_by_id=artist_by_id))
+
+    _, description = ytmusic_client.get_artist_info("UC_no_bio")
+
+    assert description is None
 
 
 def test_get_or_create_playlist_returns_existing_id_when_title_matches(monkeypatch):

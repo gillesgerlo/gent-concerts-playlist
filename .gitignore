@@ -4,3 +4,5 @@ __pycache__/
 .pytest_cache/
 .env
 auth/ytmusic_auth.json
+data/concerts.csv
+data/concerts.html

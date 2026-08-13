@@ -1,5 +1,6 @@
 import os
 import sys
+import webbrowser
 from datetime import date
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 import config
 from csv_store import CsvStore
 from filtering import filter_new, filter_upcoming
+from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
 from scrapers.base import Concert, Scraper
 from scrapers.missy_sippy import MissySippyScraper
@@ -16,21 +18,21 @@ from scrapers.wintercircus import WintercircusScraper
 from ytmusic_client import (
     YTMusicAuthError,
     add_tracks,
+    get_artist_info,
     get_or_create_playlist,
     load_client,
     search_artist,
-    top_tracks,
 )
 
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
 
-def _lookup_tracks(band: str) -> list[str]:
+def _lookup_artist_info(band: str) -> tuple[list[str], str | None]:
     artist = search_artist(band)
     if artist is None:
-        return []
-    tracks = top_tracks(artist["browseId"], limit=2)
-    return [t["videoId"] for t in tracks]
+        return [], None
+    songs, description = get_artist_info(artist["browseId"], track_limit=2)
+    return [s["videoId"] for s in songs], description
 
 
 def _lookup_genre(band: str) -> str | None:
@@ -84,25 +86,26 @@ def run() -> None:
 
     tracks_added = 0
     no_track_match: list[str] = []
-    no_genre_match: list[str] = []
+    no_description_match: list[str] = []
     add_failures: list[str] = []
     lookup_errors: list[str] = []
     for concert in new_concerts:
         track_ids: list[str] = []
+        description: str | None = None
         tracks_errored = False
         try:
-            track_ids = _lookup_tracks(concert.band)
+            track_ids, description = _lookup_artist_info(concert.band)
         except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            lookup_errors.append(f"{concert.band} (tracks): {exc}")
+            lookup_errors.append(f"{concert.band} (artist info): {exc}")
             tracks_errored = True
 
-        genre: str | None = None
         genre_errored = False
-        try:
-            genre = _lookup_genre(concert.band)
-        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            lookup_errors.append(f"{concert.band} (genre): {exc}")
-            genre_errored = True
+        if not description:
+            try:
+                description = _lookup_genre(concert.band)
+            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
+                lookup_errors.append(f"{concert.band} (genre): {exc}")
+                genre_errored = True
 
         if track_ids:
             added_ok = False
@@ -120,10 +123,13 @@ def run() -> None:
         elif not tracks_errored:
             no_track_match.append(concert.band)
 
-        if not genre and not genre_errored:
-            no_genre_match.append(concert.band)
+        if not description and not genre_errored:
+            no_description_match.append(concert.band)
 
-        store.append_row(concert, music_description=genre or "")
+        store.append_row(concert, music_description=description or "")
+
+    write_html(config.CSV_PATH, config.HTML_PATH)
+    webbrowser.open(config.HTML_PATH.resolve().as_uri())
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {len(new_concerts)}")
@@ -132,8 +138,8 @@ def run() -> None:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
     if add_failures:
         print(f"Failed to add tracks for: {', '.join(add_failures)}")
-    if no_genre_match:
-        print(f"No Last.fm genre tag for: {', '.join(no_genre_match)}")
+    if no_description_match:
+        print(f"No description found for: {', '.join(no_description_match)}")
     if lookup_errors:
         print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
