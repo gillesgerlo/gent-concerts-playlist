@@ -72,6 +72,77 @@ def test_render_html_escapes_band_name_to_prevent_injection():
     assert "&lt;script&gt;" in html
 
 
+def test_render_html_includes_venue_filter_options_for_distinct_venues():
+    rows = [
+        {
+            "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
+            "Genre": "Soul", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://a",
+        },
+        {
+            "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
+            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://b",
+        },
+    ]
+
+    html = render_html(rows)
+
+    venue_select_start = html.index('id="venue-filter"')
+    venue_select_end = html.index("</select>", venue_select_start)
+    venue_select_html = html[venue_select_start:venue_select_end]
+
+    assert '<option value="Missy Sippy">Missy Sippy</option>' in venue_select_html
+    assert '<option value="VIERNULVIER">VIERNULVIER</option>' in venue_select_html
+
+
+def test_render_html_includes_genre_filter_options_for_distinct_genres():
+    rows = [
+        {
+            "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
+            "Genre": "Soul", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://a",
+        },
+        {
+            "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
+            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://b",
+        },
+    ]
+
+    html = render_html(rows)
+
+    genre_select_start = html.index('id="genre-filter"')
+    genre_select_end = html.index("</select>", genre_select_start)
+    genre_select_html = html[genre_select_start:genre_select_end]
+
+    assert '<option value="Soul">Soul</option>' in genre_select_html
+    assert '<option value="Jazz">Jazz</option>' in genre_select_html
+
+
+def test_render_html_genre_filter_excludes_blank_values():
+    rows = [
+        {
+            "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
+            "Genre": "", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://a",
+        },
+        {
+            "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
+            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Ticket/Event Link": "http://b",
+        },
+    ]
+
+    html = render_html(rows)
+
+    genre_select_start = html.index('id="genre-filter"')
+    genre_select_end = html.index("</select>", genre_select_start)
+    genre_select_html = html[genre_select_start:genre_select_end]
+
+    assert genre_select_html.count('<option value="">') == 1
+
+
 def test_write_html_writes_upcoming_rows_to_html_path(tmp_path):
     csv_path = tmp_path / "concerts.csv"
     html_path = tmp_path / "concerts.html"

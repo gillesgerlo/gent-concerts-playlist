@@ -86,6 +86,10 @@ def _stub_venue_scrapers(monkeypatch, concerts):
     monkeypatch.setattr(main, "MissySippyScraper", lambda: _FakeScraper(concerts))
     monkeypatch.setattr(main, "ViernulvierScraper", lambda: _FakeScraper([]))
     monkeypatch.setattr(main, "WintercircusScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "CharlatanScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "TrefpuntScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "RingoScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "BarLumeScraper", lambda: _FakeScraper([]))
 
 
 def _stub_env_and_auth(monkeypatch):
