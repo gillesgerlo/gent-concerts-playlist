@@ -21,7 +21,10 @@ def genre_for_artist(name: str) -> str | None:
         },
         timeout=10,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        raise requests.HTTPError(f"Last.fm HTTP {response.status_code}") from exc
     tags = response.json().get("toptags", {}).get("tag")
     if not tags:
         return None

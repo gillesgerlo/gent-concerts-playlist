@@ -1,4 +1,22 @@
+import pytest
+
 import lastfm_client
+
+
+def test_genre_for_artist_scrubs_the_api_key_from_http_errors(monkeypatch, fake_response):
+    # A 4xx/5xx from Last.fm must never surface the real api_key query param
+    # in the exception's string representation (it would leak to stdout/logs
+    # via main.py's generic "Lookup errors" reporting).
+    monkeypatch.setattr(
+        lastfm_client.requests, "get", lambda *a, **k: fake_response({}, status_code=403)
+    )
+    lastfm_client.set_api_key("REAL_SECRET_KEY")
+
+    with pytest.raises(Exception) as exc_info:
+        lastfm_client.genre_for_artist("Radiohead")
+
+    assert "REAL_SECRET_KEY" not in str(exc_info.value)
+    assert "SECRET_KEY" not in str(exc_info.value)
 
 
 def test_genre_for_artist_returns_the_first_tag_when_multiple_tags_exist(monkeypatch, fake_response):
