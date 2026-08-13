@@ -33,55 +33,55 @@ class _FakeYTMusicClient:
         return {"status": "STATUS_SUCCEEDED", "playlistEditResults": []}
 
 
-def test_load_client_raises_ytmusic_auth_error_when_oauth_file_is_missing(tmp_path):
+def test_load_client_raises_ytmusic_auth_error_when_auth_file_is_missing(tmp_path):
     missing_path = tmp_path / "does_not_exist.json"
 
     with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(missing_path, "client-id", "client-secret")
+        ytmusic_client.load_client(missing_path)
 
 
-def test_load_client_raises_ytmusic_auth_error_on_corrupt_json_oauth_file(monkeypatch):
-    # A corrupt (non-JSON) oauth file makes ytmusicapi raise
+def test_load_client_raises_ytmusic_auth_error_on_corrupt_json_auth_file(monkeypatch):
+    # A corrupt (non-JSON) auth file makes ytmusicapi raise
     # json.JSONDecodeError, which is a ValueError subclass, not a
     # YTMusicUserError. Must still be wrapped into YTMusicAuthError, not
     # left to crash with a raw traceback.
     import json
 
-    def _raise_json_decode_error(auth, oauth_credentials):
+    def _raise_json_decode_error(auth):
         raise json.JSONDecodeError("Expecting value", "not json", 0)
 
     monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_json_decode_error)
 
     with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(Path("auth/ytmusic_oauth.json"), "client-id", "client-secret")
+        ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
 
 
-def test_load_client_raises_ytmusic_auth_error_on_wrong_shaped_oauth_file(monkeypatch):
-    # Valid JSON but the wrong shape raises TypeError while ytmusicapi builds
-    # its RefreshingToken. Must also be wrapped into YTMusicAuthError.
-    def _raise_type_error(auth, oauth_credentials):
-        raise TypeError("RefreshingToken.__init__() missing required argument")
+def test_load_client_raises_ytmusic_auth_error_on_wrong_shaped_auth_file(monkeypatch):
+    # Valid JSON but the wrong shape (e.g. not a header dict) raises
+    # TypeError while ytmusicapi parses the headers. Must also be wrapped
+    # into YTMusicAuthError.
+    def _raise_type_error(auth):
+        raise TypeError("CaseInsensitiveDict() missing required argument")
 
     monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_type_error)
 
     with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(Path("auth/ytmusic_oauth.json"), "client-id", "client-secret")
+        ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
 
 
 def test_load_client_sets_the_module_client_on_success(monkeypatch):
     captured = {}
 
     class _FakeYTMusicConstructor:
-        def __init__(self, auth, oauth_credentials):
+        def __init__(self, auth):
             captured["auth"] = auth
-            captured["oauth_credentials"] = oauth_credentials
 
     monkeypatch.setattr(ytmusic_client, "YTMusic", _FakeYTMusicConstructor)
 
-    ytmusic_client.load_client(Path("auth/ytmusic_oauth.json"), "client-id", "client-secret")
+    ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
 
     assert isinstance(ytmusic_client._client, _FakeYTMusicConstructor)
-    assert captured["auth"] == "auth/ytmusic_oauth.json"
+    assert captured["auth"] == "auth/ytmusic_auth.json"
 
 
 def test_search_artist_returns_none_when_no_results(monkeypatch):

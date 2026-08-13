@@ -1,27 +1,24 @@
 from pathlib import Path
 
-from ytmusicapi import OAuthCredentials, YTMusic
+from ytmusicapi import YTMusic
 from ytmusicapi.exceptions import YTMusicUserError
 
 _client: YTMusic | None = None
 
 
 class YTMusicAuthError(Exception):
-    """Raised when the cached OAuth token file (auth/ytmusic_oauth.json) is
-    missing or fails to load. Fix: re-run `ytmusicapi oauth`."""
+    """Raised when the cached browser auth file (auth/ytmusic_auth.json) is
+    missing or fails to load. Fix: re-run `ytmusicapi browser`."""
 
 
-def load_client(oauth_path: Path, client_id: str, client_secret: str) -> None:
+def load_client(auth_path: Path) -> None:
     global _client
     try:
-        _client = YTMusic(
-            auth=str(oauth_path),
-            oauth_credentials=OAuthCredentials(client_id, client_secret),
-        )
+        _client = YTMusic(auth=str(auth_path))
     except (YTMusicUserError, ValueError, TypeError) as exc:
-        # YTMusicUserError: missing oauth file.
-        # ValueError (json.JSONDecodeError is a subclass): corrupt/non-JSON oauth file.
-        # TypeError: valid JSON but wrong shape, raised while building RefreshingToken.
+        # YTMusicUserError: missing auth file.
+        # ValueError (json.JSONDecodeError is a subclass): corrupt/non-JSON auth file.
+        # TypeError: valid JSON but the wrong shape (e.g. not a header dict).
         raise YTMusicAuthError(str(exc)) from exc
 
 
