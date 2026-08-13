@@ -1,72 +1,85 @@
+import json
 from datetime import date
 from pathlib import Path
 
 from scrapers.wintercircus import _parse
 
-FIXTURE = (Path(__file__).parent / "fixtures" / "wintercircus.html").read_text(encoding="utf-8")
+FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "wintercircus.json").read_text(encoding="utf-8"))
 
 
-def test_concert_tagged_entries_with_a_parseable_date_are_kept():
-    # The fixture has three concert-tagged entries: Holotrigger (valid),
-    # "Broken Date Gig" (malformed multi-day date range — must be skipped,
-    # not raise), and "Relative Link Gig" (valid, relative href).
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
+def test_directly_tagged_and_uitdatabank_sourced_concerts_are_kept():
+    concerts = _parse(FIXTURE)
     bands = [c.band for c in concerts]
-    assert bands == ["Holotrigger by Ksawery Komputery", "Relative Link Gig"]
+    assert "Holotrigger by Ksawery Komputery" in bands
+    assert "AZ" in bands
 
 
-def test_expo_only_entry_is_excluded():
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    assert all("Tortuga" not in c.band for c in concerts)
+def test_festival_and_party_and_arts_only_entries_are_excluded():
+    # These all carry a generic "music" (or no music) tag but aren't
+    # concerts: a festival, a club night ("Party of fuif"), and a plain
+    # arts & culture expo.
+    concerts = _parse(FIXTURE)
+    bands = [c.band for c in concerts]
+    assert "Fire Walk With Me Party - GHOST" not in bands
+    assert "Mutation Festival 2026" not in bands
+    assert "Expo Tortuga door Luc Vrydaghs" not in bands
 
 
-def test_arts_and_culture_only_concert_is_excluded_known_limitation():
-    # Real-site quirk: "Lie-down concert" carries no "concert" tag on
-    # Wintercircus's own site, so the strict tag filter excludes it too.
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    assert all("Lie-down" not in c.band for c in concerts)
+def test_malformed_date_entry_is_skipped_not_fatal():
+    concerts = _parse(FIXTURE)
+    bands = [c.band for c in concerts]
+    assert "Broken Date Concert" not in bands
+    assert "Holotrigger by Ksawery Komputery" in bands
 
 
-def test_date_parses_the_embedded_two_digit_year():
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    assert concerts[0].date == date(2026, 11, 14)
+def test_date_parses_varying_iso_formats():
+    concerts = _parse(FIXTURE)
+    by_band = {c.band: c for c in concerts}
+    assert by_band["Holotrigger by Ksawery Komputery"].date == date(2026, 11, 14)
+    assert by_band["AZ"].date == date(2026, 9, 8)
 
 
-def test_venue_link_and_empty_description():
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    assert concerts[0].venue == "Wintercircus"
-    assert concerts[0].ticket_link == "https://portal.wintercircus.be/event/holotrigger-by-ksawery-komputery-670"
-    assert concerts[0].description == ""
+def test_venue_and_ticket_link():
+    concerts = _parse(FIXTURE)
+    by_band = {c.band: c for c in concerts}
+    az = by_band["AZ"]
+    assert az.venue == "Wintercircus"
+    assert az.ticket_link == (
+        "https://apps.ticketmatic.com/widgets/democrazy/flow/tickets?event=970337389591&l=nl#!/addtickets"
+    )
+    assert az.description == ""
 
 
-def test_article_without_a_paragraph_or_heading_is_skipped_without_error():
-    # The trailing nav-card article in the fixture has no <p>/<h3> — this
-    # test passing at all (no exception) is the assertion that matters.
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    assert isinstance(concerts, list)
+def test_missing_ticket_url_falls_back_to_the_site_agenda():
+    concerts = _parse(FIXTURE)
+    by_band = {c.band: c for c in concerts}
+    steve_reich = by_band["Steve Reich: Music for 18 Musicians & ROLROLROL"]
+    assert steve_reich.ticket_link == "https://www.wintercircus.be/nl/agenda"
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
     import scrapers.wintercircus as wintercircus
 
-    monkeypatch.setattr(wintercircus, "_fetch_html", lambda: FIXTURE)
+    monkeypatch.setattr(wintercircus, "_fetch_events", lambda: FIXTURE)
     concerts = wintercircus.WintercircusScraper().scrape()
-    assert len(concerts) == 2
+    assert len(concerts) == 3
 
 
-def test_malformed_multi_day_date_range_entry_is_skipped_not_fatal():
-    # "13.  08 > 28.  08.  26" splits into 4 parts on ".", not 3, which
-    # raised `ValueError: too many values to unpack` before the per-entry
-    # try/except was added — and used to take the whole venue's parse
-    # down with it. The other two valid entries must still come through.
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    bands = [c.band for c in concerts]
-    assert "Broken Date Gig" not in bands
-    assert "Holotrigger by Ksawery Komputery" in bands
-    assert "Relative Link Gig" in bands
+def test_fetch_events_pages_until_all_items_are_collected(monkeypatch, fake_response):
+    import scrapers.wintercircus as wintercircus
 
+    page_1 = {"data": {"total": 3, "items": [{"id": "1"}, {"id": "2"}]}}
+    page_2 = {"data": {"total": 3, "items": [{"id": "3"}]}}
+    responses = [page_1, page_2]
+    calls = []
 
-def test_relative_ticket_href_is_absolutized_with_site_base_url():
-    concerts = _parse(FIXTURE, today=date(2026, 8, 13))
-    relative_entry = next(c for c in concerts if c.band == "Relative Link Gig")
-    assert relative_entry.ticket_link == "https://www.wintercircus.be/nl/events/relative-link-gig-42"
+    def _fake_get(url, params=None, timeout=None):
+        calls.append(params)
+        return fake_response(responses.pop(0))
+
+    monkeypatch.setattr(wintercircus.requests, "get", _fake_get)
+
+    result = wintercircus._fetch_events()
+
+    assert [item["id"] for item in result["items"]] == ["1", "2", "3"]
+    assert [c["page"] for c in calls] == [1, 2]

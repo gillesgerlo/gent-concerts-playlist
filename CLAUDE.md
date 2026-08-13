@@ -43,12 +43,23 @@ new concerts, so the browsable view always reflects the current CSV.
 
 **Scrapers** (`scrapers/`): one module per venue, each exposing a class with
 a no-arg `scrape() -> list[Concert]` method matching the `Scraper` protocol
-in `scrapers/base.py`. Internally each splits into a testable `_parse(html,
-today)` and a thin `_fetch_html()`. Per-entry parsing is wrapped in a bare
-`except Exception: continue` so one malformed listing doesn't drop the whole
-venue. Venue markup has no year on event dates, so `resolve_year()` in
-`scrapers/base.py` infers it by rolling over to next year if the date would
-otherwise be in the past.
+in `scrapers/base.py`. Per-entry parsing is wrapped in a bare `except
+Exception: continue` so one malformed listing doesn't drop the whole venue.
+
+Missy Sippy and VIERNULVIER scrape HTML: each splits into a testable
+`_parse(html, today)` and a thin `_fetch_html()`. Their venue markup has no
+year on event dates, so `resolve_year()` in `scrapers/base.py` infers it by
+rolling over to next year if the date would otherwise be in the past.
+
+Wintercircus (`scrapers/wintercircus.py`) does not scrape HTML — its
+`/nl/agenda` page only server-renders a small "featured events" teaser, not
+the full calendar, so it instead pages through the JSON API
+(`/api/events`) that the site's own frontend calls for the full listing
+(`_fetch_events()` / `_parse(payload)`). That API tags most concerts
+generically as "music" (sourced from UiTdatabank), so `_is_concert()`
+checks for a literal `"concert"` tag slug or an `original` tag value
+starting with `"Concert"` to exclude club nights ("Party of fuif") and
+festivals that share the same "music" tag.
 
 **External clients**: `ytmusic_client.py` wraps `ytmusicapi` (module-level
 `_client`, set via `load_client()`); `lastfm_client.py` wraps Last.fm's REST

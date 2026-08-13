@@ -1,0 +1,69 @@
+{
+  "items": [
+    {
+      "id": "670",
+      "title": "Holotrigger by Ksawery Komputery",
+      "dateBegin": "2026-11-14 19:00:00",
+      "url": "https://portal.wintercircus.be/event/holotrigger-by-ksawery-komputery-670",
+      "tags": [
+        {"title": "arts & culture", "slug": "arts & culture"},
+        {"title": "concert", "slug": "concert"}
+      ]
+    },
+    {
+      "id": "https://io.uitdatabank.be/events/az",
+      "title": "AZ",
+      "dateBegin": "2026-09-08T19:30:00+02:00",
+      "url": "https://apps.ticketmatic.com/widgets/democrazy/flow/tickets?event=970337389591&l=nl#!/addtickets",
+      "tags": [
+        {"title": "UiV", "slug": "uiv"},
+        {"title": "Music", "slug": "music", "original": "Concert-0.50.4.0.0"}
+      ]
+    },
+    {
+      "id": "https://io.uitdatabank.be/events/no-url",
+      "title": "Steve Reich: Music for 18 Musicians & ROLROLROL",
+      "dateBegin": "2026-09-26T20:00:00+02:00",
+      "url": null,
+      "tags": [
+        {"title": "Music", "slug": "music", "original": "Concert-0.50.4.0.0"}
+      ]
+    },
+    {
+      "id": "https://io.uitdatabank.be/events/party",
+      "title": "Fire Walk With Me Party - GHOST",
+      "dateBegin": "2026-09-05T23:00:00+02:00",
+      "url": "https://www.wintercircus.be/nl/events/fire-walk-with-me-party",
+      "tags": [
+        {"title": "Music", "slug": "music", "original": "Party of fuif-0.49.0.0.0"}
+      ]
+    },
+    {
+      "id": "https://io.uitdatabank.be/events/festival",
+      "title": "Mutation Festival 2026",
+      "dateBegin": "2026-11-20T18:00:00+00:00",
+      "url": "https://www.wintercircus.be/nl/events/mutation-festival-2026",
+      "tags": [
+        {"title": "Music", "slug": "music", "original": "Festival-0.5.0.0.0"}
+      ]
+    },
+    {
+      "id": "expo-tortuga",
+      "title": "Expo Tortuga door Luc Vrydaghs",
+      "dateBegin": "2026-08-13T09:00:00.000Z",
+      "url": "/nl/events/expo-tortuga-by-luc-vrydaghs",
+      "tags": [
+        {"title": "Arts & Culture", "slug": "arts & culture"}
+      ]
+    },
+    {
+      "id": "broken-date-concert",
+      "title": "Broken Date Concert",
+      "dateBegin": "not-a-date",
+      "url": "https://www.wintercircus.be/nl/events/broken-date-concert",
+      "tags": [
+        {"title": "concert", "slug": "concert"}
+      ]
+    }
+  ]
+}
