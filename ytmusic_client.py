@@ -36,3 +36,16 @@ def top_tracks(channel_id: str, limit: int = 2) -> list[dict]:
     artist = _client.get_artist(channel_id)
     songs = artist.get("songs", {}).get("results", [])
     return songs[:limit]
+
+
+def get_or_create_playlist(title: str) -> str:
+    for playlist in _client.get_library_playlists():
+        if playlist["title"] == title:
+            return playlist["playlistId"]
+
+    return _client.create_playlist(title=title, description="")
+
+
+def add_tracks(playlist_id: str, track_ids: list[str]) -> bool:
+    response = _client.add_playlist_items(playlist_id, track_ids)
+    return isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")

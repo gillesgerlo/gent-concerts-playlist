@@ -111,3 +111,44 @@ def test_top_tracks_returns_empty_list_when_artist_has_no_songs_section(monkeypa
     monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(artist_by_id=artist_by_id))
 
     assert ytmusic_client.top_tracks("UC_video_only_artist") == []
+
+
+def test_get_or_create_playlist_returns_existing_id_when_title_matches(monkeypatch):
+    playlists = [{"playlistId": "PL_existing", "title": "Upcoming Concerts"}]
+    fake_client = _FakeYTMusicClient(playlists=playlists)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    playlist_id = ytmusic_client.get_or_create_playlist("Upcoming Concerts")
+
+    assert playlist_id == "PL_existing"
+    assert fake_client.created_playlists == []  # must not create one that already exists
+
+
+def test_get_or_create_playlist_creates_when_no_title_matches(monkeypatch):
+    fake_client = _FakeYTMusicClient(playlists=[])
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    playlist_id = ytmusic_client.get_or_create_playlist("Upcoming Concerts")
+
+    assert playlist_id == "PLnew123"
+    assert fake_client.created_playlists == [("Upcoming Concerts", "")]
+
+
+def test_add_tracks_returns_true_on_a_succeeded_status(monkeypatch):
+    fake_client = _FakeYTMusicClient()
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+
+    assert result is True
+    assert fake_client.added_items == [("PL1", ["v1", "v2"])]
+
+
+def test_add_tracks_returns_false_when_status_is_not_succeeded(monkeypatch):
+    class _FailingClient(_FakeYTMusicClient):
+        def add_playlist_items(self, playlistId, videoIds):
+            return {"error": "duplicate videos not allowed"}
+
+    monkeypatch.setattr(ytmusic_client, "_client", _FailingClient())
+
+    assert ytmusic_client.add_tracks("PL1", ["v1"]) is False
