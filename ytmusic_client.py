@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from ytmusicapi import YTMusic
@@ -22,14 +23,32 @@ def load_client(auth_path: Path) -> None:
         raise YTMusicAuthError(str(exc)) from exc
 
 
+def _normalize_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", name.casefold())
+
+
 def search_artist(name: str) -> dict | None:
     results = _client.search(name, filter="artists", limit=5)
     if not results:
         return None
 
     exact_matches = [r for r in results if r.get("artist", "").casefold() == name.casefold()]
-    candidates = exact_matches or results
-    return candidates[0]
+    if exact_matches:
+        return exact_matches[0]
+
+    # No exact match: YT's top-ranked fuzzy result is usually the canonical
+    # artist for a close variant (e.g. "Iza & The Wildcards (Live)"), but for
+    # an unrelated name it can return a completely different real artist
+    # (e.g. "Daft Funk Live" -> "Daft Punk"). Only accept it when one name is
+    # a substring of the other, so an unrelated match is rejected instead of
+    # silently attributing tracks to the wrong artist.
+    top_result = results[0]
+    normalized_query = _normalize_name(name)
+    normalized_result = _normalize_name(top_result.get("artist", ""))
+    if normalized_query in normalized_result or normalized_result in normalized_query:
+        return top_result
+
+    return None
 
 
 def get_artist_info(channel_id: str, track_limit: int = 2) -> tuple[list[dict], str | None]:

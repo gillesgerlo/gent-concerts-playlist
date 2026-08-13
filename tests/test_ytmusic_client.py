@@ -114,6 +114,20 @@ def test_search_artist_falls_back_to_the_top_ranked_result_when_no_exact_match(m
     assert artist["browseId"] == "UC_top_ranked"
 
 
+def test_search_artist_rejects_a_top_ranked_result_that_is_a_different_artist(monkeypatch):
+    # Reproduces a real run: "Daft Funk Live" (a Daft Punk tribute act) has no
+    # exact YT Music match, and the top-ranked fuzzy result is the unrelated
+    # real "Daft Punk" — accepting it would add the wrong artist's tracks.
+    results = [
+        {"artist": "Daft Punk", "browseId": "UC_wrong"},
+    ]
+    monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(search_results=results))
+
+    artist = ytmusic_client.search_artist("Daft Funk Live")
+
+    assert artist is None
+
+
 def test_get_artist_info_returns_songs_up_to_the_limit_and_the_description(monkeypatch):
     artist_by_id = {
         "UC_real": {
