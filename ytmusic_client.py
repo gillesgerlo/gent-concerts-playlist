@@ -18,7 +18,10 @@ def load_client(oauth_path: Path, client_id: str, client_secret: str) -> None:
             auth=str(oauth_path),
             oauth_credentials=OAuthCredentials(client_id, client_secret),
         )
-    except YTMusicUserError as exc:
+    except (YTMusicUserError, ValueError, TypeError) as exc:
+        # YTMusicUserError: missing oauth file.
+        # ValueError (json.JSONDecodeError is a subclass): corrupt/non-JSON oauth file.
+        # TypeError: valid JSON but wrong shape, raised while building RefreshingToken.
         raise YTMusicAuthError(str(exc)) from exc
 
 

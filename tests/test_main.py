@@ -100,6 +100,32 @@ def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
     assert "YouTube Music authentication failed" in out
 
 
+def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypatch, capsys):
+    # An expired/revoked refresh token isn't detected by load_client itself
+    # (ytmusicapi's token refresh is lazy), it only fails on the first real
+    # API call, which is get_or_create_playlist. That failure's exception
+    # type does not subclass ytmusicapi's own YTMusicError hierarchy, so
+    # this must be caught by a broad Exception handler around the same
+    # call, not just YTMusicAuthError.
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_ID", "id")
+    monkeypatch.setenv("YTMUSIC_OAUTH_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("LASTFM_API_KEY", "key")
+    monkeypatch.setattr(main, "load_dotenv", lambda: None)
+    monkeypatch.setattr(main, "load_client", lambda oauth_path, client_id, client_secret: None)
+
+    def _fail(title):
+        raise RuntimeError("Server returned HTTP 401: Unauthorized")
+
+    monkeypatch.setattr(main, "get_or_create_playlist", _fail)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main.run()
+
+    assert exc_info.value.code == 1
+    out = capsys.readouterr().out
+    assert "YouTube Music authentication failed" in out
+
+
 def test_run_decouples_track_and_genre_lookups(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")

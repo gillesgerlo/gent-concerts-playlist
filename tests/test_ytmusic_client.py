@@ -40,6 +40,34 @@ def test_load_client_raises_ytmusic_auth_error_when_oauth_file_is_missing(tmp_pa
         ytmusic_client.load_client(missing_path, "client-id", "client-secret")
 
 
+def test_load_client_raises_ytmusic_auth_error_on_corrupt_json_oauth_file(monkeypatch):
+    # A corrupt (non-JSON) oauth file makes ytmusicapi raise
+    # json.JSONDecodeError, which is a ValueError subclass, not a
+    # YTMusicUserError. Must still be wrapped into YTMusicAuthError, not
+    # left to crash with a raw traceback.
+    import json
+
+    def _raise_json_decode_error(auth, oauth_credentials):
+        raise json.JSONDecodeError("Expecting value", "not json", 0)
+
+    monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_json_decode_error)
+
+    with pytest.raises(ytmusic_client.YTMusicAuthError):
+        ytmusic_client.load_client(Path("auth/ytmusic_oauth.json"), "client-id", "client-secret")
+
+
+def test_load_client_raises_ytmusic_auth_error_on_wrong_shaped_oauth_file(monkeypatch):
+    # Valid JSON but the wrong shape raises TypeError while ytmusicapi builds
+    # its RefreshingToken. Must also be wrapped into YTMusicAuthError.
+    def _raise_type_error(auth, oauth_credentials):
+        raise TypeError("RefreshingToken.__init__() missing required argument")
+
+    monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_type_error)
+
+    with pytest.raises(ytmusic_client.YTMusicAuthError):
+        ytmusic_client.load_client(Path("auth/ytmusic_oauth.json"), "client-id", "client-secret")
+
+
 def test_load_client_sets_the_module_client_on_success(monkeypatch):
     captured = {}
 

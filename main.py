@@ -52,14 +52,25 @@ def run() -> None:
 
     try:
         load_client(OAUTH_PATH, client_id, client_secret)
+        # get_or_create_playlist is the first real YouTube Music API call.
+        # ytmusicapi's OAuth token refresh is lazy, so an expired/revoked
+        # refresh token isn't detected by load_client at all: it only
+        # surfaces here, and with an exception type that does not subclass
+        # ytmusicapi's own YTMusicError hierarchy. Guard it the same way as
+        # load_client so that failure also gets the fatal auth-failure
+        # message instead of an uncaught traceback.
+        playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
     except YTMusicAuthError as exc:
         print(f"YouTube Music authentication failed: {exc}")
+        print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
+        sys.exit(1)
+    except Exception as exc:  # noqa: BLE001 - expired/revoked token surfaces here as a non-YTMusicError type
+        print(f"YouTube Music authentication failed (during startup): {exc}")
         print(f"Fix: run `ytmusicapi oauth --client-id <id> --client-secret <secret> --file {OAUTH_PATH}` again.")
         sys.exit(1)
 
     set_api_key(lastfm_api_key)
 
-    playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
     store = CsvStore(config.CSV_PATH)
 
     scrapers: list[Scraper] = [MissySippyScraper(), ViernulvierScraper(), WintercircusScraper()]
