@@ -17,6 +17,23 @@ def _isolate_html_export(monkeypatch, tmp_path):
     monkeypatch.setattr(main.webbrowser, "open", lambda url: None)
 
 
+def test_search_query_strips_trailing_em_dash_subtitle():
+    band = 'WRONG MAN – "Here’s That Feeling" LP Release + Lotus & Sicko'
+    assert main._search_query(band) == "WRONG MAN"
+
+
+def test_search_query_strips_trailing_parenthetical():
+    assert main._search_query("JAWDROPPED (Los Angeles, USA)") == "JAWDROPPED"
+
+
+def test_search_query_leaves_plain_band_name_untouched():
+    assert main._search_query("Radiohead") == "Radiohead"
+
+
+def test_search_query_does_not_split_on_a_hyphen_without_surrounding_spaces():
+    assert main._search_query("Anti-Flag") == "Anti-Flag"
+
+
 def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
@@ -24,6 +41,15 @@ def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     ))
 
     assert main._lookup_artist_info("Radiohead") == ["aaa", "bbb"]
+
+
+def test_lookup_artist_info_searches_with_the_subtitle_stripped(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(main, "search_artist", lambda band: captured.setdefault("band", band) and None)
+
+    main._lookup_artist_info('WRONG MAN – "Here’s That Feeling" LP Release + Lotus & Sicko')
+
+    assert captured["band"] == "WRONG MAN"
 
 
 def test_lookup_artist_info_returns_empty_when_artist_not_found(monkeypatch):
@@ -40,6 +66,15 @@ def test_lookup_artist_info_returns_empty_when_artist_has_no_tracks(monkeypatch)
 def test_lookup_genre_delegates_to_lastfm_client(monkeypatch):
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Alternative Rock")
     assert main._lookup_genre("Radiohead") == "Alternative Rock"
+
+
+def test_lookup_genre_searches_with_the_parenthetical_stripped(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: captured.setdefault("band", band))
+
+    main._lookup_genre("JAWDROPPED (Los Angeles, USA)")
+
+    assert captured["band"] == "JAWDROPPED"
 
 
 def test_lookup_is_cover_or_tribute_delegates_to_musicbrainz_client(monkeypatch):

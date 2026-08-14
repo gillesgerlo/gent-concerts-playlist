@@ -3,14 +3,14 @@ import pytest
 import musicbrainz_client
 
 
-def _payload(disambiguation="", score=100):
-    return {"artists": [{"name": "X", "score": score, "disambiguation": disambiguation}]}
+def _payload(disambiguation="", score=100, name="X"):
+    return {"artists": [{"name": name, "score": score, "disambiguation": disambiguation}]}
 
 
 def test_is_cover_or_tribute_true_when_disambiguation_mentions_tribute(monkeypatch, fake_response):
     monkeypatch.setattr(
         musicbrainz_client.requests, "get",
-        lambda *a, **k: fake_response(_payload("Belgian Dire Straits cover band")),
+        lambda *a, **k: fake_response(_payload("Belgian Dire Straits cover band", name="Six Blade Knife")),
     )
     assert musicbrainz_client.is_cover_or_tribute("Six Blade Knife") is True
 
@@ -18,7 +18,7 @@ def test_is_cover_or_tribute_true_when_disambiguation_mentions_tribute(monkeypat
 def test_is_cover_or_tribute_true_when_disambiguation_mentions_tribute_word(monkeypatch, fake_response):
     monkeypatch.setattr(
         musicbrainz_client.requests, "get",
-        lambda *a, **k: fake_response(_payload("Australian ABBA tribute")),
+        lambda *a, **k: fake_response(_payload("Australian ABBA tribute", name="Bjorn Again")),
     )
     assert musicbrainz_client.is_cover_or_tribute("Bjorn Again") is True
 
@@ -26,7 +26,7 @@ def test_is_cover_or_tribute_true_when_disambiguation_mentions_tribute_word(monk
 def test_is_cover_or_tribute_false_for_an_unrelated_disambiguation(monkeypatch, fake_response):
     monkeypatch.setattr(
         musicbrainz_client.requests, "get",
-        lambda *a, **k: fake_response(_payload("Belgian soul and funk band")),
+        lambda *a, **k: fake_response(_payload("Belgian soul and funk band", name="Donovan Keith Band")),
     )
     assert musicbrainz_client.is_cover_or_tribute("Donovan Keith Band") is False
 
@@ -46,6 +46,20 @@ def test_is_cover_or_tribute_ignores_a_low_confidence_match(monkeypatch, fake_re
         lambda *a, **k: fake_response(_payload("Some other band's tribute act", score=40)),
     )
     assert musicbrainz_client.is_cover_or_tribute("Loosely Similar Name") is False
+
+
+def test_is_cover_or_tribute_rejects_a_high_score_match_for_an_unrelated_artist(monkeypatch, fake_response):
+    # Reproduces a real run: MusicBrainz fuzzy-searching "Daft Funk Live" (a
+    # Daft Punk tribute act) resolves to the real, unrelated "Daft Punk" as
+    # the top-scored result. If an unrelated match's disambiguation happens
+    # to mention "tribute", a real band would be wrongly excluded as a cover
+    # act; only trust the disambiguation when the matched name overlaps the
+    # query, mirroring the same fix already applied to YT Music/Last.fm search.
+    monkeypatch.setattr(
+        musicbrainz_client.requests, "get",
+        lambda *a, **k: fake_response(_payload("Unrelated ABBA tribute act", name="Bjorn Again")),
+    )
+    assert musicbrainz_client.is_cover_or_tribute("Donovan Keith Band") is False
 
 
 def test_is_cover_or_tribute_sends_the_expected_query_and_user_agent(monkeypatch, fake_response):

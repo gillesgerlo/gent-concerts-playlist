@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import webbrowser
 from datetime import date
@@ -40,9 +41,23 @@ from ytmusic_client import (
 
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
+_SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–-]\s+")
+_TRAILING_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def _search_query(band: str) -> str:
+    # Some venues (e.g. Trefpunt) render "ARTIST – release/support-act blurb"
+    # as a single title string with no HTML separating the two, and others
+    # (e.g. Ringo, Missy Sippy) append "(City, Country)"/"(US)" origin tags.
+    # Both are useful in the displayed band name but make YT Music/Last.fm
+    # artist search return zero results, so strip them for search only.
+    query = _SUBTITLE_SEPARATOR_RE.split(band, maxsplit=1)[0]
+    query = _TRAILING_PARENTHETICAL_RE.sub("", query)
+    return query.strip()
+
 
 def _lookup_artist_info(band: str) -> list[str]:
-    artist = search_artist(band)
+    artist = search_artist(_search_query(band))
     if artist is None:
         return []
     songs, _description = get_artist_info(artist["browseId"], track_limit=2)
@@ -50,7 +65,7 @@ def _lookup_artist_info(band: str) -> list[str]:
 
 
 def _lookup_genre(band: str) -> str | None:
-    return genre_for_artist(band)
+    return genre_for_artist(_search_query(band))
 
 
 def _lookup_is_cover_or_tribute(band: str) -> bool:

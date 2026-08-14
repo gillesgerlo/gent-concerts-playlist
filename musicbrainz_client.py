@@ -1,3 +1,4 @@
+import re
 import time
 
 import requests
@@ -28,6 +29,10 @@ def _throttle() -> None:
     _last_call_at = time.monotonic()
 
 
+def _normalize_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", name.casefold())
+
+
 def is_cover_or_tribute(band: str) -> bool:
     _throttle()
     response = requests.get(
@@ -44,6 +49,17 @@ def is_cover_or_tribute(band: str) -> bool:
 
     top_match = artists[0]
     if top_match.get("score", 0) < MIN_MATCH_SCORE:
+        return False
+
+    # MusicBrainz does its own fuzzy matching on the query, which can resolve
+    # to a completely different, unrelated real artist (e.g. "Daft Funk
+    # Live" -> the real "Daft Punk"), whose disambiguation says nothing
+    # about the queried band. Only trust it when the matched name overlaps
+    # the query, mirroring the same fix already applied to YT Music/Last.fm
+    # search.
+    normalized_query = _normalize_name(band)
+    normalized_match = _normalize_name(top_match.get("name", ""))
+    if normalized_query not in normalized_match and normalized_match not in normalized_query:
         return False
 
     disambiguation = (top_match.get("disambiguation") or "").lower()
