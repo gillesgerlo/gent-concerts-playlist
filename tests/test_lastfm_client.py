@@ -74,3 +74,105 @@ def test_genre_for_artist_sends_the_expected_query_params(monkeypatch, fake_resp
         "api_key": "my-key",
         "format": "json",
     }
+
+
+def test_genre_for_artist_queries_only_the_headline_act_of_a_co_bill(monkeypatch, fake_response):
+    # Venue listings routinely name every act on a shared bill; Last.fm can
+    # only look up one artist, so only the first (headline) act is queried.
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response({"toptags": {"tag": {"name": "hardcore"}, "@attr": {"artist": "WASTE"}}})
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("WASTE + GENDER REVEAL ATOMIC BOMB")
+
+    assert captured["artist"] == "WASTE"
+
+
+def test_genre_for_artist_strips_a_trailing_parenthetical_qualifier(monkeypatch, fake_response):
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response(
+            {"toptags": {"tag": {"name": "blues"}, "@attr": {"artist": "Donovan Keith Band"}}}
+        )
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("Donovan Keith Band (US)")
+
+    assert captured["artist"] == "Donovan Keith Band"
+
+
+def test_genre_for_artist_strips_a_quoted_work_title_after_the_artist(monkeypatch, fake_response):
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response(
+            {"toptags": {"tag": {"name": "jazz"}, "@attr": {"artist": "Alabaster DePlume"}}}
+        )
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("Alabaster DePlume x 'Time of the Heathen'")
+
+    assert captured["artist"] == "Alabaster DePlume"
+
+
+def test_genre_for_artist_does_not_mangle_a_possessive_apostrophe(monkeypatch, fake_response):
+    # Regression: a naive "strip from the first quote" rule turned "Humo's
+    # Rock Rally '26: Halve Finale" into just "Humo", which Last.fm then
+    # confidently (and wrongly) resolved to a real, unrelated artist named
+    # Humo. The subtitle-strip must require a preceding space, so it doesn't
+    # fire on the apostrophe inside "Humo's".
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response({"toptags": {}})
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("Humo's Rock Rally '26: Halve Finale")
+
+    assert captured["artist"] != "Humo"
+
+
+def test_genre_for_artist_rejects_a_resolved_artist_unrelated_to_the_query(monkeypatch, fake_response):
+    # Same class of risk the YT Music search fix guards against ("Daft Funk
+    # Live" -> the real, unrelated "Daft Punk"): Last.fm does its own fuzzy
+    # resolution internally, which can land on a real but unrelated artist
+    # (a generic-sounding query like "Eat Me" resolving to "Eat Static").
+    # Only accept the response when the resolved name overlaps the query.
+    payload = {
+        "toptags": {
+            "tag": [{"name": "electronic"}, {"name": "psytrance"}],
+            "@attr": {"artist": "Eat Static"},
+        }
+    }
+    monkeypatch.setattr(lastfm_client.requests, "get", lambda *a, **k: fake_response(payload))
+    lastfm_client.set_api_key("test-key")
+
+    assert lastfm_client.genre_for_artist("Eat Me") is None
+
+
+def test_genre_for_artist_accepts_a_resolved_artist_that_overlaps_the_query(monkeypatch, fake_response):
+    payload = {
+        "toptags": {
+            "tag": [{"name": "soul"}],
+            "@attr": {"artist": "Guy Verlinde & The Artisans of Solace"},
+        }
+    }
+    monkeypatch.setattr(lastfm_client.requests, "get", lambda *a, **k: fake_response(payload))
+    lastfm_client.set_api_key("test-key")
+
+    assert lastfm_client.genre_for_artist("Guy Verlinde & The Artisans of Solace") == "soul"
