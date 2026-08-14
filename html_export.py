@@ -1,9 +1,14 @@
 import csv
 import html
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 COLUMNS = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+
+
+def _format_date(iso_date: str) -> str:
+    parsed = datetime.strptime(iso_date, "%Y-%m-%d").date()
+    return parsed.strftime("%A %-d %B")
 
 
 def load_upcoming_rows(csv_path: Path, today: date) -> list[dict]:
@@ -41,6 +46,8 @@ def render_html(rows: list[dict]) -> str:
             value = row[col]
             if col == "Ticket/Event Link":
                 cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
+            elif col == "Date":
+                cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
             else:
                 cells.append(f"<td>{html.escape(value)}</td>")
         venue_attr = html.escape(row["Venue"])
@@ -166,8 +173,8 @@ function sortTable(colIndex) {{
   const rows = Array.from(tbody.rows);
   const ascending = table.dataset.sortCol == colIndex && table.dataset.sortDir !== "asc";
   rows.sort((a, b) => {{
-    const x = a.cells[colIndex].innerText;
-    const y = b.cells[colIndex].innerText;
+    const x = a.cells[colIndex].dataset.sort ?? a.cells[colIndex].innerText;
+    const y = b.cells[colIndex].dataset.sort ?? b.cells[colIndex].innerText;
     return ascending ? x.localeCompare(y) : y.localeCompare(x);
   }});
   rows.forEach(row => tbody.appendChild(row));

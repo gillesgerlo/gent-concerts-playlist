@@ -7,6 +7,16 @@ import main
 from scrapers.base import Concert
 
 
+@pytest.fixture(autouse=True)
+def _isolate_html_export(monkeypatch, tmp_path):
+    # main.run() always calls write_html() + webbrowser.open() on config.HTML_PATH,
+    # even for tests that only care about CSV/playlist behavior. Without this,
+    # every main.run() call in this file overwrites the real data/concerts.html
+    # and pops open a real browser tab.
+    monkeypatch.setattr(main.config, "HTML_PATH", tmp_path / "concerts.html")
+    monkeypatch.setattr(main.webbrowser, "open", lambda url: None)
+
+
 def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (

@@ -14,13 +14,20 @@ from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
 from musicbrainz_client import is_cover_or_tribute
+from scrapers.bar_lume import VENUE as BAR_LUME_VENUE
 from scrapers.bar_lume import BarLumeScraper
 from scrapers.base import Concert, Scraper
+from scrapers.charlatan import VENUE as CHARLATAN_VENUE
 from scrapers.charlatan import CharlatanScraper
+from scrapers.missy_sippy import VENUE as MISSY_SIPPY_VENUE
 from scrapers.missy_sippy import MissySippyScraper
+from scrapers.ringo import VENUE as RINGO_VENUE
 from scrapers.ringo import RingoScraper
+from scrapers.trefpunt import VENUE as TREFPUNT_VENUE
 from scrapers.trefpunt import TrefpuntScraper
+from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
 from scrapers.viernulvier import ViernulvierScraper
+from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
 from scrapers.wintercircus import WintercircusScraper
 from ytmusic_client import (
     YTMusicAuthError,
@@ -90,15 +97,21 @@ def run() -> None:
 
     store = CsvStore(config.CSV_PATH)
 
-    scrapers: list[Scraper] = [
-        MissySippyScraper(), ViernulvierScraper(), WintercircusScraper(), CharlatanScraper(),
-        TrefpuntScraper(), RingoScraper(), BarLumeScraper(),
+    scrapers: list[tuple[str, Scraper]] = [
+        (MISSY_SIPPY_VENUE, MissySippyScraper()),
+        (VIERNULVIER_VENUE, ViernulvierScraper()),
+        (WINTERCIRCUS_VENUE, WintercircusScraper()),
+        (CHARLATAN_VENUE, CharlatanScraper()),
+        (TREFPUNT_VENUE, TrefpuntScraper()),
+        (RINGO_VENUE, RingoScraper()),
+        (BAR_LUME_VENUE, BarLumeScraper()),
     ]
     today = date.today()
 
     all_concerts: list[Concert] = []
     scrape_failures: list[str] = []
-    for scraper in scrapers:
+    for venue_name, scraper in scrapers:
+        print(f"Scraping {venue_name}...")
         try:
             all_concerts.extend(scraper.scrape())
         except Exception as exc:  # noqa: BLE001 - a single venue must never abort the run
@@ -106,6 +119,7 @@ def run() -> None:
 
     upcoming = filter_upcoming(all_concerts, config.WINDOW_DAYS, today)
     new_concerts = filter_new(upcoming, store)
+    print(f"Found {len(upcoming)} concerts, {len(new_concerts)} new.")
 
     rows_written = 0
     tracks_added = 0
@@ -117,7 +131,8 @@ def run() -> None:
     excluded_cover: list[str] = []
     excluded_genre: list[str] = []
     excluded_party: list[str] = []
-    for concert in new_concerts:
+    for i, concert in enumerate(new_concerts, start=1):
+        print(f"[{i}/{len(new_concerts)}] {concert.band} @ {concert.venue} ({concert.date})")
         is_cover = False
         try:
             is_cover = _lookup_is_cover_or_tribute(concert.band)
