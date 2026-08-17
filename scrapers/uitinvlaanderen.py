@@ -89,7 +89,10 @@ def _strip_html(html: str) -> str:
 def _fetch_events(today: date) -> list[dict]:
     cutoff = today + timedelta(days=config.WINDOW_DAYS)
     date_from = f"{today.isoformat()}T00:00:00.000Z"
-    date_to = f"{cutoff.isoformat()}T00:00:00.000Z"
+    # Inclusive of the whole last day, matching filter_upcoming's
+    # `today <= c.date <= today + WINDOW_DAYS` range — dateTo is an instant
+    # boundary, so T00:00:00 would exclude events later that same day.
+    date_to = f"{cutoff.isoformat()}T23:59:59.999Z"
 
     items = []
     offset = 0
@@ -111,7 +114,10 @@ def _fetch_events(today: date) -> list[dict]:
             timeout=TIMEOUT,
         )
         response.raise_for_status()
-        payload = response.json()["data"]["events"]
+        body = response.json()
+        if body.get("errors") or body.get("data") is None:
+            raise RuntimeError(f"UiTinVlaanderen GraphQL API returned errors: {body.get('errors')}")
+        payload = body["data"]["events"]
         items.extend(payload["data"])
         if not payload["data"] or len(items) >= payload["totalItems"]:
             break

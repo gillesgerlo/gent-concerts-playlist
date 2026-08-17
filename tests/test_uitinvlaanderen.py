@@ -3,6 +3,8 @@ import json
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 import scrapers.uitinvlaanderen as uiv
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "uitinvlaanderen.json").read_text(encoding="utf-8"))
@@ -63,13 +65,9 @@ def test_ticket_link_is_constructed_from_id_and_a_slugified_name():
     )
 
 
-def test_is_known_venue_matches_a_uitdatabank_superstring_of_a_known_venue():
-    assert uiv._is_known_venue("Kunstencentrum VIERNULVIER") is True
-    assert uiv._is_known_venue("Club Wintercircus") is True
-
-
-def test_is_known_venue_matches_an_exact_venue_name():
-    assert uiv._is_known_venue("Charlatan") is True
+@pytest.mark.parametrize("name", uiv.KNOWN_VENUE_NAMES)
+def test_is_known_venue_matches_every_entry_in_known_venue_names(name):
+    assert uiv._is_known_venue(name) is True
 
 
 def test_is_known_venue_does_not_match_an_unrelated_venue():
@@ -116,7 +114,19 @@ def test_fetch_events_sends_the_expected_filter_variables(monkeypatch, fake_resp
 
     variables = captured["variables"]
     assert variables["dateFrom"] == "2026-08-17T00:00:00.000Z"
-    assert variables["dateTo"] == "2026-08-27T00:00:00.000Z"
+    assert variables["dateTo"] == "2026-08-27T23:59:59.999Z"
     assert variables["eventTypes"] == uiv.EVENT_TYPE_IDS
     assert variables["themes"] == uiv.THEME_IDS
     assert variables["nisCodes"] == [uiv.GENT_NIS_CODE]
+
+
+def test_fetch_events_raises_a_clear_error_on_a_graphql_error_response(monkeypatch, fake_response):
+    error_body = {"errors": [{"message": "Cannot query field \"events\" on type \"Query\"."}], "data": None}
+
+    def _fake_post(url, json=None, timeout=None):
+        return fake_response(error_body)
+
+    monkeypatch.setattr(uiv.requests, "post", _fake_post)
+
+    with pytest.raises(RuntimeError, match="Cannot query field"):
+        uiv._fetch_events(date(2026, 8, 17))
