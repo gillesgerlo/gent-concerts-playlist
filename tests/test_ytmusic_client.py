@@ -128,6 +128,42 @@ def test_search_artist_rejects_a_top_ranked_result_that_is_a_different_artist(mo
     assert artist is None
 
 
+def test_search_artist_falls_back_to_unfiltered_search_when_the_artists_filter_returns_nothing(monkeypatch):
+    # Reproduces a real run: YT Music's "artists"-filtered search returned
+    # nothing for "BAT EYES" even though an unfiltered search surfaces the
+    # exact-name artist among songs/albums/videos. The real result comes
+    # back as a "Top result" card, which nests the artist in an "artists"
+    # list instead of flat "artist"/"browseId" keys.
+    class _FakeClient(_FakeYTMusicClient):
+        def search(self, query, filter=None, limit=20):
+            if filter == "artists":
+                return []
+            return [
+                {"resultType": "song", "title": "It's Not Real"},
+                {
+                    "category": "Top result",
+                    "resultType": "artist",
+                    "artists": [{"name": "Bat Eyes", "id": "UC_real"}],
+                },
+            ]
+
+    monkeypatch.setattr(ytmusic_client, "_client", _FakeClient())
+
+    artist = ytmusic_client.search_artist("BAT EYES")
+
+    assert artist["browseId"] == "UC_real"
+
+
+def test_search_artist_returns_none_when_the_unfiltered_fallback_also_has_no_artist_rows(monkeypatch):
+    class _FakeClient(_FakeYTMusicClient):
+        def search(self, query, filter=None, limit=20):
+            return []
+
+    monkeypatch.setattr(ytmusic_client, "_client", _FakeClient())
+
+    assert ytmusic_client.search_artist("Some Unknown Band") is None
+
+
 def test_get_artist_info_returns_songs_up_to_the_limit_and_the_description(monkeypatch):
     artist_by_id = {
         "UC_real": {

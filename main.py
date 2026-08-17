@@ -41,17 +41,36 @@ from ytmusic_client import (
 
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
-_SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–-]\s+")
+_SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–\-/+]\s+")
+_X_SEPARATOR_RE = re.compile(r"\s+x\s+", re.IGNORECASE)
 _TRAILING_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
+_QUOTE_CHARS = "'\"‘’“”"
+
+
+def _is_quoted(segment: str) -> bool:
+    segment = segment.strip()
+    return bool(segment) and segment[0] in _QUOTE_CHARS
 
 
 def _search_query(band: str) -> str:
     # Some venues (e.g. Trefpunt) render "ARTIST – release/support-act blurb"
-    # as a single title string with no HTML separating the two, and others
-    # (e.g. Ringo, Missy Sippy) append "(City, Country)"/"(US)" origin tags.
-    # Both are useful in the displayed band name but make YT Music/Last.fm
-    # artist search return zero results, so strip them for search only.
-    query = _SUBTITLE_SEPARATOR_RE.split(band, maxsplit=1)[0]
+    # as a single title string with no HTML separating the two, others
+    # (e.g. Charlatan, VIERNULVIER) join co-billed acts with "/" or "+", and
+    # others (e.g. Ringo, Missy Sippy) append "(City, Country)"/"(US)" origin
+    # tags. All of this is useful in the displayed band name but makes YT
+    # Music/Last.fm artist search return zero results, so strip it for
+    # search only, keeping just the first act.
+    #
+    # VIERNULVIER also runs "ARTIST x 'Film Title'" screening/AV events,
+    # sometimes with the film title first instead ("'Film Title' x ARTIST"),
+    # so for an " x " split we keep whichever side isn't quote-wrapped
+    # rather than always taking the first part.
+    text = band
+    x_parts = _X_SEPARATOR_RE.split(text, maxsplit=1)
+    if len(x_parts) == 2 and _is_quoted(x_parts[0]) != _is_quoted(x_parts[1]):
+        text = x_parts[1] if _is_quoted(x_parts[0]) else x_parts[0]
+
+    query = _SUBTITLE_SEPARATOR_RE.split(text, maxsplit=1)[0]
     query = _TRAILING_PARENTHETICAL_RE.sub("", query)
     return query.strip()
 
