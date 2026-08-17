@@ -27,8 +27,28 @@ def _normalize_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", name.casefold())
 
 
+def _normalize_artist_result(result: dict) -> dict | None:
+    if result.get("resultType") != "artist":
+        return None
+    if "browseId" in result:
+        return {"artist": result.get("artist", ""), "browseId": result["browseId"]}
+    # The unfiltered search's "Top result" card nests the artist in an
+    # "artists" list instead of flat "artist"/"browseId" keys.
+    nested = result.get("artists") or []
+    if nested:
+        return {"artist": nested[0].get("name", ""), "browseId": nested[0].get("id", "")}
+    return None
+
+
 def search_artist(name: str) -> dict | None:
     results = _client.search(name, filter="artists", limit=5)
+    if not results:
+        # YT Music's "artists"-filtered search is unreliable for smaller
+        # artists — it can return nothing even when an unfiltered search
+        # surfaces the exact-name artist among songs/albums/videos, so fall
+        # back to that before giving up.
+        unfiltered = _client.search(name, limit=20)
+        results = [r for r in (_normalize_artist_result(r) for r in unfiltered) if r and r.get("browseId")]
     if not results:
         return None
 

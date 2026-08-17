@@ -34,6 +34,26 @@ def test_search_query_does_not_split_on_a_hyphen_without_surrounding_spaces():
     assert main._search_query("Anti-Flag") == "Anti-Flag"
 
 
+def test_search_query_splits_on_slash_co_bill():
+    assert main._search_query("Moor Mother / Razen") == "Moor Mother"
+
+
+def test_search_query_splits_on_plus_co_bill():
+    assert main._search_query("PISSBUGS + GEITENVEL") == "PISSBUGS"
+
+
+def test_search_query_keeps_unquoted_side_of_x_screening_title():
+    assert main._search_query("Alabaster DePlume x 'Time of the Heathen'") == "Alabaster DePlume"
+
+
+def test_search_query_keeps_unquoted_side_of_x_screening_title_when_film_is_first():
+    assert main._search_query("'The Evil Dead' x BL!NDMAN") == "BL!NDMAN"
+
+
+def test_search_query_handles_x_screening_title_with_curly_quotes():
+    assert main._search_query("múm x ‘La Vie Rêvée’") == "múm"
+
+
 def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
