@@ -41,7 +41,7 @@ from ytmusic_client import (
 
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
-_SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–\-/+]\s+")
+_SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–\-/+@]\s+")
 _X_SEPARATOR_RE = re.compile(r"\s+x\s+", re.IGNORECASE)
 _TRAILING_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
 _QUOTE_CHARS = "'\"‘’“”"
@@ -65,6 +65,10 @@ def _search_query(band: str) -> str:
     # sometimes with the film title first instead ("'Film Title' x ARTIST"),
     # so for an " x " split we keep whichever side isn't quote-wrapped
     # rather than always taking the first part.
+    #
+    # UiTinVlaanderen-sourced listings (scrapers/uitinvlaanderen.py) use
+    # "ActName @ FestivalName YYYY" for per-act festival entries, so "@" is
+    # included in the separator set above too.
     text = band
     x_parts = _X_SEPARATOR_RE.split(text, maxsplit=1)
     if len(x_parts) == 2 and _is_quoted(x_parts[0]) != _is_quoted(x_parts[1]):
