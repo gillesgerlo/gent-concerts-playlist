@@ -1,0 +1,50 @@
+{
+  "data": {
+    "events": {
+      "totalItems": 6,
+      "data": [
+        {
+          "id": "560d91f6-a3f9-4902-83f7-4e7aa8bdd723",
+          "name": "GDU Open Mic augustus",
+          "description": "<p>Op<strong> donderdag 20 augustus</strong> is het tijd voor de GDU Open Mic. Wil jij je talent tonen? Bij onze open mic krijg je 10 minuten! We hebben ongeveer 12 plekjes en die zijn snel gevuld, dus schroom niet en schrijf je snel in op <a href=\"https://www.geheeldeuwe.be/\" target=\"_self\">de website</a> of stuur ons een berichtje op<a href=\"https://www.instagram.com/geheeldeuwe/\" target=\"_self\"> Instagram</a>. Wil je een avondje uit met een afwisselende voorstelling van muziek en poëzie? Dan is de Open Mic ook heel leuk om eens te bezoeken! Start 20.00 uur.</p>",
+          "location": {"name": "Geheel de Uwe"},
+          "calendar": {"startDate": "2026-08-20T18:00:00+00:00"}
+        },
+        {
+          "id": "2f56cf2b-c6bf-4c2a-9b0f-8aeb8fa01f23",
+          "name": "Lunasix @ Ledebergse Feesten 2026",
+          "description": null,
+          "location": {"name": "Sfeertent Ledeberg"},
+          "calendar": {"startDate": "2026-08-21T18:00:00+00:00"}
+        },
+        {
+          "id": "3a67df3d-d514-4e0b-9f6a-9c1a2b3c4d5e",
+          "name": "Old Man's Beard @ Ledebergse Feesten 2026",
+          "description": null,
+          "location": {"name": "Sfeertent Ledeberg"},
+          "calendar": {"startDate": "2026-08-23T18:00:00+00:00"}
+        },
+        {
+          "id": "8ac2afe3-f185-418c-a312-4a832d4a6cf7",
+          "name": "Beherit - Alkerdeel / Bacht'n de Vulle Moane",
+          "description": "<p>De schaduw over België.</p>",
+          "location": {"name": "Kunstencentrum VIERNULVIER"},
+          "calendar": {"startDate": "2026-09-05T20:00:00+00:00"}
+        },
+        {
+          "id": "9bd3ee4a-6b3a-4b0a-8f2a-1e2d3c4b5a6f",
+          "name": "PISSBUGS + GEITENVEL - Hard tegen Onzacht",
+          "description": null,
+          "location": {"name": "Charlatan"},
+          "calendar": {"startDate": "2026-09-11T20:00:00+00:00"}
+        },
+        {
+          "id": "1c2b3a4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+          "name": "Broken Calendar Event",
+          "description": null,
+          "location": {"name": "Some Venue"}
+        }
+      ]
+    }
+  }
+}
