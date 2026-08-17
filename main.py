@@ -26,6 +26,8 @@ from scrapers.ringo import VENUE as RINGO_VENUE
 from scrapers.ringo import RingoScraper
 from scrapers.trefpunt import VENUE as TREFPUNT_VENUE
 from scrapers.trefpunt import TrefpuntScraper
+from scrapers.uitinvlaanderen import VENUE as UITINVLAANDEREN_VENUE
+from scrapers.uitinvlaanderen import UitinvlaanderenScraper
 from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
 from scrapers.viernulvier import ViernulvierScraper
 from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
@@ -143,6 +145,7 @@ def run() -> None:
         (TREFPUNT_VENUE, TrefpuntScraper()),
         (RINGO_VENUE, RingoScraper()),
         (BAR_LUME_VENUE, BarLumeScraper()),
+        (UITINVLAANDEREN_VENUE, UitinvlaanderenScraper()),
     ]
     today = date.today()
 

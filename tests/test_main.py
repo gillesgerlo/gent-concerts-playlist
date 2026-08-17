@@ -164,6 +164,7 @@ def _stub_venue_scrapers(monkeypatch, concerts):
     monkeypatch.setattr(main, "TrefpuntScraper", lambda: _FakeScraper([]))
     monkeypatch.setattr(main, "RingoScraper", lambda: _FakeScraper([]))
     monkeypatch.setattr(main, "BarLumeScraper", lambda: _FakeScraper([]))
+    monkeypatch.setattr(main, "UitinvlaanderenScraper", lambda: _FakeScraper([]))
 
 
 def _stub_env_and_auth(monkeypatch):
@@ -543,3 +544,26 @@ def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatc
     assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 0" in out  # not silently counted as a success
     assert "Failed to add tracks for: Quota Band" in out
     assert "Lookup errors" not in out  # this is a reported failure, not an exception
+
+
+def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    _stub_venue_scrapers(monkeypatch, [])
+    festival_act = Concert(
+        venue="Sfeertent Ledeberg", date=date(2026, 8, 21),
+        band="Lunasix @ Ledebergse Feesten 2026", description="",
+        ticket_link="https://www.uitinvlaanderen.be/agenda/e/lunasix/1",
+    )
+    monkeypatch.setattr(main, "UitinvlaanderenScraper", lambda: _FakeScraper([festival_act]))
+
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run()
+
+    csv_content = (tmp_path / "concerts.csv").read_text()
+    assert "Lunasix @ Ledebergse Feesten 2026" in csv_content
