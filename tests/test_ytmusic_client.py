@@ -8,10 +8,11 @@ import ytmusic_client
 class _FakeYTMusicClient:
     """Stands in for ytmusicapi.YTMusic — same method names/shapes as the real client."""
 
-    def __init__(self, search_results=None, artist_by_id=None, playlists=None):
+    def __init__(self, search_results=None, artist_by_id=None, playlists=None, playlist_tracks=None):
         self.search_results = search_results or []
         self.artist_by_id = artist_by_id or {}
         self.playlists = playlists or []
+        self.playlist_tracks = playlist_tracks or {}
         self.created_playlists = []
         self.added_items = []
 
@@ -27,6 +28,9 @@ class _FakeYTMusicClient:
     def create_playlist(self, title, description):
         self.created_playlists.append((title, description))
         return "PLnew123"
+
+    def get_playlist(self, playlistId, limit=None, related=False, suggestions_limit=0):
+        return {"tracks": self.playlist_tracks.get(playlistId, [])}
 
     def add_playlist_items(self, playlistId, videoIds, duplicates=False):
         self.added_items.append((playlistId, videoIds, duplicates))
@@ -247,3 +251,28 @@ def test_add_tracks_returns_false_when_status_is_not_succeeded(monkeypatch):
     monkeypatch.setattr(ytmusic_client, "_client", _FailingClient())
 
     assert ytmusic_client.add_tracks("PL1", ["v1"]) is False
+
+
+def test_add_tracks_skips_video_ids_already_in_the_playlist(monkeypatch):
+    # Reproduces the Max Cooper bug: the same concert's tracks got re-added
+    # across multiple runs because the CSV dedup state didn't survive, and
+    # add_playlist_items(duplicates=True) happily re-adds anything given to
+    # it with no check of its own. add_tracks must filter against the
+    # playlist's actual current contents, not just trust the caller.
+    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": [{"videoId": "v1"}]})
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+
+    assert result is True
+    assert fake_client.added_items == [("PL1", ["v2"], True)]
+
+
+def test_add_tracks_does_not_call_add_playlist_items_when_all_tracks_already_present(monkeypatch):
+    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": [{"videoId": "v1"}, {"videoId": "v2"}]})
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+
+    assert result is True
+    assert fake_client.added_items == []

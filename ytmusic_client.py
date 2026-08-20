@@ -87,8 +87,19 @@ def get_or_create_playlist(title: str) -> str:
 
 
 def add_tracks(playlist_id: str, track_ids: list[str]) -> bool:
+    # The CSV is the only thing that normally stops a concert from being
+    # reprocessed, but it's local/gitignored and isn't guaranteed to survive
+    # (e.g. a fresh checkout, a deleted data/ dir) — so also check the
+    # playlist's actual current contents before adding, instead of trusting
+    # the caller not to send something that's already there.
+    existing_ids = {t["videoId"] for t in _client.get_playlist(playlist_id, limit=None).get("tracks", [])}
+    new_ids = [t for t in track_ids if t not in existing_ids]
+    if not new_ids:
+        return True
+
     # duplicates=True: without it, add_playlist_items rejects the WHOLE call
-    # (adding nothing) if ANY given video ID is already in the playlist,
-    # which happens routinely since this playlist accumulates across runs.
-    response = _client.add_playlist_items(playlist_id, track_ids, duplicates=True)
+    # (adding nothing) if ANY given video ID is already in the playlist. That
+    # can still happen for IDs added earlier in this same call, so keep it as
+    # a backstop even though new_ids is now pre-filtered.
+    response = _client.add_playlist_items(playlist_id, new_ids, duplicates=True)
     return isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")
