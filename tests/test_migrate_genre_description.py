@@ -5,7 +5,7 @@ import pytest
 import scripts.migrate_genre_description as migrate_mod
 
 OLD_HEADER = ["Venue", "Date", "Band", "Music Description", "Qobuz Status", "Ticket/Event Link"]
-NEW_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+NEW_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
 
 
 def _write_old_csv(path, rows):
@@ -41,13 +41,11 @@ def test_migrate_rewrites_csv_with_new_header_and_backfilled_columns(tmp_path, m
     donovan = next(r for r in rows if r["Band"] == "Donovan Keith Band")
     assert donovan["Genre"] == "Blues"
     assert donovan["Event Description"] == "A soulful night."
-    assert donovan["Qobuz Status"] == "Pending transfer"
     assert donovan["Ticket/Event Link"] == "http://x"
 
     other = next(r for r in rows if r["Band"] == "Some Other Band")
     assert other["Genre"] == "Jazz"
     assert other["Event Description"] == ""
-    assert other["Qobuz Status"] == "Transferred"
 
 
 def test_migrate_leaves_columns_blank_when_lookups_find_nothing(tmp_path, monkeypatch):

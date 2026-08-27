@@ -3,7 +3,7 @@ import html
 from datetime import date, datetime
 from pathlib import Path
 
-COLUMNS = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+COLUMNS = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
 
 
 def _format_date(iso_date: str) -> str:
@@ -45,7 +45,10 @@ def render_html(rows: list[dict]) -> str:
         for col in COLUMNS:
             value = row[col]
             if col == "Ticket/Event Link":
-                cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
+                if value:
+                    cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
+                else:
+                    cells.append('<td>—</td>')
             elif col == "Date":
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
             else:

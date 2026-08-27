@@ -30,10 +30,10 @@ def test_append_row_creates_file_with_header_and_row(tmp_path):
     with path.open(newline="", encoding="utf-8") as f:
         rows = list(csv.reader(f))
 
-    assert rows[0] == ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+    assert rows[0] == ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
     assert rows[1] == [
         "Missy Sippy", "2026-08-20", "Donovan Keith Band", "Soul", "Live at Missy Sippy tonight.",
-        "Pending transfer", "https://example.com/tickets",
+        "https://example.com/tickets",
     ]
 
 
@@ -47,8 +47,8 @@ def test_is_known_true_when_loaded_from_a_preexisting_csv(tmp_path):
     path = tmp_path / "concerts.csv"
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"])
-        writer.writerow(["FROZE Venue", "2026-08-25", "FROZE", "Hip hop", "A wild show.", "Pending transfer", "https://example.com"])
+        writer.writerow(["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"])
+        writer.writerow(["FROZE Venue", "2026-08-25", "FROZE", "Hip hop", "A wild show.", "https://example.com"])
 
     store = CsvStore(path)
     assert store.is_known("FROZE Venue", date(2026, 8, 25), "FROZE") is True

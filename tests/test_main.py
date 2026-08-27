@@ -194,6 +194,7 @@ def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
 def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
+    monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
     def _fail(auth_path):
         raise main.YTMusicAuthError("Invalid auth JSON string or file path provided.")
@@ -218,6 +219,7 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
     monkeypatch.setattr(main, "load_client", lambda auth_path: None)
+    monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
     def _fail(title):
         raise RuntimeError("Server returned HTTP 401: Unauthorized")

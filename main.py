@@ -32,6 +32,7 @@ from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
 from scrapers.viernulvier import ViernulvierScraper
 from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
 from scrapers.wintercircus import WintercircusScraper
+from yt_auth_har import prompt_for_har_and_save
 from ytmusic_client import (
     YTMusicAuthError,
     add_tracks,
@@ -106,6 +107,22 @@ def _lookup_event_description(concert: Concert) -> str | None:
     return None
 
 
+def _handle_auth_failure(auth_path: Path) -> bool:
+    """Prompt user to re-authenticate via HAR data. Returns True if successful."""
+    try:
+        response = input(
+            "\nWould you like to refresh your YouTube Music auth now? (y/n): "
+        ).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        return False
+
+    if response != "y":
+        print("Skipped. You can run the script again after refreshing auth manually.")
+        return False
+
+    return prompt_for_har_and_save(auth_path)
+
+
 def run() -> None:
     load_dotenv()
     try:
@@ -126,12 +143,28 @@ def run() -> None:
         playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
     except YTMusicAuthError as exc:
         print(f"YouTube Music authentication failed: {exc}")
-        print(f"Fix: run `ytmusicapi browser --file {AUTH_PATH}` again.")
-        sys.exit(1)
+        if _handle_auth_failure(AUTH_PATH):
+            # Try again after re-auth
+            try:
+                load_client(AUTH_PATH)
+                playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
+            except Exception as retry_exc:  # noqa: BLE001
+                print(f"Authentication still failed: {retry_exc}")
+                sys.exit(1)
+        else:
+            sys.exit(1)
     except Exception as exc:  # noqa: BLE001 - expired/invalid cookie surfaces here as a non-YTMusicError type
         print(f"YouTube Music authentication failed (during startup): {exc}")
-        print(f"Fix: run `ytmusicapi browser --file {AUTH_PATH}` again.")
-        sys.exit(1)
+        if _handle_auth_failure(AUTH_PATH):
+            # Try again after re-auth
+            try:
+                load_client(AUTH_PATH)
+                playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
+            except Exception as retry_exc:  # noqa: BLE001
+                print(f"Authentication still failed: {retry_exc}")
+                sys.exit(1)
+        else:
+            sys.exit(1)
 
     set_api_key(lastfm_api_key)
 
@@ -268,7 +301,6 @@ def run() -> None:
         print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
         print(f"Venue scrape failures: {'; '.join(scrape_failures)}")
-    print("Reminder: run the YouTube Music -> Qobuz transfer manually via Soundiiz (soundiiz.com).")
 
 
 if __name__ == "__main__":

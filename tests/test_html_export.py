@@ -3,7 +3,7 @@ from datetime import date
 
 from html_export import load_upcoming_rows, render_html, write_html
 
-HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
 
 
 def _write_csv(path, rows):
@@ -16,8 +16,8 @@ def _write_csv(path, rows):
 def test_load_upcoming_rows_excludes_past_dates(tmp_path):
     path = tmp_path / "concerts.csv"
     _write_csv(path, [
-        ["Missy Sippy", "2026-08-01", "Past Band", "", "", "Pending transfer", "http://past"],
-        ["Missy Sippy", "2026-08-20", "Future Band", "", "", "Pending transfer", "http://future"],
+        ["Missy Sippy", "2026-08-01", "Past Band", "", "", "http://past"],
+        ["Missy Sippy", "2026-08-20", "Future Band", "", "", "http://future"],
     ])
 
     rows = load_upcoming_rows(path, today=date(2026, 8, 13))
@@ -29,8 +29,8 @@ def test_load_upcoming_rows_excludes_past_dates(tmp_path):
 def test_load_upcoming_rows_sorts_by_date_ascending(tmp_path):
     path = tmp_path / "concerts.csv"
     _write_csv(path, [
-        ["Missy Sippy", "2026-09-01", "Later Band", "", "", "Pending transfer", "http://later"],
-        ["Missy Sippy", "2026-08-20", "Sooner Band", "", "", "Pending transfer", "http://sooner"],
+        ["Missy Sippy", "2026-09-01", "Later Band", "", "", "http://later"],
+        ["Missy Sippy", "2026-08-20", "Sooner Band", "", "", "http://sooner"],
     ])
 
     rows = load_upcoming_rows(path, today=date(2026, 8, 13))
@@ -47,7 +47,7 @@ def test_load_upcoming_rows_returns_empty_list_when_csv_does_not_exist(tmp_path)
 def test_render_html_includes_band_name_genre_and_ticket_link():
     rows = [{
         "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
-        "Genre": "Soul", "Event Description": "A great show.", "Qobuz Status": "Pending transfer",
+        "Genre": "Soul", "Event Description": "A great show.",
         "Ticket/Event Link": "http://future",
     }]
 
@@ -62,7 +62,7 @@ def test_render_html_includes_band_name_genre_and_ticket_link():
 def test_render_html_escapes_band_name_to_prevent_injection():
     rows = [{
         "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "<script>alert(1)</script>",
-        "Genre": "", "Event Description": "", "Qobuz Status": "Pending transfer",
+        "Genre": "", "Event Description": "",
         "Ticket/Event Link": "http://future",
     }]
 
@@ -76,12 +76,12 @@ def test_render_html_includes_venue_filter_options_for_distinct_venues():
     rows = [
         {
             "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
-            "Genre": "Soul", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "Soul", "Event Description": "",
             "Ticket/Event Link": "http://a",
         },
         {
             "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
-            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "Jazz", "Event Description": "",
             "Ticket/Event Link": "http://b",
         },
     ]
@@ -100,12 +100,12 @@ def test_render_html_includes_genre_filter_options_for_distinct_genres():
     rows = [
         {
             "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
-            "Genre": "Soul", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "Soul", "Event Description": "",
             "Ticket/Event Link": "http://a",
         },
         {
             "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
-            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "Jazz", "Event Description": "",
             "Ticket/Event Link": "http://b",
         },
     ]
@@ -124,12 +124,12 @@ def test_render_html_genre_filter_excludes_blank_values():
     rows = [
         {
             "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Band A",
-            "Genre": "", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "", "Event Description": "",
             "Ticket/Event Link": "http://a",
         },
         {
             "Venue": "VIERNULVIER", "Date": "2026-08-21", "Band": "Band B",
-            "Genre": "Jazz", "Event Description": "", "Qobuz Status": "Pending transfer",
+            "Genre": "Jazz", "Event Description": "",
             "Ticket/Event Link": "http://b",
         },
     ]
@@ -147,8 +147,8 @@ def test_write_html_writes_upcoming_rows_to_html_path(tmp_path):
     csv_path = tmp_path / "concerts.csv"
     html_path = tmp_path / "concerts.html"
     _write_csv(csv_path, [
-        ["Missy Sippy", "2026-08-01", "Past Band", "", "", "Pending transfer", "http://past"],
-        ["Missy Sippy", "2026-08-20", "Future Band", "", "", "Pending transfer", "http://future"],
+        ["Missy Sippy", "2026-08-01", "Past Band", "", "", "http://past"],
+        ["Missy Sippy", "2026-08-20", "Future Band", "", "", "http://future"],
     ])
 
     write_html(csv_path, html_path, today=date(2026, 8, 13))

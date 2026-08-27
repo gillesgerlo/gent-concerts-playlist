@@ -27,38 +27,35 @@ OAuth refresh token would have renewed itself.
 3. Register a free Last.fm API account at https://www.last.fm/api/account/create
    and note the API key.
 4. `cp .env.example .env` and fill in `LASTFM_API_KEY`.
-5. Log into https://music.youtube.com in Firefox or Chrome/Edge. Open dev
-   tools -> Network tab, reload the page, and find a POST request to a URL
-   containing `/browse` (e.g. `music.youtube.com/youtubei/v1/browse`). Copy
-   its request headers.
-6. Run the one-time setup, pasting the headers when prompted (Ctrl-D, or on
-   Windows Enter, Ctrl-Z, Enter, to finish pasting):
-
-   ```
-   ytmusicapi browser --file auth/ytmusic_auth.json
-   ```
-
-7. `python main.py`
+5. `python main.py` — on first run, the script will prompt you to authenticate.
+   Follow the on-screen instructions to copy your YouTube Music auth headers
+   from DevTools and save them automatically.
 
 ### Forcing re-authentication
 
-If YouTube Music reports an invalid/expired session (or you just want a
-fresh login), delete the cached auth file and repeat steps 5-6:
+When your YouTube Music auth expires, the script will automatically prompt you to refresh it.
+
+**Recommended method (file-based):**
+1. Open YouTube Music in your browser: https://music.youtube.com
+2. Open DevTools (F12 or right-click → Inspect)
+3. Go to the **Network** tab (refresh the page if it's empty, and log in if needed)
+4. Right-click on any network request and select **Copy as cURL**
+5. Paste the cURL command into a text editor
+6. Save the file as `curl_command.txt` in your project directory
+7. Run `python main.py` — it will automatically extract the auth headers
+
+**Alternative method (manual entry):**
+If you can't save a file, the script will prompt you to paste just the authorization and cookie header values (simpler strings that paste more reliably).
+
+If you prefer to manually refresh (or the script doesn't prompt you):
 
 ```
 rm auth/ytmusic_auth.json
-ytmusicapi browser --file auth/ytmusic_auth.json
+python main.py
 ```
 
-## After each run
+The script will then guide you through the HAR extraction process.
 
-Manually transfer the YouTube Music playlist to Qobuz via
-https://soundiiz.com (YouTube Music → Qobuz, select "Upcoming Concerts",
-confirm). The free Soundiiz tier supports up to 200 tracks per transfer.
-
-Once you've done that transfer, open `data/concerts.csv` and change the
-`Qobuz Status` column from `Pending transfer` to `Transferred` for each row
-you just moved over, so future runs show which concerts are still pending.
 
 ## Tests
 

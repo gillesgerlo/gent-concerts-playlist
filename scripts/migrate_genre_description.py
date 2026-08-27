@@ -11,7 +11,7 @@ import config
 from event_description import fetch_description
 from lastfm_client import genre_for_artist, set_api_key
 
-NEW_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Qobuz Status", "Ticket/Event Link"]
+NEW_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
 
 
 def migrate(csv_path: Path) -> None:
@@ -28,7 +28,6 @@ def migrate(csv_path: Path) -> None:
             row["Band"],
             genre,
             description,
-            row["Qobuz Status"],
             row["Ticket/Event Link"],
         ])
 
