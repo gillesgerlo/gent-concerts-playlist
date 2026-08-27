@@ -2,5 +2,5 @@ from pathlib import Path
 
 PLAYLIST_NAME = "Upcoming Concerts"
 CSV_PATH = Path("data/concerts.csv")
-HTML_PATH = Path("data/concerts.html")
+HTML_PATH = Path("concerts.html")
 WINDOW_DAYS = 91
