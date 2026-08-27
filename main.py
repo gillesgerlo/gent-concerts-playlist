@@ -42,6 +42,7 @@ from ytmusic_client import (
     load_client,
     search_artist,
 )
+from playlist_tracker import PlaylistTracker
 
 AUTH_PATH = Path("auth/ytmusic_auth.json")
 
@@ -196,6 +197,7 @@ def run() -> None:
     set_api_key(lastfm_api_key)
 
     store = CsvStore(config.CSV_PATH)
+    tracker = PlaylistTracker()
 
     scrapers: list[tuple[str, Scraper]] = [
         (MISSY_SIPPY_VENUE, MissySippyScraper()),
@@ -288,6 +290,7 @@ def run() -> None:
 
             if added_ok:
                 tracks_added += len(track_ids)
+                tracker.record_tracks(concert.venue, concert.date.isoformat(), concert.band, track_ids)
             elif not add_tracks_errored:
                 add_failures.append(concert.band)
         elif is_party_event:
@@ -303,6 +306,8 @@ def run() -> None:
 
         store.append_row(concert, genre=genre or "", event_description=event_description_value or "")
         rows_written += 1
+
+    tracker.save()
 
     write_html(config.CSV_PATH, config.HTML_PATH)
     _push_html_to_github()

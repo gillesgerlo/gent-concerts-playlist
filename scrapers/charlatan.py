@@ -54,6 +54,7 @@ def _parse(html: str, today: date) -> list[Concert]:
 def _fetch_page(page: int) -> str:
     response = requests.get(URL, params={"page": page}, timeout=10)
     response.raise_for_status()
+    response.encoding = 'utf-8'
     return response.text
 
 
