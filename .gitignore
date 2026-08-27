@@ -5,6 +5,5 @@ __pycache__/
 .env
 auth/ytmusic_auth.json
 data/concerts.csv
-data/concerts.html
 /docs
 CLAUDE.md

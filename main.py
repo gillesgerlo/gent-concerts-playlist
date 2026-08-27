@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 import sys
 import webbrowser
 from datetime import date
@@ -121,6 +122,32 @@ def _handle_auth_failure(auth_path: Path) -> bool:
         return False
 
     return prompt_for_har_and_save(auth_path)
+
+
+def _push_html_to_github() -> None:
+    """Commit and push the updated HTML file to GitHub."""
+    try:
+        subprocess.run(
+            ["git", "add", str(config.HTML_PATH)],
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "Update concert listing"],
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push"],
+            check=True,
+            capture_output=True,
+        )
+        print("Published to GitHub Pages")
+    except subprocess.CalledProcessError as exc:
+        if b"nothing to commit" not in exc.stderr:
+            print(f"Warning: Failed to push to GitHub: {exc.stderr.decode().strip()}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"Warning: Could not push to GitHub: {exc}")
 
 
 def run() -> None:
@@ -278,6 +305,7 @@ def run() -> None:
         rows_written += 1
 
     write_html(config.CSV_PATH, config.HTML_PATH)
+    _push_html_to_github()
     webbrowser.open(config.HTML_PATH.resolve().as_uri())
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
