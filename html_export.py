@@ -22,7 +22,7 @@ def load_upcoming_rows(csv_path: Path, today: date) -> list[dict]:
 
 
 def _distinct_values(rows: list[dict], col: str) -> list[str]:
-    return sorted({row[col] for row in rows if row[col].strip()})
+    return sorted({row[col] for row in rows if row[col] and row[col].strip()})
 
 
 def _filter_options(rows: list[dict], col: str) -> str:
@@ -43,7 +43,7 @@ def render_html(rows: list[dict]) -> str:
     for row in rows:
         cells = []
         for col in COLUMNS:
-            value = row[col]
+            value = row[col] or ""
             if col == "Ticket/Event Link":
                 if value:
                     cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
@@ -53,8 +53,8 @@ def render_html(rows: list[dict]) -> str:
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
             else:
                 cells.append(f"<td>{html.escape(value)}</td>")
-        venue_attr = html.escape(row["Venue"])
-        genre_attr = html.escape(row["Genre"])
+        venue_attr = html.escape(row["Venue"] or "")
+        genre_attr = html.escape(row["Genre"] or "")
         body_rows.append(f'<tr data-venue="{venue_attr}" data-genre="{genre_attr}">{"".join(cells)}</tr>')
 
     venue_options = _filter_options(rows, "Venue")
