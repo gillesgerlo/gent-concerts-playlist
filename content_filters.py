@@ -8,6 +8,12 @@ PARTY_KEYWORDS = [
     "clubnight", "club night", "vinyl night", "record night",
 ]
 
+# English/Dutch again ("eerbetoon" = tribute). This is a best-effort local
+# replacement for the old MusicBrainz disambiguation lookup, which was
+# removed because its endpoint routinely tarpitted the run for ~10s/concert.
+# It only catches acts that say so in the band name or listing blurb.
+TRIBUTE_KEYWORDS = ["tribute", "cover band", "coverband", "eerbetoon"]
+
 
 def _normalize_genre(genre: str) -> str:
     return re.sub(r"[^a-z0-9]", "", genre.lower())
@@ -29,3 +35,7 @@ def _matches_keywords(text: str, keywords: list[str]) -> bool:
 
 def is_party(band: str, text: str | None) -> bool:
     return _matches_keywords(f"{band} {text or ''}", PARTY_KEYWORDS)
+
+
+def is_tribute(band: str, text: str | None) -> bool:
+    return _matches_keywords(f"{band} {text or ''}", TRIBUTE_KEYWORDS)

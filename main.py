@@ -9,13 +9,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import config
-from content_filters import is_excluded_genre, is_party
+from content_filters import is_excluded_genre, is_party, is_tribute
 from csv_store import CsvStore
 from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
-from musicbrainz_client import is_cover_or_tribute
 from scrapers.bar_lume import VENUE as BAR_LUME_VENUE
 from scrapers.bar_lume import BarLumeScraper
 from scrapers.base import Concert, Scraper
@@ -95,10 +94,6 @@ def _lookup_artist_info(band: str) -> list[str]:
 
 def _lookup_genre(band: str) -> str | None:
     return genre_for_artist(_search_query(band))
-
-
-def _lookup_is_cover_or_tribute(band: str) -> bool:
-    return is_cover_or_tribute(band)
 
 
 def _lookup_event_description(concert: Concert) -> str | None:
@@ -239,13 +234,12 @@ def run() -> None:
     excluded_party: list[str] = []
     for i, concert in enumerate(new_concerts, start=1):
         print(f"[{i}/{len(new_concerts)}] {concert.band} @ {concert.venue} ({concert.date})")
-        is_cover = False
-        try:
-            is_cover = _lookup_is_cover_or_tribute(concert.band)
-        except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-            lookup_errors.append(f"{concert.band} (cover/tribute check): {exc}")
-
-        if is_cover:
+        # Keyword-only tribute/cover-act check against the band name and the
+        # venue listing blurb. Cheap and local: it replaced a per-concert
+        # MusicBrainz disambiguation lookup whose endpoint routinely tarpitted
+        # the whole run at ~10s/concert. It runs before any network lookup so
+        # an obvious tribute still skips every other call.
+        if is_tribute(concert.band, concert.description):
             excluded_cover.append(concert.band)
             continue
 
