@@ -86,13 +86,19 @@ def get_or_create_playlist(title: str) -> str:
     return _client.create_playlist(title=title, description="")
 
 
-def add_tracks(playlist_id: str, track_ids: list[str]) -> bool:
+def get_existing_track_ids(playlist_id: str) -> set[str]:
     # The CSV is the only thing that normally stops a concert from being
     # reprocessed, but it's local/gitignored and isn't guaranteed to survive
-    # (e.g. a fresh checkout, a deleted data/ dir) — so also check the
-    # playlist's actual current contents before adding, instead of trusting
-    # the caller not to send something that's already there.
-    existing_ids = {t["videoId"] for t in _client.get_playlist(playlist_id, limit=None).get("tracks", [])}
+    # (e.g. a fresh checkout, a deleted data/ dir) — so add_tracks also checks
+    # the playlist's actual current contents before adding, instead of
+    # trusting the caller not to send something that's already there. Fetch
+    # it once per run (not once per concert): full-catalog runs process
+    # hundreds of concerts, and re-fetching the whole playlist per concert
+    # turned that into an O(n^2) number of YouTube Music requests.
+    return {t["videoId"] for t in _client.get_playlist(playlist_id, limit=None).get("tracks", [])}
+
+
+def add_tracks(playlist_id: str, track_ids: list[str], existing_ids: set[str]) -> bool:
     new_ids = [t for t in track_ids if t not in existing_ids]
     if not new_ids:
         return True
@@ -102,4 +108,7 @@ def add_tracks(playlist_id: str, track_ids: list[str]) -> bool:
     # can still happen for IDs added earlier in this same call, so keep it as
     # a backstop even though new_ids is now pre-filtered.
     response = _client.add_playlist_items(playlist_id, new_ids, duplicates=True)
-    return isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")
+    succeeded = isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")
+    if succeeded:
+        existing_ids.update(new_ids)
+    return succeeded

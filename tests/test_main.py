@@ -173,7 +173,8 @@ def _stub_env_and_auth(monkeypatch):
     monkeypatch.setattr(main, "load_client", lambda auth_path: None)
     monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
-    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: True)
+    monkeypatch.setattr(main, "get_existing_track_ids", lambda playlist_id: set())
+    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: True)
     monkeypatch.setattr(main, "fetch_description", lambda url: None)
     monkeypatch.setattr(main, "is_cover_or_tribute", lambda band: False)
 
@@ -371,7 +372,7 @@ def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
 
-    def _fake_add_tracks(playlist_id, track_ids):
+    def _fake_add_tracks(playlist_id, track_ids, existing_ids):
         raise RuntimeError("YouTube Music API error: playlist not found")
 
     monkeypatch.setattr(main, "add_tracks", _fake_add_tracks)
@@ -538,7 +539,7 @@ def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatc
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
     # add_tracks returns False (e.g. a non-"SUCCEEDED" response) rather than raising.
-    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids: False)
+    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: False)
 
     main.run()
 

@@ -38,6 +38,7 @@ from ytmusic_client import (
     YTMusicAuthError,
     add_tracks,
     get_artist_info,
+    get_existing_track_ids,
     get_or_create_playlist,
     load_client,
     search_artist,
@@ -224,6 +225,8 @@ def run() -> None:
     new_concerts = filter_new(upcoming, store)
     print(f"Found {len(upcoming)} concerts, {len(new_concerts)} new.")
 
+    existing_track_ids = get_existing_track_ids(playlist_id)
+
     rows_written = 0
     tracks_added = 0
     no_track_match: list[str] = []
@@ -283,7 +286,7 @@ def run() -> None:
             added_ok = False
             add_tracks_errored = False
             try:
-                added_ok = add_tracks(playlist_id, track_ids)
+                added_ok = add_tracks(playlist_id, track_ids, existing_track_ids)
             except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
                 lookup_errors.append(f"{concert.band} (add tracks): {exc}")
                 add_tracks_errored = True

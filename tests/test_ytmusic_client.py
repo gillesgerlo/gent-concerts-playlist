@@ -237,7 +237,7 @@ def test_add_tracks_returns_true_on_a_succeeded_status(monkeypatch):
     fake_client = _FakeYTMusicClient()
     monkeypatch.setattr(ytmusic_client, "_client", fake_client)
 
-    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"], set())
 
     assert result is True
     assert fake_client.added_items == [("PL1", ["v1", "v2"], True)]
@@ -250,7 +250,7 @@ def test_add_tracks_returns_false_when_status_is_not_succeeded(monkeypatch):
 
     monkeypatch.setattr(ytmusic_client, "_client", _FailingClient())
 
-    assert ytmusic_client.add_tracks("PL1", ["v1"]) is False
+    assert ytmusic_client.add_tracks("PL1", ["v1"], set()) is False
 
 
 def test_add_tracks_skips_video_ids_already_in_the_playlist(monkeypatch):
@@ -259,20 +259,40 @@ def test_add_tracks_skips_video_ids_already_in_the_playlist(monkeypatch):
     # add_playlist_items(duplicates=True) happily re-adds anything given to
     # it with no check of its own. add_tracks must filter against the
     # playlist's actual current contents, not just trust the caller.
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": [{"videoId": "v1"}]})
+    fake_client = _FakeYTMusicClient()
     monkeypatch.setattr(ytmusic_client, "_client", fake_client)
 
-    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"], {"v1"})
 
     assert result is True
     assert fake_client.added_items == [("PL1", ["v2"], True)]
 
 
 def test_add_tracks_does_not_call_add_playlist_items_when_all_tracks_already_present(monkeypatch):
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": [{"videoId": "v1"}, {"videoId": "v2"}]})
+    fake_client = _FakeYTMusicClient()
     monkeypatch.setattr(ytmusic_client, "_client", fake_client)
 
-    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"])
+    result = ytmusic_client.add_tracks("PL1", ["v1", "v2"], {"v1", "v2"})
 
     assert result is True
     assert fake_client.added_items == []
+
+
+def test_add_tracks_updates_existing_ids_after_a_successful_add(monkeypatch):
+    # existing_ids is fetched once per run in main.py, not once per concert,
+    # so a successful add must update it in place for subsequent concerts in
+    # the same run to see it.
+    fake_client = _FakeYTMusicClient()
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+    existing_ids = set()
+
+    ytmusic_client.add_tracks("PL1", ["v1"], existing_ids)
+
+    assert existing_ids == {"v1"}
+
+
+def test_get_existing_track_ids_returns_the_playlists_current_video_ids(monkeypatch):
+    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": [{"videoId": "v1"}, {"videoId": "v2"}]})
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    assert ytmusic_client.get_existing_track_ids("PL1") == {"v1", "v2"}
