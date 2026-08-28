@@ -15,6 +15,7 @@ def fetch_description(url: str, max_length: int = 300) -> str | None:
     if "html" not in content_type.lower():
         return None
 
+    response.encoding = "utf-8"
     soup = BeautifulSoup(response.text, "lxml")
     meta = soup.find("meta", property="og:description") or soup.find("meta", attrs={"name": "description"})
     if meta is None:
