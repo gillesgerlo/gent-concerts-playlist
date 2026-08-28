@@ -27,7 +27,9 @@ OAuth refresh token would have renewed itself.
 3. Register a free Last.fm API account at https://www.last.fm/api/account/create
    and note the API key.
 4. `cp .env.example .env` and fill in `LASTFM_API_KEY`.
-5. `python main.py` — on first run, the script will prompt you to authenticate.
+5. Edit `EXCLUDED_GENRE_KEYWORDS` in `config.py` if you want to filter out
+   different genres than the defaults (metal, hardcore, rap, hiphop).
+6. `python main.py` — on first run, the script will prompt you to authenticate.
    Follow the on-screen instructions to copy your YouTube Music auth headers
    from DevTools and save them automatically.
 
