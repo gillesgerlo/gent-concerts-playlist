@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
 
-import config
+from cities import GENT
 from event_description import fetch_description
 from lastfm_client import genre_for_artist, set_api_key
 
@@ -45,7 +45,7 @@ def main() -> None:
         print("Missing LASTFM_API_KEY — copy .env.example to .env and fill in your credentials.")
         sys.exit(1)
     set_api_key(lastfm_api_key)
-    migrate(config.CSV_PATH)
+    migrate(GENT.csv_path)
 
 
 if __name__ == "__main__":

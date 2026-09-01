@@ -268,8 +268,17 @@ def _select_cities(argv: list[str]) -> list[City]:
 
 def _run_all(selected: list[City]) -> None:
     load_client(AUTH_PATH)
-    for city in selected:
-        run(city)
+    for i, city in enumerate(selected):
+        if i == 0:
+            # First city's auth-ish failures (an expired cookie surfaces on the
+            # first real API call, i.e. get_or_create_playlist) propagate to
+            # main()'s re-auth handler — nothing has been written yet.
+            run(city)
+        else:
+            try:
+                run(city)
+            except Exception as exc:  # noqa: BLE001 - one city must never abort the others
+                print(f"City '{city.key}' failed, continuing: {exc}")
 
 
 def main(argv: list[str] | None = None) -> None:

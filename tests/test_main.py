@@ -230,6 +230,53 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
     assert "YouTube Music authentication failed" in out
 
 
+def test_main_isolates_a_failing_city_from_the_rest(monkeypatch, tmp_path, capsys):
+    # With more than one selected city, a non-auth failure inside a later city's
+    # pipeline must not be mislabeled as an auth failure, must not trigger a
+    # re-auth prompt, and must not abort the cities that already completed.
+    from cities import City
+
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    def _city(key, scrapers):
+        base = tmp_path / key
+        return City(
+            key=key,
+            display_name=key.title(),
+            playlist_name=f"Upcoming Concerts {key.title()}",
+            csv_path=base / "concerts.csv",
+            html_path=base / "listing.html",
+            tracker_path=base / "playlist_tracks.json",
+            scrapers=scrapers,
+        )
+
+    good = Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band",
+                   description="", ticket_link="http://x")
+    city0 = _city("alpha", [("Missy Sippy", _FakeScraper([good]))])
+    city1 = _city("beta", [("Missy Sippy", _FakeScraper([]))])
+    monkeypatch.setattr(main, "CITIES", {"alpha": city0, "beta": city1})
+
+    def _playlist(title):
+        if title == city1.playlist_name:
+            raise RuntimeError("beta pipeline blew up")
+        return "PL1"
+
+    monkeypatch.setattr(main, "get_or_create_playlist", _playlist)
+
+    main.main([])  # all cities; must not raise and must not sys.exit
+
+    assert city0.csv_path.exists()
+    assert "Good Band" in city0.csv_path.read_text()  # first city completed
+
+    out = capsys.readouterr().out
+    assert "City 'beta' failed, continuing:" in out
+    assert "authentication failed" not in out
+
+
 def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
