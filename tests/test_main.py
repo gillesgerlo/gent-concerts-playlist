@@ -8,13 +8,12 @@ from scrapers.base import Concert
 
 
 @pytest.fixture(autouse=True)
-def _isolate_html_export(monkeypatch, tmp_path):
-    # main.run() always calls write_html() + webbrowser.open() on config.HTML_PATH,
-    # even for tests that only care about CSV/playlist behavior. Without this,
-    # every main.run() call in this file overwrites the real data/concerts.html
-    # and pops open a real browser tab.
-    monkeypatch.setattr(main.config, "HTML_PATH", tmp_path / "concerts.html")
+def _isolate_side_effects(monkeypatch):
+    # main.main() opens a browser tab and pushes to GitHub after every run;
+    # each test now supplies its own html path via a fake city, so all that is
+    # left to silence here is the browser and the git push.
     monkeypatch.setattr(main.webbrowser, "open", lambda url: None)
+    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: None)
 
 
 def test_search_query_strips_trailing_em_dash_subtitle():
@@ -142,6 +141,19 @@ class _FakeScraper:
         return self._concerts
 
 
+def _fake_city(tmp_path, scrapers):
+    from cities import City
+    return City(
+        key="test",
+        display_name="Test",
+        playlist_name="Upcoming Concerts Test",
+        csv_path=tmp_path / "concerts.csv",
+        html_path=tmp_path / "listing.html",
+        tracker_path=tmp_path / "playlist_tracks.json",
+        scrapers=scrapers,
+    )
+
+
 def _run_with_frozen_today(monkeypatch, today):
     class _FrozenDate(date):
         @classmethod
@@ -149,17 +161,6 @@ def _run_with_frozen_today(monkeypatch, today):
             return today
 
     monkeypatch.setattr(main, "date", _FrozenDate)
-
-
-def _stub_venue_scrapers(monkeypatch, concerts):
-    monkeypatch.setattr(main, "MissySippyScraper", lambda: _FakeScraper(concerts))
-    monkeypatch.setattr(main, "ViernulvierScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "WintercircusScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "CharlatanScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "TrefpuntScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "RingoScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "BarLumeScraper", lambda: _FakeScraper([]))
-    monkeypatch.setattr(main, "UitinvlaanderenScraper", lambda: _FakeScraper([]))
 
 
 def _stub_env_and_auth(monkeypatch):
@@ -178,7 +179,7 @@ def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
 
     with pytest.raises(SystemExit) as exc_info:
-        main.run()
+        main.main([])
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
@@ -186,33 +187,32 @@ def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
     assert ".env" in out
 
 
-def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys):
-    monkeypatch.setenv("LASTFM_API_KEY", "key")
-    monkeypatch.setattr(main, "load_dotenv", lambda: None)
+def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys, tmp_path):
+    _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
     def _fail(auth_path):
         raise main.YTMusicAuthError("Invalid auth JSON string or file path provided.")
 
     monkeypatch.setattr(main, "load_client", _fail)
+    monkeypatch.setattr(main, "CITIES", {"gent": _fake_city(tmp_path, [])})
 
     with pytest.raises(SystemExit) as exc_info:
-        main.run()
+        main.main(["gent"])
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
     assert "YouTube Music authentication failed" in out
 
 
-def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypatch, capsys):
+def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypatch, capsys, tmp_path):
     # An expired/invalid cookie isn't detected by load_client itself (browser
     # auth headers aren't validated at construction time), it only fails on
     # the first real API call, which is get_or_create_playlist. That
     # failure's exception type does not subclass ytmusicapi's own
     # YTMusicError hierarchy, so this must be caught by a broad Exception
-    # handler around the same call, not just YTMusicAuthError.
-    monkeypatch.setenv("LASTFM_API_KEY", "key")
-    monkeypatch.setattr(main, "load_dotenv", lambda: None)
+    # handler in main(), not just YTMusicAuthError.
+    _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main, "load_client", lambda auth_path: None)
     monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
@@ -220,9 +220,10 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
         raise RuntimeError("Server returned HTTP 401: Unauthorized")
 
     monkeypatch.setattr(main, "get_or_create_playlist", _fail)
+    monkeypatch.setattr(main, "CITIES", {"gent": _fake_city(tmp_path, [])})
 
     with pytest.raises(SystemExit) as exc_info:
-        main.run()
+        main.main(["gent"])
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
@@ -231,7 +232,6 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
 
 def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -239,7 +239,7 @@ def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Full Info Band",
                 description="Listing blurb text.", ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
@@ -255,7 +255,7 @@ def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
 
     monkeypatch.setattr(main, "genre_for_artist", _fake_genre)
 
-    main.run()
+    main.run(city)
 
     # Genre is looked up unconditionally now, no longer gated on a missing YouTube bio.
     assert genre_calls == ["Full Info Band"]
@@ -268,7 +268,6 @@ def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
 
 def test_run_falls_back_to_listing_blurb_when_page_fetch_has_no_description(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -276,13 +275,13 @@ def test_run_falls_back_to_listing_blurb_when_page_fetch_has_no_description(monk
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Blurb Band",
                 description="Deep soul from Austin Texas.", ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: None)
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Soul")
     # fetch_description already stubbed to return None by _stub_env_and_auth.
 
-    main.run()
+    main.run(city)
 
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
     row = next(r for r in rows if "Blurb Band" in r).split(",")
@@ -291,7 +290,6 @@ def test_run_falls_back_to_listing_blurb_when_page_fetch_has_no_description(monk
 
 def test_run_leaves_columns_blank_when_no_genre_or_description_found(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -299,13 +297,13 @@ def test_run_leaves_columns_blank_when_no_genre_or_description_found(monkeypatch
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Empty Band",
                 description="", ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: None)
     monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
     # fetch_description already stubbed to return None by _stub_env_and_auth.
 
-    main.run()
+    main.run(city)
 
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
     row = next(r for r in rows if "Empty Band" in r).split(",")
@@ -319,7 +317,6 @@ def test_run_leaves_columns_blank_when_no_genre_or_description_found(monkeypatch
 
 def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -327,7 +324,7 @@ def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, cap
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band", description="", ticket_link="http://x"),
         Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Bad Band", description="", ticket_link="http://y"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     def _fake_search_artist(band):
         if band == "Bad Band":
@@ -338,7 +335,7 @@ def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, cap
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
 
-    main.run()  # must not raise
+    main.run(city)  # must not raise
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Good Band" in csv_content
@@ -352,7 +349,6 @@ def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, cap
 
 def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -360,7 +356,7 @@ def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band", description="", ticket_link="http://x"),
         Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Bad Band", description="", ticket_link="http://y"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
@@ -371,40 +367,39 @@ def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(main, "add_tracks", _fake_add_tracks)
 
-    main.run()  # must not raise, even though every add_tracks call blows up
+    main.run(city)  # must not raise, even though every add_tracks call blows up
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Good Band" in csv_content
     assert "Bad Band" in csv_content  # both still recorded despite the add_tracks error
 
     out = capsys.readouterr().out
-    assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 0" in out  # nothing actually got added
+    assert f"Tracks added to '{city.playlist_name}': 0" in out  # nothing actually got added
     assert "Lookup errors" in out
     assert "(add tracks)" in out
     assert "Good Band" in out and "Bad Band" in out
 
 
 def test_run_writes_html_export_and_opens_it_in_the_browser(monkeypatch, tmp_path):
+    # Writing the HTML now happens in run(city); opening it and pushing to
+    # GitHub moved to main(), so this exercises the whole main() path.
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
-    monkeypatch.setattr(main.config, "HTML_PATH", tmp_path / "concerts.html")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
-    _stub_venue_scrapers(monkeypatch, [])
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
 
     opened_urls = []
     monkeypatch.setattr(main.webbrowser, "open", lambda url: opened_urls.append(url))
 
-    main.run()
+    main.main(["test"])
 
-    html_path = tmp_path / "concerts.html"
-    assert html_path.exists()
-    assert opened_urls == [html_path.resolve().as_uri()]
+    assert city.html_path.exists()
+    assert opened_urls == [city.html_path.resolve().as_uri()]
 
 
 def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -413,7 +408,7 @@ def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp
                 description="Brengt een stomend eerbetoon aan de legendarische muziek van Dire Straits.",
                 ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Charlatan", _FakeScraper(concerts))])
 
     search_calls = []
     genre_calls = []
@@ -423,7 +418,7 @@ def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: genre_calls.append(band) or "Rock")
 
-    main.run()
+    main.run(city)
 
     assert search_calls == []  # never even looked up on YouTube Music
     assert genre_calls == []  # nor Last.fm — a confirmed tribute skips every other lookup
@@ -435,7 +430,6 @@ def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp
 
 def test_run_includes_a_metal_show_now_that_genre_filtering_is_off(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -443,14 +437,14 @@ def test_run_includes_a_metal_show_now_that_genre_filtering_is_off(monkeypatch, 
         Concert(venue="VIERNULVIER", date=date(2026, 9, 5), band="Beherit",
                 description="De schaduw over Belgie.", ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("VIERNULVIER", _FakeScraper(concerts))])
 
     search_calls = []
     monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "black metal")
 
-    main.run()
+    main.run(city)
 
     assert search_calls == ["Beherit"]
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
@@ -461,7 +455,6 @@ def test_run_includes_a_metal_show_now_that_genre_filtering_is_off(monkeypatch, 
 
 def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
@@ -470,34 +463,33 @@ def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp
                 description="The ultimate Britpop party returns, our DJs will take you on a ride.",
                 ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Ringo Music Bar", _FakeScraper(concerts))])
 
     search_calls = []
     monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Britpop")
 
-    main.run()
+    main.run(city)
 
     assert search_calls == []  # party: never looked up on YouTube Music
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "BRITPOP! - A Night Out" in csv_content  # but still logged, per the CSV design
 
     out = capsys.readouterr().out
-    assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 0" in out
+    assert f"Tracks added to '{city.playlist_name}': 0" in out
     assert "Skipped playlist add (party/DJ set): BRITPOP! - A Night Out" in out
 
 
 def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
     concerts = [
         Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Quota Band", description="", ticket_link="http://x"),
     ]
-    _stub_venue_scrapers(monkeypatch, concerts)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
@@ -505,32 +497,30 @@ def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatc
     # add_tracks returns False (e.g. a non-"SUCCEEDED" response) rather than raising.
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: False)
 
-    main.run()
+    main.run(city)
 
     out = capsys.readouterr().out
-    assert f"Tracks added to '{main.config.PLAYLIST_NAME}': 0" in out  # not silently counted as a success
+    assert f"Tracks added to '{city.playlist_name}': 0" in out  # not silently counted as a success
     assert "Failed to add tracks for: Quota Band" in out
     assert "Lookup errors" not in out  # this is a reported failure, not an exception
 
 
 def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp_path):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
 
-    _stub_venue_scrapers(monkeypatch, [])
     festival_act = Concert(
         venue="Sfeertent Ledeberg", date=date(2026, 8, 21),
         band="Lunasix @ Ledebergse Feesten 2026", description="",
         ticket_link="https://www.uitinvlaanderen.be/agenda/e/lunasix/1",
     )
-    monkeypatch.setattr(main, "UitinvlaanderenScraper", lambda: _FakeScraper([festival_act]))
+    city = _fake_city(tmp_path, [("UiTinVlaanderen", _FakeScraper([festival_act]))])
 
     monkeypatch.setattr(main, "search_artist", lambda band: None)
     monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
 
-    main.run()
+    main.run(city)
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Lunasix @ Ledebergse Feesten 2026" in csv_content

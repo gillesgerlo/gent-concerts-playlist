@@ -15,23 +15,8 @@ from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
-from scrapers.bar_lume import VENUE as BAR_LUME_VENUE
-from scrapers.bar_lume import BarLumeScraper
-from scrapers.base import Concert, Scraper
-from scrapers.charlatan import VENUE as CHARLATAN_VENUE
-from scrapers.charlatan import CharlatanScraper
-from scrapers.missy_sippy import VENUE as MISSY_SIPPY_VENUE
-from scrapers.missy_sippy import MissySippyScraper
-from scrapers.ringo import VENUE as RINGO_VENUE
-from scrapers.ringo import RingoScraper
-from scrapers.trefpunt import VENUE as TREFPUNT_VENUE
-from scrapers.trefpunt import TrefpuntScraper
-from scrapers.uitinvlaanderen import VENUE as UITINVLAANDEREN_VENUE
-from scrapers.uitinvlaanderen import UitinvlaanderenScraper
-from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
-from scrapers.viernulvier import ViernulvierScraper
-from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
-from scrapers.wintercircus import WintercircusScraper
+from cities import CITIES, City
+from scrapers.base import Concert
 from yt_auth_har import prompt_for_har_and_save
 from ytmusic_client import (
     YTMusicAuthError,
@@ -121,24 +106,16 @@ def _handle_auth_failure(auth_path: Path) -> bool:
     return prompt_for_har_and_save(auth_path)
 
 
-def _push_html_to_github() -> None:
-    """Commit and push the updated HTML file to GitHub."""
+def _push_html_to_github(paths: list[Path]) -> None:
+    """Commit and push the updated HTML file(s) to GitHub."""
     try:
-        subprocess.run(
-            ["git", "add", str(config.HTML_PATH)],
-            check=True,
-            capture_output=True,
-        )
+        for path in paths:
+            subprocess.run(["git", "add", str(path)], check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", "Update concert listing"],
-            check=True,
-            capture_output=True,
+            check=True, capture_output=True,
         )
-        subprocess.run(
-            ["git", "push"],
-            check=True,
-            capture_output=True,
-        )
+        subprocess.run(["git", "push"], check=True, capture_output=True)
         print("Published to GitHub Pages")
     except subprocess.CalledProcessError as exc:
         if b"nothing to commit" not in exc.stderr:
@@ -147,69 +124,23 @@ def _push_html_to_github() -> None:
         print(f"Warning: Could not push to GitHub: {exc}")
 
 
-def run() -> None:
-    load_dotenv()
-    try:
-        lastfm_api_key = os.environ["LASTFM_API_KEY"]
-    except KeyError:
-        print("Missing LASTFM_API_KEY — copy .env.example to .env and fill in your credentials.")
-        sys.exit(1)
+def run(city: City) -> None:
+    store = CsvStore(city.csv_path)
+    tracker = PlaylistTracker(city.tracker_path)
 
-    try:
-        load_client(AUTH_PATH)
-        # get_or_create_playlist is the first real YouTube Music API call.
-        # Browser auth headers aren't validated when the client is built, so
-        # an expired/invalid cookie isn't detected by load_client at all: it
-        # only surfaces here, and with an exception type that does not
-        # subclass ytmusicapi's own YTMusicError hierarchy. Guard it the same
-        # way as load_client so that failure also gets the fatal
-        # auth-failure message instead of an uncaught traceback.
-        playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
-    except YTMusicAuthError as exc:
-        print(f"YouTube Music authentication failed: {exc}")
-        if _handle_auth_failure(AUTH_PATH):
-            # Try again after re-auth
-            try:
-                load_client(AUTH_PATH)
-                playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
-            except Exception as retry_exc:  # noqa: BLE001
-                print(f"Authentication still failed: {retry_exc}")
-                sys.exit(1)
-        else:
-            sys.exit(1)
-    except Exception as exc:  # noqa: BLE001 - expired/invalid cookie surfaces here as a non-YTMusicError type
-        print(f"YouTube Music authentication failed (during startup): {exc}")
-        if _handle_auth_failure(AUTH_PATH):
-            # Try again after re-auth
-            try:
-                load_client(AUTH_PATH)
-                playlist_id = get_or_create_playlist(config.PLAYLIST_NAME)
-            except Exception as retry_exc:  # noqa: BLE001
-                print(f"Authentication still failed: {retry_exc}")
-                sys.exit(1)
-        else:
-            sys.exit(1)
-
-    set_api_key(lastfm_api_key)
-
-    store = CsvStore(config.CSV_PATH)
-    tracker = PlaylistTracker()
-
-    scrapers: list[tuple[str, Scraper]] = [
-        (MISSY_SIPPY_VENUE, MissySippyScraper()),
-        (VIERNULVIER_VENUE, ViernulvierScraper()),
-        (WINTERCIRCUS_VENUE, WintercircusScraper()),
-        (CHARLATAN_VENUE, CharlatanScraper()),
-        (TREFPUNT_VENUE, TrefpuntScraper()),
-        (RINGO_VENUE, RingoScraper()),
-        (BAR_LUME_VENUE, BarLumeScraper()),
-        (UITINVLAANDEREN_VENUE, UitinvlaanderenScraper()),
-    ]
     today = date.today()
+    # get_or_create_playlist is the first real YouTube Music API call.
+    # Browser auth headers aren't validated when the client is built, so
+    # an expired/invalid cookie isn't detected by load_client at all: it
+    # only surfaces here, and with an exception type that does not
+    # subclass ytmusicapi's own YTMusicError hierarchy. It propagates out
+    # of _run_all into main()'s except clauses, which give it the fatal
+    # auth-failure message instead of an uncaught traceback.
+    playlist_id = get_or_create_playlist(city.playlist_name)
 
     all_concerts: list[Concert] = []
     scrape_failures: list[str] = []
-    for venue_name, scraper in scrapers:
+    for venue_name, scraper in city.scrapers:
         print(f"Scraping {venue_name}...")
         try:
             all_concerts.extend(scraper.scrape())
@@ -301,13 +232,11 @@ def run() -> None:
 
     tracker.save()
 
-    write_html(config.CSV_PATH, config.HTML_PATH)
-    _push_html_to_github()
-    webbrowser.open(config.HTML_PATH.resolve().as_uri())
+    write_html(city.csv_path, city.html_path)
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {rows_written}")
-    print(f"Tracks added to '{config.PLAYLIST_NAME}': {tracks_added}")
+    print(f"Tracks added to '{city.playlist_name}': {tracks_added}")
     if no_track_match:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
     if add_failures:
@@ -326,5 +255,61 @@ def run() -> None:
         print(f"Venue scrape failures: {'; '.join(scrape_failures)}")
 
 
+def _select_cities(argv: list[str]) -> list[City]:
+    if not argv:
+        return list(CITIES.values())
+    key = argv[0]
+    if key not in CITIES:
+        valid = ", ".join(sorted(CITIES))
+        print(f"Unknown city '{key}'. Valid: {valid}")
+        sys.exit(1)
+    return [CITIES[key]]
+
+
+def _run_all(selected: list[City]) -> None:
+    load_client(AUTH_PATH)
+    for city in selected:
+        run(city)
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = sys.argv[1:] if argv is None else argv
+    load_dotenv()
+    try:
+        lastfm_api_key = os.environ["LASTFM_API_KEY"]
+    except KeyError:
+        print("Missing LASTFM_API_KEY — copy .env.example to .env and fill in your credentials.")
+        sys.exit(1)
+    set_api_key(lastfm_api_key)
+
+    selected = _select_cities(argv)
+
+    try:
+        _run_all(selected)
+    except YTMusicAuthError as exc:
+        print(f"YouTube Music authentication failed: {exc}")
+        if not _handle_auth_failure(AUTH_PATH):
+            sys.exit(1)
+        try:
+            _run_all(selected)
+        except Exception as retry_exc:  # noqa: BLE001
+            print(f"Authentication still failed: {retry_exc}")
+            sys.exit(1)
+    except Exception as exc:  # noqa: BLE001 - expired cookie surfaces here as a non-YTMusicError type
+        print(f"YouTube Music authentication failed (during startup): {exc}")
+        if not _handle_auth_failure(AUTH_PATH):
+            sys.exit(1)
+        try:
+            _run_all(selected)
+        except Exception as retry_exc:  # noqa: BLE001
+            print(f"Authentication still failed: {retry_exc}")
+            sys.exit(1)
+
+    written = [city.html_path for city in selected]
+    _push_html_to_github(written)
+    for path in written:
+        webbrowser.open(path.resolve().as_uri())
+
+
 if __name__ == "__main__":
-    run()
+    main()
