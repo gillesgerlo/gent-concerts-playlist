@@ -3,7 +3,10 @@ import html
 from datetime import date, datetime
 from pathlib import Path
 
-COLUMNS = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
+COLUMNS = [
+    "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
+    "Address", "Start Time", "Free Entry",
+]
 
 
 def _format_date(iso_date: str) -> str:
@@ -43,7 +46,7 @@ def render_html(rows: list[dict]) -> str:
     for row in rows:
         cells = []
         for col in COLUMNS:
-            value = row[col] or ""
+            value = row.get(col) or ""
             if col == "Ticket/Event Link":
                 if value:
                     cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
@@ -53,8 +56,8 @@ def render_html(rows: list[dict]) -> str:
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
             else:
                 cells.append(f"<td>{html.escape(value)}</td>")
-        venue_attr = html.escape(row["Venue"] or "")
-        genre_attr = html.escape(row["Genre"] or "")
+        venue_attr = html.escape(row.get("Venue") or "")
+        genre_attr = html.escape(row.get("Genre") or "")
         body_rows.append(f'<tr data-venue="{venue_attr}" data-genre="{genre_attr}">{"".join(cells)}</tr>')
 
     venue_options = _filter_options(rows, "Venue")

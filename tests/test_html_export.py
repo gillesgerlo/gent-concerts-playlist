@@ -156,3 +156,31 @@ def test_write_html_writes_upcoming_rows_to_html_path(tmp_path):
     content = html_path.read_text(encoding="utf-8")
     assert "Future Band" in content
     assert "Past Band" not in content
+
+
+def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():
+    # Simulates a CSV row read before the Address/Start Time/Free Entry
+    # columns existed -- render_html must not KeyError on it.
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "Soul", "Event Description": "A great show.",
+        "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows)
+
+    assert "Future Band" in html
+
+
+def test_render_html_includes_address_start_time_and_free_entry_when_present():
+    rows = [{
+        "Venue": "Charlatan", "Date": "2026-09-18", "Band": "FROZE",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://x",
+        "Address": "Vlasmarkt 6, 9000 Gent", "Start Time": "20:30", "Free Entry": "No",
+    }]
+
+    html = render_html(rows)
+
+    assert "Vlasmarkt 6, 9000 Gent" in html
+    assert "20:30" in html
