@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.viernulvier import _parse
+from scrapers.gent.viernulvier import _parse
 
 FIXTURE = (Path(__file__).parent / "fixtures" / "viernulvier.html").read_text(encoding="utf-8")
 
@@ -36,7 +36,7 @@ def test_description_defaults_to_empty_string_when_tagline_is_absent():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.viernulvier as viernulvier
+    import scrapers.gent.viernulvier as viernulvier
 
     monkeypatch.setattr(viernulvier, "_fetch_html", lambda: FIXTURE)
     concerts = viernulvier.ViernulvierScraper().scrape()

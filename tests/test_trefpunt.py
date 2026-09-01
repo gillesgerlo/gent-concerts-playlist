@@ -2,7 +2,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.trefpunt import _parse
+from scrapers.gent.trefpunt import _parse
 
 PAGE = (Path(__file__).parent / "fixtures" / "trefpunt.html").read_text(encoding="utf-8")
 
@@ -59,7 +59,7 @@ def test_non_concertzaal_room_is_excluded():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.trefpunt as trefpunt
+    import scrapers.gent.trefpunt as trefpunt
 
     monkeypatch.setattr(trefpunt, "_fetch_html", lambda: PAGE)
     concerts = trefpunt.TrefpuntScraper().scrape()

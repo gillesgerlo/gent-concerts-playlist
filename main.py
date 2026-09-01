@@ -56,7 +56,7 @@ def _search_query(band: str) -> str:
     # so for an " x " split we keep whichever side isn't quote-wrapped
     # rather than always taking the first part.
     #
-    # UiTinVlaanderen-sourced listings (scrapers/uitinvlaanderen.py) use
+    # UiTinVlaanderen-sourced listings (scrapers/uit.py) use
     # "ActName @ FestivalName YYYY" for per-act festival entries, so "@" is
     # included in the separator set above too.
     text = band

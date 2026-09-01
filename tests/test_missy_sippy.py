@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.missy_sippy import _parse
+from scrapers.gent.missy_sippy import _parse
 
 FIXTURE = (Path(__file__).parent / "fixtures" / "missy_sippy.html").read_text(encoding="utf-8")
 
@@ -46,7 +46,7 @@ def test_year_rolls_over_when_month_day_already_passed_this_year():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.missy_sippy as missy_sippy
+    import scrapers.gent.missy_sippy as missy_sippy
 
     monkeypatch.setattr(missy_sippy, "_fetch_html", lambda: FIXTURE)
     concerts = missy_sippy.MissySippyScraper().scrape()

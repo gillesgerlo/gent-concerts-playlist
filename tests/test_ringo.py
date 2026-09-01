@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.ringo import _parse
+from scrapers.gent.ringo import _parse
 
 PAGE = (Path(__file__).parent / "fixtures" / "ringo.html").read_text(encoding="utf-8")
 
@@ -44,7 +44,7 @@ def test_malformed_date_entry_is_skipped_not_fatal():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.ringo as ringo
+    import scrapers.gent.ringo as ringo
 
     monkeypatch.setattr(ringo, "_fetch_html", lambda: PAGE)
     concerts = ringo.RingoScraper().scrape()

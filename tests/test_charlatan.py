@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.charlatan import _parse
+from scrapers.gent.charlatan import _parse
 
 PAGE1 = (Path(__file__).parent / "fixtures" / "charlatan_page1.html").read_text(encoding="utf-8")
 PAGE2 = (Path(__file__).parent / "fixtures" / "charlatan_page2.html").read_text(encoding="utf-8")
@@ -63,7 +63,7 @@ def test_malformed_date_entry_is_skipped_not_fatal():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.charlatan as charlatan
+    import scrapers.gent.charlatan as charlatan
 
     monkeypatch.setattr(charlatan, "_fetch_pages", lambda: [PAGE1, PAGE2])
     concerts = charlatan.CharlatanScraper().scrape()
@@ -71,7 +71,7 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
 
 
 def test_fetch_pages_follows_rel_next_until_absent(monkeypatch):
-    import scrapers.charlatan as charlatan
+    import scrapers.gent.charlatan as charlatan
 
     fetched_pages = []
 
@@ -86,7 +86,7 @@ def test_fetch_pages_follows_rel_next_until_absent(monkeypatch):
 
 
 def test_fetch_pages_stops_after_a_page_with_no_next_link(monkeypatch):
-    import scrapers.charlatan as charlatan
+    import scrapers.gent.charlatan as charlatan
 
     monkeypatch.setattr(charlatan, "_fetch_page", lambda page: PAGE2)
     pages = charlatan._fetch_pages()

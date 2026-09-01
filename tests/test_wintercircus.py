@@ -2,7 +2,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from scrapers.wintercircus import _parse
+from scrapers.gent.wintercircus import _parse
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "wintercircus.json").read_text(encoding="utf-8"))
 
@@ -58,7 +58,7 @@ def test_missing_ticket_url_falls_back_to_the_site_agenda():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.wintercircus as wintercircus
+    import scrapers.gent.wintercircus as wintercircus
 
     monkeypatch.setattr(wintercircus, "_fetch_events", lambda: FIXTURE)
     concerts = wintercircus.WintercircusScraper().scrape()
@@ -66,7 +66,7 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
 
 
 def test_fetch_events_pages_until_all_items_are_collected(monkeypatch, fake_response):
-    import scrapers.wintercircus as wintercircus
+    import scrapers.gent.wintercircus as wintercircus
 
     page_1 = {"data": {"total": 3, "items": [{"id": "1"}, {"id": "2"}]}}
     page_2 = {"data": {"total": 3, "items": [{"id": "3"}]}}

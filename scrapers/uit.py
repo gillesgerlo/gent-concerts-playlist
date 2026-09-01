@@ -5,14 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 import config
-from scrapers.bar_lume import VENUE as BAR_LUME_VENUE
 from scrapers.base import Concert
-from scrapers.charlatan import VENUE as CHARLATAN_VENUE
-from scrapers.missy_sippy import VENUE as MISSY_SIPPY_VENUE
-from scrapers.ringo import VENUE as RINGO_VENUE
-from scrapers.trefpunt import VENUE as TREFPUNT_VENUE
-from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
-from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
 
 URL = "https://www.uitinvlaanderen.be/api/graphql"
 SITE_BASE_URL = "https://www.uitinvlaanderen.be"
@@ -20,26 +13,8 @@ VENUE = "UiTinVlaanderen"
 
 # UiTdatabank taxonomy codes (Event.types[].id) — "concerts and festivals".
 EVENT_TYPE_IDS = ["0.50.4.0.0", "0.5.0.0.0"]
-GENT_NIS_CODE = "nis-44021"
 PAGE_SIZE = 50
 TIMEOUT = 10
-
-# Venues already scraped directly by their own dedicated scraper. Excluded
-# here so the same real-world concert doesn't get a second CSV row / a
-# second playlist add under a differently-formatted venue name — confirmed
-# live that UiTdatabank's own location name for these venues doesn't match
-# this project's own VENUE constant verbatim (e.g. "Kunstencentrum
-# VIERNULVIER" vs. "VIERNULVIER"), so CsvStore's exact-tuple dedup would
-# not catch the duplicate on its own.
-KNOWN_VENUE_NAMES = (
-    MISSY_SIPPY_VENUE,
-    VIERNULVIER_VENUE,
-    WINTERCIRCUS_VENUE,
-    CHARLATAN_VENUE,
-    TREFPUNT_VENUE,
-    RINGO_VENUE,
-    BAR_LUME_VENUE,
-)
 
 SEARCH_QUERY = """
 query GetEventSearch($limit: Float, $offset: Float, $eventTypes: [String!], $nisCodes: [String!], $dateFrom: DateTimeISO, $dateTo: DateTimeISO) {
@@ -70,11 +45,11 @@ def _detail_page_url(event_id: str, name: str) -> str:
     return f"{SITE_BASE_URL}/agenda/e/{_slugify(name)}/{event_id}"
 
 
-def _is_known_venue(location_name: str) -> bool:
+def _is_known_venue(location_name: str, known_venue_names: tuple[str, ...]) -> bool:
     normalized = location_name.casefold()
     return any(
         known.casefold() in normalized or normalized in known.casefold()
-        for known in KNOWN_VENUE_NAMES
+        for known in known_venue_names
     )
 
 
@@ -82,7 +57,7 @@ def _strip_html(html: str) -> str:
     return BeautifulSoup(html, "lxml").get_text(separator=" ", strip=True)
 
 
-def _fetch_events(today: date) -> list[dict]:
+def _fetch_events(today: date, nis_code: str) -> list[dict]:
     cutoff = today + timedelta(days=config.WINDOW_DAYS)
     date_from = f"{today.isoformat()}T00:00:00.000Z"
     # Inclusive of the whole last day, matching filter_upcoming's
@@ -101,7 +76,7 @@ def _fetch_events(today: date) -> list[dict]:
                     "limit": PAGE_SIZE,
                     "offset": offset,
                     "eventTypes": EVENT_TYPE_IDS,
-                    "nisCodes": [GENT_NIS_CODE],
+                    "nisCodes": [nis_code],
                     "dateFrom": date_from,
                     "dateTo": date_to,
                 },
@@ -120,12 +95,12 @@ def _fetch_events(today: date) -> list[dict]:
     return items
 
 
-def _parse(items: list[dict]) -> list[Concert]:
+def _parse(items: list[dict], known_venue_names: tuple[str, ...]) -> list[Concert]:
     concerts = []
     for item in items:
         try:
             location_name = item["location"]["name"]
-            if _is_known_venue(location_name):
+            if _is_known_venue(location_name, known_venue_names):
                 continue
 
             event_date = datetime.fromisoformat(
@@ -147,6 +122,11 @@ def _parse(items: list[dict]) -> list[Concert]:
     return concerts
 
 
-class UitinvlaanderenScraper:
+class UitScraper:
+    def __init__(self, nis_code: str, known_venue_names: tuple[str, ...]):
+        self.nis_code = nis_code
+        self.known_venue_names = known_venue_names
+
     def scrape(self) -> list[Concert]:
-        return _parse(_fetch_events(date.today()))
+        items = _fetch_events(date.today(), self.nis_code)
+        return _parse(items, self.known_venue_names)

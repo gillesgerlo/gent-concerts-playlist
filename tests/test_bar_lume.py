@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from scrapers.bar_lume import URL, _parse
+from scrapers.gent.bar_lume import URL, _parse
 
 PAGE1 = (Path(__file__).parent / "fixtures" / "bar_lume.html").read_text(encoding="utf-8")
 PAGE2 = (Path(__file__).parent / "fixtures" / "bar_lume_page2.html").read_text(encoding="utf-8")
@@ -66,7 +66,7 @@ def test_separator_variant_with_colon_is_parsed():
 
 
 def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
-    import scrapers.bar_lume as bar_lume
+    import scrapers.gent.bar_lume as bar_lume
 
     monkeypatch.setattr(bar_lume, "_fetch_pages", lambda today: [PAGE1, PAGE2])
     concerts = bar_lume.BarLumeScraper().scrape()
@@ -74,7 +74,7 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
 
 
 def test_fetch_pages_fetches_current_and_next_month(monkeypatch):
-    import scrapers.bar_lume as bar_lume
+    import scrapers.gent.bar_lume as bar_lume
 
     fetched = []
 
@@ -89,7 +89,7 @@ def test_fetch_pages_fetches_current_and_next_month(monkeypatch):
 
 
 def test_fetch_pages_rolls_over_to_next_year_in_december(monkeypatch):
-    import scrapers.bar_lume as bar_lume
+    import scrapers.gent.bar_lume as bar_lume
 
     fetched = []
 
