@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from pathlib import Path
 
@@ -8,18 +9,16 @@ FIXTURE = (Path(__file__).parent.parent / "fixtures" / "het_entrepot.html").read
 TODAY = date(2026, 9, 1)
 
 
-def test_parses_at_least_one_concert():
-    concerts = _parse(FIXTURE, today=TODAY)
-    assert len(concerts) >= 1
-
-
 def test_music_event_count_matches_fixture():
     # The trimmed fixture has 51 agenda cards. Non-music entries dropped:
     # 11 workshops, 3 infosessies, 2 café-avonden (bar), 2 expo/film,
     # 1 rommelmarkt, 7 theater (Team Jacques), 1 party, 1 fuif,
-    # 3 klerenverkoop (vintage), 6 tango -> 36 dropped, 15 music events.
+    # 3 klerenverkoop (vintage), 6 tango, plus 12 auto-generated single-day
+    # "CONTAINERPARK D/M" child rows -> 48 dropped, 3 real music events:
+    # the CONTAINERPARK umbrella, SOUNDLAB TAKES OVER CONTAINERPARK, and
+    # Hellfort – Metalfestival.
     concerts = _parse(FIXTURE, today=TODAY)
-    assert len(concerts) == 15
+    assert len(concerts) == 3
 
 
 def test_all_rows_are_this_venue_with_real_dates():
@@ -33,7 +32,18 @@ def test_pins_exact_band_date_pairs():
     concerts = _parse(FIXTURE, today=TODAY)
     pairs = {(c.band, c.date) for c in concerts}
     assert ("SOUNDLAB TAKES OVER CONTAINERPARK", date(2026, 8, 29)) in pairs
-    assert ("CONTAINERPARK 27/8", date(2026, 8, 27)) in pairs
+    assert ("CONTAINERPARK Summer 2026 in Bruges", date(2026, 8, 14)) in pairs
+    # extern-event with an empty data-filter, kept via its #CONCERT/OPTREDEN
+    # tag token - guards against a naive "festival" substring exclusion.
+    assert ("Hellfort – Metalfestival", date(2026, 9, 26)) in pairs
+
+
+def test_daily_child_rows_are_dropped():
+    concerts = _parse(FIXTURE, today=TODAY)
+    bands = {c.band for c in concerts}
+    # The 12 "CONTAINERPARK 27/8" .. "CONTAINERPARK 13/9" child rows.
+    assert not any(re.search(r"\s\d{1,2}/\d{1,2}$", b) for b in bands)
+    assert "CONTAINERPARK 27/8" not in bands
 
 
 def test_multi_day_entry_uses_start_date():

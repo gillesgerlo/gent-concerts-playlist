@@ -14,8 +14,8 @@ VENUE = "Het Entrepot"
 # Het Entrepot's agenda mixes live music with workshops, markets, expos,
 # film screenings, talks and parties. Every card carries its event type(s)
 # in a ``data-filter`` JSON array and/or ``/agenda/type/<x>/`` + ``/tag/<x>/``
-# links inside ``div.tags``. These tokens (or, as a fallback, keywords in the
-# title) mark a card as *not* a concert.
+# links inside ``div.tags``. These tokens mark a card as *not* a concert; the
+# title is only scanned for them when a card exposes no category tokens at all.
 EXCLUDED_TYPES = {
     "workshop",
     "expo",
@@ -23,7 +23,6 @@ EXCLUDED_TYPES = {
     "filmscreening",
     "lezing",
     "infosessie",
-    "markt",
     "rommelmarkt",
     "party",
     "fuif",
@@ -38,6 +37,11 @@ EXCLUDED_TYPES = {
 # ``extern-event`` is bookkeeping, not an event type - ignore it when deciding
 # whether a card exposes a category at all.
 _NOISE_TOKENS = {"extern-event"}
+
+# Het Entrepot auto-generates one row per day for a multi-day series, titled
+# "<Series> D/M" (e.g. "CONTAINERPARK 27/8"). Keep the umbrella entry, drop
+# the daily children - a real act's name never ends in a bare D/M date.
+_DAILY_CHILD_RE = re.compile(r"\s\d{1,2}\s*/\s*\d{1,2}\s*$")
 
 _TYPE_SLUG_RE = re.compile(r"/(?:type|tag)/([^/]+)/")
 _DAY_SLASH_MONTH_RE = re.compile(r"(\d{1,2})\s*/\s*(\d{1,2})")
@@ -88,8 +92,13 @@ def _parse(html: str, today: date) -> list[Concert]:
         try:
             title = card.select_one("h3").get_text(strip=True)
 
-            haystack = " ".join(sorted(_category_tokens(card))) + " " + title.lower()
-            if any(t in haystack for t in EXCLUDED_TYPES):
+            if _DAILY_CHILD_RE.search(title):
+                continue
+
+            tokens = _category_tokens(card)
+            if tokens & EXCLUDED_TYPES:
+                continue
+            if not tokens and any(kw in title.lower() for kw in EXCLUDED_TYPES):
                 continue
 
             time_el = card.select_one("time.date")
