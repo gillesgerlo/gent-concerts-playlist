@@ -116,7 +116,7 @@ def test_fetch_events_sends_the_expected_filter_variables(monkeypatch, fake_resp
     assert variables["dateFrom"] == "2026-08-17T00:00:00.000Z"
     assert variables["dateTo"] == "2026-08-27T23:59:59.999Z"
     assert variables["eventTypes"] == uiv.EVENT_TYPE_IDS
-    assert variables["themes"] == uiv.THEME_IDS
+    assert "themes" not in variables
     assert variables["nisCodes"] == [uiv.GENT_NIS_CODE]
 
 

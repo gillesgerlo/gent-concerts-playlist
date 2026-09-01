@@ -20,10 +20,6 @@ VENUE = "UiTinVlaanderen"
 
 # UiTdatabank taxonomy codes (Event.types[].id) — "concerts and festivals".
 EVENT_TYPE_IDS = ["0.50.4.0.0", "0.5.0.0.0"]
-# UiTdatabank theme codes (Event.themes[].id) roughly matching rock/pop/
-# indie/folk. There is no separate "indie" theme — indie acts are tagged
-# under "Pop en rock" ("1.8.3.1.0"). "1.8.4.0.0" is "Folk en wereldmuziek".
-THEME_IDS = ["1.8.3.1.0", "1.8.4.0.0"]
 GENT_NIS_CODE = "nis-44021"
 PAGE_SIZE = 50
 TIMEOUT = 10
@@ -46,8 +42,8 @@ KNOWN_VENUE_NAMES = (
 )
 
 SEARCH_QUERY = """
-query GetEventSearch($limit: Float, $offset: Float, $eventTypes: [String!], $themes: [String!], $nisCodes: [String!], $dateFrom: DateTimeISO, $dateTo: DateTimeISO) {
-  events(limit: $limit, offset: $offset, eventTypes: $eventTypes, themes: $themes, nisCodes: $nisCodes, dateFrom: $dateFrom, dateTo: $dateTo) {
+query GetEventSearch($limit: Float, $offset: Float, $eventTypes: [String!], $nisCodes: [String!], $dateFrom: DateTimeISO, $dateTo: DateTimeISO) {
+  events(limit: $limit, offset: $offset, eventTypes: $eventTypes, nisCodes: $nisCodes, dateFrom: $dateFrom, dateTo: $dateTo) {
     totalItems
     data {
       ... on Event {
@@ -105,7 +101,6 @@ def _fetch_events(today: date) -> list[dict]:
                     "limit": PAGE_SIZE,
                     "offset": offset,
                     "eventTypes": EVENT_TYPE_IDS,
-                    "themes": THEME_IDS,
                     "nisCodes": [GENT_NIS_CODE],
                     "dateFrom": date_from,
                     "dateTo": date_to,

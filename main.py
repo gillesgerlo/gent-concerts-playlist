@@ -9,7 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import config
-from content_filters import is_excluded_genre, is_party, is_tribute
+from content_filters import is_party, is_tribute
 from csv_store import CsvStore
 from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
@@ -230,7 +230,6 @@ def run() -> None:
     add_failures: list[str] = []
     lookup_errors: list[str] = []
     excluded_cover: list[str] = []
-    excluded_genre: list[str] = []
     excluded_party: list[str] = []
     for i, concert in enumerate(new_concerts, start=1):
         print(f"[{i}/{len(new_concerts)}] {concert.band} @ {concert.venue} ({concert.date})")
@@ -260,10 +259,6 @@ def run() -> None:
         except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
             lookup_errors.append(f"{concert.band} (genre): {exc}")
             genre_errored = True
-
-        if is_excluded_genre(genre):
-            excluded_genre.append(concert.band)
-            continue
 
         is_party_event = is_party(concert.band, detection_text)
 
@@ -323,8 +318,6 @@ def run() -> None:
         print(f"No description found for: {', '.join(no_description_match)}")
     if excluded_cover:
         print(f"Excluded as cover/tribute gigs: {', '.join(excluded_cover)}")
-    if excluded_genre:
-        print(f"Excluded for genre: {', '.join(excluded_genre)}")
     if excluded_party:
         print(f"Skipped playlist add (party/DJ set): {', '.join(excluded_party)}")
     if lookup_errors:

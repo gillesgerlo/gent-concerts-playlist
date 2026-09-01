@@ -433,7 +433,7 @@ def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp
     assert "Excluded as cover/tribute gigs: Six Blade Knife" in out
 
 
-def test_run_excludes_a_metal_show_from_the_csv_and_the_playlist(monkeypatch, tmp_path, capsys):
+def test_run_includes_a_metal_show_now_that_genre_filtering_is_off(monkeypatch, tmp_path, capsys):
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
     monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
@@ -452,11 +452,11 @@ def test_run_excludes_a_metal_show_from_the_csv_and_the_playlist(monkeypatch, tm
 
     main.run()
 
-    assert search_calls == []
-    assert not (tmp_path / "concerts.csv").exists()  # never logged at all
-
+    assert search_calls == ["Beherit"]
+    rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
+    assert any("Beherit" in r for r in rows)
     out = capsys.readouterr().out
-    assert "Excluded for genre: Beherit" in out
+    assert "Excluded for genre" not in out
 
 
 def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp_path, capsys):
