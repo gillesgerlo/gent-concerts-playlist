@@ -8,6 +8,11 @@ bio), and logs a row to `data/concerts.csv`. Each run also regenerates
 `data/concerts.html` — a sortable table of the still-upcoming concerts with
 clickable ticket links — and opens it in your browser.
 
+Concerts are also cross-checked against vndg.be, an independent Gent
+events calendar — see `vndg_crosscheck.py` for what that does and why.
+If you have an existing `data/concerts.csv` from before this feature,
+run `python scripts/migrate_vndg_fields.py` once to add its columns.
+
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 ## Setup
