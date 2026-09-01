@@ -4,7 +4,10 @@ from pathlib import Path
 
 from scrapers.base import Concert
 
-CSV_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
+CSV_HEADER = [
+    "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
+    "Address", "Start Time", "Free Entry",
+]
 
 
 class CsvStore:
@@ -27,6 +30,9 @@ class CsvStore:
         concert: Concert,
         genre: str = "",
         event_description: str = "",
+        address: str = "",
+        start_time: str = "",
+        free_entry: str = "",
     ) -> None:
         is_new_file = not self.path.exists()
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -41,5 +47,8 @@ class CsvStore:
                 genre,
                 event_description,
                 concert.ticket_link,
+                address,
+                start_time,
+                free_entry,
             ])
         self._known.add((concert.venue, concert.date.isoformat(), concert.band))

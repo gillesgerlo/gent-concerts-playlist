@@ -25,16 +25,33 @@ def test_is_known_false_when_csv_does_not_exist_yet(tmp_path):
 def test_append_row_creates_file_with_header_and_row(tmp_path):
     path = tmp_path / "concerts.csv"
     store = CsvStore(path)
-    store.append_row(_concert(), genre="Soul", event_description="Live at Missy Sippy tonight.")
+    store.append_row(
+        _concert(), genre="Soul", event_description="Live at Missy Sippy tonight.",
+        address="Klein Turkije 16, 9000 Gent", start_time="20:30", free_entry="No",
+    )
 
     with path.open(newline="", encoding="utf-8") as f:
         rows = list(csv.reader(f))
 
-    assert rows[0] == ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
+    assert rows[0] == [
+        "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
+        "Address", "Start Time", "Free Entry",
+    ]
     assert rows[1] == [
         "Missy Sippy", "2026-08-20", "Donovan Keith Band", "Soul", "Live at Missy Sippy tonight.",
-        "https://example.com/tickets",
+        "https://example.com/tickets", "Klein Turkije 16, 9000 Gent", "20:30", "No",
     ]
+
+
+def test_append_row_defaults_the_new_columns_to_blank(tmp_path):
+    path = tmp_path / "concerts.csv"
+    store = CsvStore(path)
+    store.append_row(_concert())
+
+    with path.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+
+    assert rows[1][-3:] == ["", "", ""]
 
 
 def test_append_row_then_is_known_true_for_that_concert(tmp_path):
