@@ -171,6 +171,7 @@ def _stub_env_and_auth(monkeypatch):
     monkeypatch.setattr(main, "get_existing_track_ids", lambda playlist_id: set())
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: True)
     monkeypatch.setattr(main, "fetch_description", lambda url: None)
+    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [])
 
 
 def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
@@ -534,3 +535,122 @@ def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Lunasix @ Ledebergse Feesten 2026" in csv_content
+
+
+def test_run_uses_vndgs_dj_tag_to_skip_a_track_lookup_the_keyword_heuristic_would_have_missed(monkeypatch, tmp_path):
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Sunset Session",
+                         description="", ticket_link="http://x")]
+    _stub_venue_scrapers(monkeypatch, concerts)
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
+        "naam": "Sunset Session", "datum": "2026-08-20", "type": "DJ", "gratis": None,
+        "start_time": None, "venues": {"naam": "Missy Sippy", "adres": None},
+    }])
+    search_calls = []
+    monkeypatch.setattr(main, "search_artist", lambda band: search_calls.append(band) or {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "House")
+
+    main.run()
+
+    assert search_calls == []
+
+
+def test_run_backfills_address_start_time_and_free_entry_from_a_vndg_match(monkeypatch, tmp_path):
+    csv_path = tmp_path / "concerts.csv"
+    monkeypatch.setattr(main.config, "CSV_PATH", csv_path)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Donovan Keith Band",
+                         description="", ticket_link="http://x")]
+    _stub_venue_scrapers(monkeypatch, concerts)
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
+        "naam": "Donovan Keith Band", "datum": "2026-08-20", "type": "Live Muziek",
+        "gratis": False, "start_time": "20:30:00",
+        "venues": {"naam": "Missy Sippy", "adres": "Klein Turkije 16, 9000 Gent"},
+    }])
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run()
+
+    import csv
+    with csv_path.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert rows[0]["Address"] == "Klein Turkije 16, 9000 Gent"
+    assert rows[0]["Start Time"] == "20:30"
+    assert rows[0]["Free Entry"] == "No"
+
+
+def test_run_corrects_a_mis_resolved_year_before_filtering_and_storing(monkeypatch, tmp_path):
+    csv_path = tmp_path / "concerts.csv"
+    monkeypatch.setattr(main.config, "CSV_PATH", csv_path)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 400)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    # Scraped with the wrong year -- vndg independently has the same
+    # venue+band on the same day/month in 2027.
+    concerts = [Concert(venue="Missy Sippy", date=date(2026, 1, 15), band="Donovan Keith Band",
+                         description="", ticket_link="http://x")]
+    _stub_venue_scrapers(monkeypatch, concerts)
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
+        "naam": "Donovan Keith Band", "datum": "2027-01-15", "type": "Live Muziek",
+        "gratis": None, "start_time": None, "venues": {"naam": "Missy Sippy", "adres": None},
+    }])
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run()
+
+    import csv
+    with csv_path.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert rows[0]["Date"] == "2027-01-15"
+
+
+def test_run_prints_an_unconfirmed_band_when_vndg_lists_the_venue_and_date_but_not_the_band(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="✰ Missy Sippy",
+                         description="", ticket_link="http://x")]
+    _stub_venue_scrapers(monkeypatch, concerts)
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
+        "naam": "Real Band Name", "datum": "2026-08-20", "type": "Live Muziek",
+        "gratis": None, "start_time": None, "venues": {"naam": "Missy Sippy", "adres": None},
+    }])
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run()
+
+    out = capsys.readouterr().out
+    assert "✰ Missy Sippy" in out
+    assert "vndg" in out.lower()
+
+
+def test_run_survives_a_vndg_fetch_failure(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(main.config, "CSV_PATH", tmp_path / "concerts.csv")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Donovan Keith Band",
+                         description="", ticket_link="http://x")]
+    _stub_venue_scrapers(monkeypatch, concerts)
+    _stub_env_and_auth(monkeypatch)
+
+    def _fail(today, window_days):
+        raise RuntimeError("vndg.be is down")
+
+    monkeypatch.setattr(main, "fetch_events", _fail)
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run()  # must not raise
+
+    out = capsys.readouterr().out
+    assert "vndg.be" in out

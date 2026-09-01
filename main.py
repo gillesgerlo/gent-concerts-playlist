@@ -3,6 +3,7 @@ import re
 import subprocess
 import sys
 import webbrowser
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
@@ -32,6 +33,14 @@ from scrapers.viernulvier import VENUE as VIERNULVIER_VENUE
 from scrapers.viernulvier import ViernulvierScraper
 from scrapers.wintercircus import VENUE as WINTERCIRCUS_VENUE
 from scrapers.wintercircus import WintercircusScraper
+from vndg_crosscheck import (
+    cross_check,
+    enrichment_fields,
+    fetch_events,
+    find_year_correction,
+    index_by_venue,
+    suggests_party_or_dj,
+)
 from yt_auth_har import prompt_for_har_and_save
 from ytmusic_client import (
     YTMusicAuthError,
@@ -216,6 +225,22 @@ def run() -> None:
         except Exception as exc:  # noqa: BLE001 - a single venue must never abort the run
             scrape_failures.append(f"{type(scraper).__name__}: {exc}")
 
+    # vndg.be is an independent, unofficial cross-check (see
+    # vndg_crosscheck.py) -- a fetch failure must never abort the run.
+    try:
+        vndg_index = index_by_venue(fetch_events(today, config.WINDOW_DAYS))
+    except Exception as exc:  # noqa: BLE001 - vndg.be is best-effort, never fatal
+        vndg_index = {}
+        print(f"Warning: vndg.be cross-check unavailable: {exc}")
+
+    # Correct a mis-resolved year (see resolve_year() in scrapers/base.py)
+    # before filtering, since a corrected year can change whether a
+    # concert falls inside the scrape window at all.
+    all_concerts = [
+        replace(concert, date=find_year_correction(concert, vndg_index) or concert.date)
+        for concert in all_concerts
+    ]
+
     upcoming = filter_upcoming(all_concerts, config.WINDOW_DAYS, today)
     new_concerts = filter_new(upcoming, store)
     print(f"Found {len(upcoming)} concerts, {len(new_concerts)} new.")
@@ -232,6 +257,7 @@ def run() -> None:
     excluded_cover: list[str] = []
     excluded_genre: list[str] = []
     excluded_party: list[str] = []
+    unconfirmed_by_vndg: list[str] = []
     for i, concert in enumerate(new_concerts, start=1):
         print(f"[{i}/{len(new_concerts)}] {concert.band} @ {concert.venue} ({concert.date})")
         # Keyword-only tribute/cover-act check against the band name and the
@@ -253,6 +279,10 @@ def run() -> None:
 
         detection_text = f"{concert.description} {event_description_value or ''}"
 
+        vndg_result = cross_check(concert, vndg_index)
+        if vndg_result.unconfirmed:
+            unconfirmed_by_vndg.append(concert.band)
+
         genre: str | None = None
         genre_errored = False
         try:
@@ -265,7 +295,7 @@ def run() -> None:
             excluded_genre.append(concert.band)
             continue
 
-        is_party_event = is_party(concert.band, detection_text)
+        is_party_event = is_party(concert.band, detection_text) or suggests_party_or_dj(vndg_result)
 
         track_ids: list[str] = []
         tracks_errored = False
@@ -301,7 +331,11 @@ def run() -> None:
         if not event_description_value and not description_errored:
             no_description_match.append(concert.band)
 
-        store.append_row(concert, genre=genre or "", event_description=event_description_value or "")
+        address, start_time, free_entry = enrichment_fields(vndg_result)
+        store.append_row(
+            concert, genre=genre or "", event_description=event_description_value or "",
+            address=address, start_time=start_time, free_entry=free_entry,
+        )
         rows_written += 1
 
     tracker.save()
@@ -327,6 +361,8 @@ def run() -> None:
         print(f"Excluded for genre: {', '.join(excluded_genre)}")
     if excluded_party:
         print(f"Skipped playlist add (party/DJ set): {', '.join(excluded_party)}")
+    if unconfirmed_by_vndg:
+        print(f"Not corroborated by vndg.be (double-check band name): {', '.join(unconfirmed_by_vndg)}")
     if lookup_errors:
         print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
