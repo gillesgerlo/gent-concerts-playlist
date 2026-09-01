@@ -8,16 +8,23 @@ events feed (an independent, community-run Gent events calendar) to:
   - catch a scraper picking the wrong text off a venue page (e.g. a
     decorative header instead of the band name) by flagging concerts
     that don't match anything vndg lists for that venue+date
-  - correct a mis-resolved year at a year boundary, where
-    scrapers/base.py's resolve_year() has to guess a year from a
-    day/month pair alone
+  - correct a same-venue+band year mismatch found within vndg's
+    crosscheck fetch window (config.VNDG_CROSSCHECK_WINDOW_DAYS), where
+    scrapers/base.py's resolve_year() had to guess a year from a
+    day/month pair alone and guessed wrong
 
 vndg.be has real coverage gaps of its own (it doesn't track every venue we
 do, and even tracked venues aren't always complete — confirmed by diffing
 this project's own scrapers against vndg.be's dataset), so "no match" is
 only ever used as a soft "double check this" signal. It never drops a
 concert, and it only ever corrects a date when the same venue+band is
-independently listed on the same day/month under a different year.
+independently listed on the same day/month under a different year --
+forward-looking only, and only within the crosscheck window: it does not
+attempt backward/past-date correction (a backward correction could push a
+concert's date before "today", which filter_upcoming would then drop,
+colliding with the "never drop a concert" invariant above), and it cannot
+catch a mismatch further out than config.VNDG_CROSSCHECK_WINDOW_DAYS
+covers.
 
 This is an unofficial integration: vndg.be does not publish this endpoint
 as a supported API, so its schema or the key below could change without
@@ -67,15 +74,40 @@ def _normalize_venue(name: str) -> str:
     return normalized.strip()
 
 
-def _normalize_band(name: str) -> str:
-    normalized = re.sub(r"[^a-z0-9 ]", " ", name.casefold())
+def _normalize_band(name) -> str:
+    # vndg event payloads are untrusted external data -- `naam` has been
+    # observed as non-string (e.g. an int) in the wild, which would
+    # otherwise raise AttributeError on .casefold() below and crash the
+    # whole run outside main.py's fetch-time try/except.
+    normalized = re.sub(r"[^a-z0-9 ]", " ", str(name).casefold())
     return re.sub(r"\s+", " ", normalized).strip()
+
+
+# Minimum length for a *substring* band-name match (not an exact-equality
+# one) to count -- guards against short/generic tokens like "DJ" or "Air"
+# spuriously matching inside an unrelated longer name.
+_MIN_SUBSTRING_MATCH_LEN = 4
 
 
 def _bands_match(a: str, b: str) -> bool:
     if not a or not b:
         return False
-    return a in b or b in a
+    if a == b:
+        return True
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    if len(shorter) < _MIN_SUBSTRING_MATCH_LEN:
+        return False
+    # Require the shorter name to appear as a contiguous run of whole,
+    # whitespace-delimited tokens within the longer one -- not merely as a
+    # raw substring, which would let e.g. "Ada" match inside "Nomadas" or
+    # "Sons" match inside "Parsons Green".
+    shorter_tokens = shorter.split()
+    longer_tokens = longer.split()
+    n = len(shorter_tokens)
+    return any(
+        longer_tokens[i:i + n] == shorter_tokens
+        for i in range(len(longer_tokens) - n + 1)
+    )
 
 
 def index_by_venue(events: list[dict]) -> dict[str, list[dict]]:
@@ -117,8 +149,19 @@ def suggests_party_or_dj(result: CrossCheckResult) -> bool:
 
 def find_year_correction(concert: Concert, index: dict[str, list[dict]]) -> date | None:
     """Return a corrected date if vndg independently lists the same venue
-    and band on the same day/month but a different year -- a sign
-    scrapers/base.py's resolve_year() guessed wrong. None otherwise."""
+    and band on the same day/month but a different year, within the
+    (`main.py`-supplied) crosscheck fetch window -- a sign
+    scrapers/base.py's resolve_year() guessed wrong. None otherwise.
+
+    This is not a general year-boundary fix: two dates sharing (month,
+    day) but differing in year are always >= ~365 calendar days apart, so
+    a match is only reachable at all when the caller's vndg fetch window
+    is wide enough to span both the scraped date and the correct one (see
+    config.VNDG_CROSSCHECK_WINDOW_DAYS). It also makes no attempt to
+    distinguish a forward correction (the intended case) from a backward
+    one -- backward/past-date correction is explicitly out of scope, since
+    it could push a concert's date before `today`, which filter_upcoming
+    would then drop."""
     cband = _normalize_band(concert.band)
     for event in index.get(_normalize_venue(concert.venue), []):
         try:

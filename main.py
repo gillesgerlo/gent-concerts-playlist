@@ -227,15 +227,26 @@ def run() -> None:
 
     # vndg.be is an independent, unofficial cross-check (see
     # vndg_crosscheck.py) -- a fetch failure must never abort the run.
+    # Uses its own, wider VNDG_CROSSCHECK_WINDOW_DAYS rather than the
+    # display/filter WINDOW_DAYS: find_year_correction() below can only
+    # ever match a same-day/month, different-year pair when the fetch
+    # window is wide enough to span both dates (~365+ days), which
+    # WINDOW_DAYS (91) never is.
     try:
-        vndg_index = index_by_venue(fetch_events(today, config.WINDOW_DAYS))
+        vndg_index = index_by_venue(fetch_events(today, config.VNDG_CROSSCHECK_WINDOW_DAYS))
     except Exception as exc:  # noqa: BLE001 - vndg.be is best-effort, never fatal
         vndg_index = {}
         print(f"Warning: vndg.be cross-check unavailable: {exc}")
 
-    # Correct a mis-resolved year (see resolve_year() in scrapers/base.py)
+    # Correct a same-venue+band year mismatch found within vndg's
+    # crosscheck window (see find_year_correction() in vndg_crosscheck.py)
     # before filtering, since a corrected year can change whether a
-    # concert falls inside the scrape window at all.
+    # concert falls inside the scrape window at all. This is forward-
+    # looking only and scoped to what vndg happens to independently
+    # corroborate within VNDG_CROSSCHECK_WINDOW_DAYS -- not a general
+    # year-boundary fix, and it does not attempt backward/past-date
+    # correction (that could push a date before `today`, which
+    # filter_upcoming would then drop).
     all_concerts = [
         replace(concert, date=find_year_correction(concert, vndg_index) or concert.date)
         for concert in all_concerts

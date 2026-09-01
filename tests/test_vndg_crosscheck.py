@@ -54,6 +54,29 @@ def test_bands_match_returns_false_when_either_side_is_empty():
     assert vc._bands_match(vc._normalize_band("FROZE"), "") is False
 
 
+def test_bands_match_returns_false_for_a_short_substring_embedded_in_a_longer_word():
+    # "Ada" is a bare substring of "Nomadas", not a whitespace-delimited
+    # token within it -- unguarded bidirectional substring matching used
+    # to treat this as a match.
+    assert vc._bands_match(vc._normalize_band("Ada"), vc._normalize_band("Nomadas")) is False
+
+
+def test_bands_match_returns_false_when_shorter_is_a_token_embedded_inside_a_longer_word():
+    # "Sons" is a real whitespace-delimited token's length, but it only
+    # ever appears embedded inside "Parsons", never as its own token.
+    assert vc._bands_match(vc._normalize_band("Sons"), vc._normalize_band("Parsons Green")) is False
+
+
+def test_bands_match_returns_false_for_another_short_substring_false_positive():
+    assert vc._bands_match(vc._normalize_band("Air"), vc._normalize_band("Chair")) is False
+
+
+def test_bands_match_returns_false_for_a_short_generic_token_like_dj():
+    # "DJ" is a real, whole token in "DJ Marcelle", but it's too short and
+    # generic on its own to count as a meaningful band-name match.
+    assert vc._bands_match(vc._normalize_band("DJ"), vc._normalize_band("DJ Marcelle")) is False
+
+
 def _event(naam, datum, venue_naam="Charlatan", type_="Live Muziek", gratis=None,
            start_time=None, adres=None):
     return {
@@ -100,6 +123,14 @@ def test_cross_check_does_not_flag_unconfirmed_when_vndg_has_nothing_for_that_ve
     result = vc.cross_check(_concert(venue="Bar Lume"), index)
     assert result.matched_event is None
     assert result.unconfirmed is False
+
+
+def test_cross_check_does_not_crash_when_an_events_naam_is_not_a_string():
+    events = [_event(12345, "2026-09-18")]
+    index = vc.index_by_venue(events)
+    result = vc.cross_check(_concert(), index)
+    assert result.matched_event is None
+    assert result.unconfirmed is True
 
 
 def test_cross_check_does_not_flag_unconfirmed_when_the_venue_matches_but_the_date_does_not():

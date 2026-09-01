@@ -10,8 +10,10 @@ clickable ticket links — and opens it in your browser.
 
 Concerts are also cross-checked against vndg.be, an independent Gent
 events calendar — see `vndg_crosscheck.py` for what that does and why.
-If you have an existing `data/concerts.csv` from before this feature,
-run `python scripts/migrate_vndg_fields.py` once to add its columns.
+If you have an existing `data/concerts.csv` from before this feature, its
+header is upgraded to the new columns automatically the next time the app
+runs; `python scripts/migrate_vndg_fields.py` is still there if you'd
+rather do that upgrade explicitly/standalone instead.
 
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
