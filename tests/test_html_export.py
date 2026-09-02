@@ -168,3 +168,31 @@ def test_render_html_renders_cross_links_to_other_pages():
     html = render_html([], "Gent", other_pages=[("Brugge", "brugge.html")])
     assert 'href="brugge.html"' in html
     assert ">Brugge<" in html
+
+
+def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():
+    # Simulates a CSV row read before the Address/Start Time/Free Entry
+    # columns existed -- render_html must not KeyError on it.
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "Soul", "Event Description": "A great show.",
+        "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent")
+
+    assert "Future Band" in html
+
+
+def test_render_html_includes_address_start_time_and_free_entry_when_present():
+    rows = [{
+        "Venue": "Charlatan", "Date": "2026-09-18", "Band": "FROZE",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://x",
+        "Address": "Vlasmarkt 6, 9000 Gent", "Start Time": "20:30", "Free Entry": "No",
+    }]
+
+    html = render_html(rows, "Gent")
+
+    assert "Vlasmarkt 6, 9000 Gent" in html
+    assert "20:30" in html

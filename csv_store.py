@@ -4,7 +4,18 @@ from pathlib import Path
 
 from scrapers.base import Concert
 
-CSV_HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
+CSV_HEADER = [
+    "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
+    "Address", "Start Time", "Free Entry",
+]
+
+
+def _is_legacy_prefix_header(header: list[str]) -> bool:
+    """True when `header` is a strict, order-preserving prefix of
+    CSV_HEADER -- in practice, the only legacy header this project has
+    ever shipped is the 6-column one CSV_HEADER's three trailing columns
+    (Address/Start Time/Free Entry) were added on top of."""
+    return bool(header) and header != CSV_HEADER and header == CSV_HEADER[: len(header)]
 
 
 class CsvStore:
@@ -17,7 +28,29 @@ class CsvStore:
             return set()
         with self.path.open(newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
-            return {(row["Venue"], row["Date"], row["Band"]) for row in reader}
+            header = reader.fieldnames or []
+            rows = list(reader)
+
+        # Self-heal an existing file still on an old, pre-vndg-crosscheck
+        # header: append_row always writes CSV_HEADER's full 9 values, but
+        # only stamps a header line for a brand-new file, so an existing
+        # file would otherwise keep its stale header forever and every
+        # future row would silently misalign under csv.DictReader (the
+        # three new columns parsed into a restkey list and dropped by
+        # html_export). Rewriting here, once, on load makes
+        # scripts/migrate_vndg_fields.py an optional manual alternative
+        # rather than a load-bearing prerequisite.
+        if _is_legacy_prefix_header(header):
+            self._rewrite_with_current_header(rows)
+
+        return {(row["Venue"], row["Date"], row["Band"]) for row in rows}
+
+    def _rewrite_with_current_header(self, rows: list[dict]) -> None:
+        with self.path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(CSV_HEADER)
+            for row in rows:
+                writer.writerow([row.get(col) or "" for col in CSV_HEADER])
 
     def is_known(self, venue: str, event_date: date, band: str) -> bool:
         return (venue, event_date.isoformat(), band) in self._known
@@ -27,6 +60,9 @@ class CsvStore:
         concert: Concert,
         genre: str = "",
         event_description: str = "",
+        address: str = "",
+        start_time: str = "",
+        free_entry: str = "",
     ) -> None:
         is_new_file = not self.path.exists()
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -41,5 +77,8 @@ class CsvStore:
                 genre,
                 event_description,
                 concert.ticket_link,
+                address,
+                start_time,
+                free_entry,
             ])
         self._known.add((concert.venue, concert.date.isoformat(), concert.band))

@@ -10,6 +10,18 @@ the venue's own ticket page, and logs a row to
 that city's still-upcoming concerts with clickable ticket links, cross-linked
 to the other city's page — and opens it in your browser.
 
+Concerts are also cross-checked against vndg.be, an independent Gent
+events calendar — see `vndg_crosscheck.py` for what that does and why.
+If you have an existing `data/concerts.csv` from before this feature, its
+header is upgraded to the new columns automatically the next time the app
+runs; `python scripts/migrate_vndg_fields.py` is still there if you'd
+rather do that upgrade explicitly/standalone instead. That cross-check
+only ever runs against concerts freshly scraped in a given run, though —
+rows already in the CSV from before this feature don't get re-checked on
+their own. Run `python scripts/vndg_backfill.py` once to cross-check
+every row already in `data/concerts.csv` directly (no re-scraping, no
+playlist/genre lookups) and backfill/correct what it can.
+
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 ## Cities
