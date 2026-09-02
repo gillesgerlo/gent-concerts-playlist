@@ -1,14 +1,23 @@
-# Gent Concerts Playlist
+# Concerts Playlist
 
-Manually-triggered CLI: scrapes Missy Sippy, VIERNULVIER, and Wintercircus for
-concerts in the next 30 days, adds each new one's top 2 YouTube Music tracks
-to the "Upcoming Concerts" YouTube Music playlist, looks up the artist's
-YouTube Music bio (falling back to a Last.fm genre tag when YouTube has no
-bio), and logs a row to `data/concerts.csv`. Each run also regenerates
-`data/concerts.html` — a sortable table of the still-upcoming concerts with
-clickable ticket links — and opens it in your browser.
+Manually-triggered CLI: for each configured city (Gent and Brugge) it scrapes
+that city's venues for concerts in the next 30 days, adds each new one's top 2
+YouTube Music tracks to that city's `Upcoming Concerts <City>` YouTube Music
+playlist, looks up the artist's YouTube Music bio (falling back to a Last.fm
+genre tag when YouTube has no bio), and logs a row to
+`data/<city>/concerts.csv`. Each run also regenerates one HTML page per city
+(`index.html` for Gent, `brugge.html` for Brugge) — each a sortable table of
+that city's still-upcoming concerts with clickable ticket links, cross-linked
+to the other city's page — and opens it in your browser.
 
 Requires Python 3.10+ (the code uses `X | None` union-type syntax).
+
+## Cities
+
+- `python main.py` runs every configured city.
+- `python main.py gent` / `python main.py brugge` runs just that one.
+- Add a new venue by creating a scraper module under `scrapers/<city>/` and
+  appending it to that package's `SCRAPERS` list.
 
 ## Setup
 
@@ -27,9 +36,7 @@ OAuth refresh token would have renewed itself.
 3. Register a free Last.fm API account at https://www.last.fm/api/account/create
    and note the API key.
 4. `cp .env.example .env` and fill in `LASTFM_API_KEY`.
-5. Edit `EXCLUDED_GENRE_KEYWORDS` in `config.py` if you want to filter out
-   different genres than the defaults (metal, hardcore, rap, hiphop).
-6. `python main.py` — on first run, the script will prompt you to authenticate.
+5. `python main.py` — on first run, the script will prompt you to authenticate.
    Follow the on-screen instructions to copy your YouTube Music auth headers
    from DevTools and save them automatically.
 

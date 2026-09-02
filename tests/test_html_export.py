@@ -51,7 +51,7 @@ def test_render_html_includes_band_name_genre_and_ticket_link():
         "Ticket/Event Link": "http://future",
     }]
 
-    html = render_html(rows)
+    html = render_html(rows, "Gent")
 
     assert "Future Band" in html
     assert "Soul" in html
@@ -66,7 +66,7 @@ def test_render_html_escapes_band_name_to_prevent_injection():
         "Ticket/Event Link": "http://future",
     }]
 
-    html = render_html(rows)
+    html = render_html(rows, "Gent")
 
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html
@@ -86,7 +86,7 @@ def test_render_html_includes_venue_filter_options_for_distinct_venues():
         },
     ]
 
-    html = render_html(rows)
+    html = render_html(rows, "Gent")
 
     venue_select_start = html.index('id="venue-filter"')
     venue_select_end = html.index("</select>", venue_select_start)
@@ -110,7 +110,7 @@ def test_render_html_includes_genre_filter_options_for_distinct_genres():
         },
     ]
 
-    html = render_html(rows)
+    html = render_html(rows, "Gent")
 
     genre_select_start = html.index('id="genre-filter"')
     genre_select_end = html.index("</select>", genre_select_start)
@@ -134,7 +134,7 @@ def test_render_html_genre_filter_excludes_blank_values():
         },
     ]
 
-    html = render_html(rows)
+    html = render_html(rows, "Gent")
 
     genre_select_start = html.index('id="genre-filter"')
     genre_select_end = html.index("</select>", genre_select_start)
@@ -151,8 +151,20 @@ def test_write_html_writes_upcoming_rows_to_html_path(tmp_path):
         ["Missy Sippy", "2026-08-20", "Future Band", "", "", "http://future"],
     ])
 
-    write_html(csv_path, html_path, today=date(2026, 8, 13))
+    write_html(csv_path, html_path, "Gent", today=date(2026, 8, 13))
 
     content = html_path.read_text(encoding="utf-8")
     assert "Future Band" in content
     assert "Past Band" not in content
+
+
+def test_render_html_puts_the_city_name_in_the_title_and_heading():
+    html = render_html([], "Brugge")
+    assert "Brugge" in html
+    assert "<title>" in html and "Brugge" in html.split("<title>", 1)[1].split("</title>", 1)[0]
+
+
+def test_render_html_renders_cross_links_to_other_pages():
+    html = render_html([], "Gent", other_pages=[("Brugge", "brugge.html")])
+    assert 'href="brugge.html"' in html
+    assert ">Brugge<" in html

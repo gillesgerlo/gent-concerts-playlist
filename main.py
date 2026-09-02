@@ -232,7 +232,12 @@ def run(city: City) -> None:
 
     tracker.save()
 
-    write_html(city.csv_path, city.html_path)
+    other_pages = [
+        (c.display_name, c.html_path.name)
+        for c in CITIES.values()
+        if c.key != city.key
+    ]
+    write_html(city.csv_path, city.html_path, city.display_name, other_pages=other_pages)
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {rows_written}")

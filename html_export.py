@@ -33,7 +33,19 @@ def _filter_options(rows: list[dict], col: str) -> str:
     return f'<option value="">All</option>{options}'
 
 
-def render_html(rows: list[dict]) -> str:
+def _nav_html(other_pages: list[tuple[str, str]]) -> str:
+    if not other_pages:
+        return ""
+    links = " · ".join(
+        f'<a href="{html.escape(url)}">{html.escape(name)}</a>'
+        for name, url in other_pages
+    )
+    return f'<p class="nav">Also: {links}</p>\n'
+
+
+def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str, str]] = ()) -> str:
+    title = f"Upcoming Concerts — {display_name}"
+    nav = _nav_html(list(other_pages))
     header_cells = "".join(f"<th onclick=\"sortTable({i})\">{col}</th>" for i, col in enumerate(COLUMNS))
 
     venue_col = COLUMNS.index("Venue")
@@ -64,7 +76,7 @@ def render_html(rows: list[dict]) -> str:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Upcoming Ghent Concerts</title>
+<title>{html.escape(title)}</title>
 <style>
   :root {{
     color-scheme: light;
@@ -92,6 +104,11 @@ def render_html(rows: list[dict]) -> str:
   h1 {{
     font-size: 1.5rem;
     font-weight: 600;
+    margin: 0 0 1.25rem;
+  }}
+  .nav {{
+    font-size: 0.85rem;
+    color: var(--text-muted);
     margin: 0 0 1.25rem;
   }}
   .filters {{
@@ -153,8 +170,8 @@ def render_html(rows: list[dict]) -> str:
 </head>
 <body>
 <div class="page">
-<h1>Upcoming Ghent Concerts</h1>
-<div class="filters">
+<h1>{html.escape(title)}</h1>
+{nav}<div class="filters">
   <label>Venue
     <select id="venue-filter">{venue_options}</select>
   </label>
@@ -204,7 +221,14 @@ document.getElementById("genre-filter").addEventListener("change", applyFilters)
 """
 
 
-def write_html(csv_path: Path, html_path: Path, today: date | None = None) -> None:
+def write_html(
+    csv_path: Path,
+    html_path: Path,
+    display_name: str,
+    *,
+    today: date | None = None,
+    other_pages: list[tuple[str, str]] = (),
+) -> None:
     rows = load_upcoming_rows(csv_path, today or date.today())
     html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(render_html(rows), encoding="utf-8")
+    html_path.write_text(render_html(rows, display_name, other_pages), encoding="utf-8")
