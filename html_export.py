@@ -70,8 +70,6 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
                     cells.append('<td>—</td>')
             elif col == "Date":
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
-            elif col == "Event Description":
-                cells.append(f'<td class="event-description">{html.escape(value)}</td>')
             else:
                 cells.append(f"<td>{html.escape(value)}</td>")
         venue_attr = html.escape(row.get("Venue") or "")
@@ -155,14 +153,6 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
     text-align: left;
     padding: 0.65rem 0.9rem;
     font-size: 0.9rem;
-  }}
-  td.event-description {{
-    max-width: 250px;
-    word-break: break-word;
-    white-space: normal;
-  }}
-  tbody tr {{
-    vertical-align: top;
   }}
   th {{
     cursor: pointer;
