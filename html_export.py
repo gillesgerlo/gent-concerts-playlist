@@ -5,7 +5,6 @@ from pathlib import Path
 
 COLUMNS = [
     "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
-    "Address", "Start Time", "Free Entry",
 ]
 
 
@@ -36,19 +35,24 @@ def _filter_options(rows: list[dict], col: str) -> str:
     return f'<option value="">All</option>{options}'
 
 
-def _nav_html(other_pages: list[tuple[str, str]]) -> str:
-    if not other_pages:
-        return ""
-    links = " · ".join(
+def _nav_html(other_pages: list[tuple[str, str]], playlist_id: str | None = None) -> str:
+    links = []
+    if playlist_id:
+        playlist_url = f"https://music.youtube.com/playlist?list={playlist_id}"
+        links.append(f'<a href="{html.escape(playlist_url)}" target="_blank">YouTube Music Playlist</a>')
+    links.extend(
         f'<a href="{html.escape(url)}">{html.escape(name)}</a>'
         for name, url in other_pages
     )
-    return f'<p class="nav">Also: {links}</p>\n'
+    if not links:
+        return ""
+    nav_text = " · ".join(links)
+    return f'<p class="nav">{nav_text}</p>\n'
 
 
-def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str, str]] = ()) -> str:
+def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str, str]] = (), playlist_id: str | None = None) -> str:
     title = f"Upcoming Concerts — {display_name}"
-    nav = _nav_html(list(other_pages))
+    nav = _nav_html(list(other_pages), playlist_id=playlist_id)
     header_cells = "".join(f"<th onclick=\"sortTable({i})\">{col}</th>" for i, col in enumerate(COLUMNS))
 
     venue_col = COLUMNS.index("Venue")
@@ -66,6 +70,8 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
                     cells.append('<td>—</td>')
             elif col == "Date":
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
+            elif col == "Event Description":
+                cells.append(f'<td class="event-description">{html.escape(value)}</td>')
             else:
                 cells.append(f"<td>{html.escape(value)}</td>")
         venue_attr = html.escape(row.get("Venue") or "")
@@ -150,6 +156,14 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
     padding: 0.65rem 0.9rem;
     font-size: 0.9rem;
   }}
+  td.event-description {{
+    max-width: 250px;
+    word-break: break-word;
+    white-space: normal;
+  }}
+  tbody tr {{
+    vertical-align: top;
+  }}
   th {{
     cursor: pointer;
     user-select: none;
@@ -230,8 +244,9 @@ def write_html(
     display_name: str,
     *,
     today: date | None = None,
+    playlist_id: str | None = None,
     other_pages: list[tuple[str, str]] = (),
 ) -> None:
     rows = load_upcoming_rows(csv_path, today or date.today())
     html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(render_html(rows, display_name, other_pages), encoding="utf-8")
+    html_path.write_text(render_html(rows, display_name, other_pages, playlist_id=playlist_id), encoding="utf-8")

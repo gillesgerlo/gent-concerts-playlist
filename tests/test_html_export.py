@@ -184,15 +184,3 @@ def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():
     assert "Future Band" in html
 
 
-def test_render_html_includes_address_start_time_and_free_entry_when_present():
-    rows = [{
-        "Venue": "Charlatan", "Date": "2026-09-18", "Band": "FROZE",
-        "Genre": "", "Event Description": "",
-        "Ticket/Event Link": "http://x",
-        "Address": "Vlasmarkt 6, 9000 Gent", "Start Time": "20:30", "Free Entry": "No",
-    }]
-
-    html = render_html(rows, "Gent")
-
-    assert "Vlasmarkt 6, 9000 Gent" in html
-    assert "20:30" in html

@@ -141,10 +141,10 @@ class _FakeScraper:
         return self._concerts
 
 
-def _fake_city(tmp_path, scrapers):
+def _fake_city(tmp_path, scrapers, key="test"):
     from cities import City
     return City(
-        key="test",
+        key=key,
         display_name="Test",
         playlist_name="Upcoming Concerts Test",
         csv_path=tmp_path / "concerts.csv",
@@ -654,7 +654,7 @@ def test_run_uses_vndgs_dj_tag_to_skip_a_track_lookup_the_keyword_heuristic_woul
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
     concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Sunset Session",
                          description="", ticket_link="http://x")]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))], key="gent")
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
         "naam": "Sunset Session", "datum": "2026-08-20", "type": "DJ", "gratis": None,
@@ -668,32 +668,6 @@ def test_run_uses_vndgs_dj_tag_to_skip_a_track_lookup_the_keyword_heuristic_woul
     main.run(city, "PL1")
 
     assert search_calls == []
-
-
-def test_run_backfills_address_start_time_and_free_entry_from_a_vndg_match(monkeypatch, tmp_path):
-    csv_path = tmp_path / "concerts.csv"
-    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
-    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
-    concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Donovan Keith Band",
-                         description="", ticket_link="http://x")]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
-    _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
-        "naam": "Donovan Keith Band", "datum": "2026-08-20", "type": "Live Muziek",
-        "gratis": False, "start_time": "20:30:00",
-        "venues": {"naam": "Missy Sippy", "adres": "Klein Turkije 16, 9000 Gent"},
-    }])
-    monkeypatch.setattr(main, "search_artist", lambda band: None)
-    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
-
-    main.run(city, "PL1")
-
-    import csv
-    with csv_path.open(newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
-    assert rows[0]["Address"] == "Klein Turkije 16, 9000 Gent"
-    assert rows[0]["Start Time"] == "20:30"
-    assert rows[0]["Free Entry"] == "No"
 
 
 def test_run_corrects_a_mis_resolved_year_before_filtering_and_storing(monkeypatch, tmp_path):
@@ -710,7 +684,7 @@ def test_run_corrects_a_mis_resolved_year_before_filtering_and_storing(monkeypat
     # venue+band on the same day/month in 2027.
     concerts = [Concert(venue="Missy Sippy", date=date(2026, 1, 15), band="Donovan Keith Band",
                          description="", ticket_link="http://x")]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))], key="gent")
     _stub_env_and_auth(monkeypatch)
     captured_window_days = {}
 
@@ -746,7 +720,7 @@ def test_run_prints_an_unconfirmed_band_when_vndg_lists_the_venue_and_date_but_n
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
     concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="✰ Missy Sippy",
                          description="", ticket_link="http://x")]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))], key="gent")
     _stub_env_and_auth(monkeypatch)
     monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [{
         "naam": "Real Band Name", "datum": "2026-08-20", "type": "Live Muziek",
@@ -775,7 +749,7 @@ def test_run_survives_a_vndg_fetch_failure(monkeypatch, tmp_path, capsys):
     _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
     concerts = [Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Donovan Keith Band",
                          description="", ticket_link="http://x")]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))], key="gent")
     _stub_env_and_auth(monkeypatch)
 
     def _fail(today, window_days):

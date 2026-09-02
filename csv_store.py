@@ -6,15 +6,18 @@ from scrapers.base import Concert
 
 CSV_HEADER = [
     "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
-    "Address", "Start Time", "Free Entry",
 ]
 
 
 def _is_legacy_prefix_header(header: list[str]) -> bool:
-    """True when `header` is a strict, order-preserving prefix of
-    CSV_HEADER -- in practice, the only legacy header this project has
-    ever shipped is the 6-column one CSV_HEADER's three trailing columns
-    (Address/Start Time/Free Entry) were added on top of."""
+    """True when `header` is the old 9-column CSV_HEADER (with Address/Start Time/Free Entry),
+    or a strict prefix of the current CSV_HEADER."""
+    legacy_9_col = [
+        "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
+        "Address", "Start Time", "Free Entry",
+    ]
+    if header == legacy_9_col:
+        return True
     return bool(header) and header != CSV_HEADER and header == CSV_HEADER[: len(header)]
 
 
@@ -60,9 +63,6 @@ class CsvStore:
         concert: Concert,
         genre: str = "",
         event_description: str = "",
-        address: str = "",
-        start_time: str = "",
-        free_entry: str = "",
     ) -> None:
         is_new_file = not self.path.exists()
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,8 +77,5 @@ class CsvStore:
                 genre,
                 event_description,
                 concert.ticket_link,
-                address,
-                start_time,
-                free_entry,
             ])
         self._known.add((concert.venue, concert.date.isoformat(), concert.band))

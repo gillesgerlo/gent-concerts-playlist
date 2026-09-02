@@ -20,7 +20,6 @@ from cities import CITIES, City
 from scrapers.base import Concert
 from vndg_crosscheck import (
     cross_check,
-    enrichment_fields,
     fetch_events,
     find_year_correction,
     index_by_venue,
@@ -149,17 +148,19 @@ def run(city: City, playlist_id: str) -> None:
             scrape_failures.append(f"{type(scraper).__name__}: {exc}")
 
     # vndg.be is an independent, unofficial cross-check (see
-    # vndg_crosscheck.py) -- a fetch failure must never abort the run.
+    # vndg_crosscheck.py) -- only used for Gent since it's a Gent-focused
+    # website. A fetch failure must never abort the run.
     # Uses its own, wider VNDG_CROSSCHECK_WINDOW_DAYS rather than the
     # display/filter WINDOW_DAYS: find_year_correction() below can only
     # ever match a same-day/month, different-year pair when the fetch
     # window is wide enough to span both dates (~365+ days), which
     # WINDOW_DAYS (91) never is.
-    try:
-        vndg_index = index_by_venue(fetch_events(today, config.VNDG_CROSSCHECK_WINDOW_DAYS))
-    except Exception as exc:  # noqa: BLE001 - vndg.be is best-effort, never fatal
-        vndg_index = {}
-        print(f"Warning: vndg.be cross-check unavailable: {exc}")
+    vndg_index = {}
+    if city.key == "gent":
+        try:
+            vndg_index = index_by_venue(fetch_events(today, config.VNDG_CROSSCHECK_WINDOW_DAYS))
+        except Exception as exc:  # noqa: BLE001 - vndg.be is best-effort, never fatal
+            print(f"Warning: vndg.be cross-check unavailable: {exc}")
 
     # Correct a same-venue+band year mismatch found within vndg's
     # crosscheck window (see find_year_correction() in vndg_crosscheck.py)
@@ -260,10 +261,8 @@ def run(city: City, playlist_id: str) -> None:
         if not event_description_value and not description_errored:
             no_description_match.append(concert.band)
 
-        address, start_time, free_entry = enrichment_fields(vndg_result)
         store.append_row(
-            concert, genre=genre or "", event_description=event_description_value or "",
-            address=address, start_time=start_time, free_entry=free_entry,
+            concert, genre=genre or "", event_description=event_description_value or ""
         )
         rows_written += 1
 
@@ -274,7 +273,7 @@ def run(city: City, playlist_id: str) -> None:
         for c in CITIES.values()
         if c.key != city.key
     ]
-    write_html(city.csv_path, city.html_path, city.display_name, other_pages=other_pages)
+    write_html(city.csv_path, city.html_path, city.display_name, playlist_id=playlist_id, other_pages=other_pages)
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {rows_written}")
