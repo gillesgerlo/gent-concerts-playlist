@@ -24,10 +24,15 @@ MONTHS = {
 # vocabulary (comedy, poëzie, yoga, dj, karaoke, expo, theater, panelgesprek,
 # thema-avond) plus the recurring in-house formats that appear by name in the
 # listing - the "Comedy Club" nights, the table-football "tornooi" and
-# Vitalski's spoken-word "Dinsdagclub". "tornooi" has to match inside Dutch
-# compounds ("Tafelvoetbaltornooi"), so these are substring matches; the
-# 2-letter "dj" is checked as a whole word so it can't fire inside a band
-# name.
+# Vitalski's spoken-word "Dinsdagclub".
+#
+# Every keyword is matched as a whole word (\b...\b) so common ones like
+# "theater"/"expo"/"yoga" can't silently drop a real act whose name happens
+# to contain them (e.g. "Theater of Tragedy", "Expo '70"). Two deliberate
+# exceptions:
+#   - "tornooi" stays a plain substring - it has to match inside the Dutch
+#     compound "Tafelvoetbaltornooi";
+#   - "dj" gets its own tighter rule so it can't fire mid-word.
 NON_MUSIC_TAGS = {
     "comedy",
     "poëzie",
@@ -46,15 +51,20 @@ NON_MUSIC_TAGS = {
     "dinsdagclub",
 }
 
-_SUBSTRING_TAGS = NON_MUSIC_TAGS - {"dj"}
-_WORD_TAGS_RE = re.compile(r"(?<!\w)dj(?!\w)", re.IGNORECASE)
+_SUBSTRING_TAGS = {"tornooi"}
+_WORD_BOUNDED_TAGS = NON_MUSIC_TAGS - _SUBSTRING_TAGS - {"dj"}
+_WORD_TAGS_RE = re.compile(
+    r"\b(?:" + "|".join(map(re.escape, sorted(_WORD_BOUNDED_TAGS))) + r")\b",
+    re.IGNORECASE,
+)
+_DJ_RE = re.compile(r"(?<!\w)dj(?!\w)", re.IGNORECASE)
 
 
 def _is_non_music(text: str) -> bool:
     lowered = text.lower()
     if any(tag in lowered for tag in _SUBSTRING_TAGS):
         return True
-    return bool(_WORD_TAGS_RE.search(text))
+    return bool(_WORD_TAGS_RE.search(text) or _DJ_RE.search(text))
 
 
 def _parse(html: str, today: date) -> list[Concert]:

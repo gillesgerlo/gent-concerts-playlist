@@ -19,6 +19,16 @@ def test_parses_music_events():
     assert len(concerts) == MUSIC_COUNT
     assert all(c.venue == VENUE for c in concerts)
     assert all(isinstance(c.date, date) for c in concerts)
+    # Every surviving card is a dated event in the snapshot's window; no
+    # exact ``max`` band is pinned since a stand-up act can slip the filter.
+    assert all(date(2026, 9, 1) <= c.date <= date(2027, 3, 1) for c in concerts)
+
+
+def test_both_snuffel_sub_venues_survive_the_filter():
+    concerts = _parse(FIXTURE, today=TODAY)
+    # The brief requires keeping both Snuffel rooms; the Zaal/Café label is
+    # stored in ``description``.
+    assert {"Zaal", "Café"} <= {c.description for c in concerts}
 
 
 def test_pins_exact_band_date_pairs():
@@ -30,12 +40,14 @@ def test_pins_exact_band_date_pairs():
 
 
 def test_year_wraps_for_months_before_today():
-    concerts = _parse(FIXTURE, today=TODAY)
+    # With a November reference date, the Sept/Oct cards are in the past for
+    # the current year, so ``resolve_year`` must roll them into 2027.
+    concerts = _parse(FIXTURE, today=date(2026, 11, 1))
     pairs = {(c.band, c.date) for c in concerts}
-    # "Apsurt" is billed for December -> still 2026; the fixture's Feb/Mar/May
-    # comedy cards are all filtered out, so December is the latest music date.
-    assert ("Apsurt", date(2026, 12, 4)) in pairs
-    assert max(c.date for c in concerts) == date(2026, 12, 19)
+    assert ("Lola & Eastwood", date(2027, 9, 6)) in pairs
+    assert ("Kiss The Anus of a Black Cat & ru·is", date(2027, 9, 18)) in pairs
+    # November+ cards stay in 2026.
+    assert ("Howlin’ Roaddogs", date(2026, 11, 20)) in pairs
 
 
 def test_comedy_tournament_and_dinsdagclub_are_excluded():
