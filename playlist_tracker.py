@@ -7,7 +7,7 @@ from pathlib import Path
 class PlaylistTracker:
     """Maps concert (venue, date, band) to the video IDs added to the playlist."""
 
-    def __init__(self, tracker_path: Path = Path("data/playlist_tracks.json")):
+    def __init__(self, tracker_path: Path):
         self.tracker_path = tracker_path
         self.data = self._load()
 

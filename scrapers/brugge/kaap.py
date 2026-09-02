@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 
 from scrapers.base import DUTCH_MONTHS, Concert, resolve_year
 
+# ``URL`` is the human-facing programme page (kept for reference / debugging);
+# ``AJAX_URL`` below is what this scraper actually fetches.
 URL = "https://www.kaap.be/toont"
 SITE_BASE_URL = "https://www.kaap.be"
 # ``/toont`` server-renders only the first ~15 events; the rest of the
@@ -64,7 +66,9 @@ def _parse(html: str, today: date) -> list[Concert]:
             # ``item--month`` reads e.g. "vr | sep"; the day is a bare number
             # and the markup carries no year, so infer it from ``today``.
             month_text = month_el.get_text(strip=True).split("|")[-1].strip().lower()
-            month = DUTCH_MONTHS[month_text]
+            # Three-letter prefix, like every other scraper, so a "sept"-style
+            # abbreviation still resolves.
+            month = DUTCH_MONTHS[month_text[:3]]
             event_date = resolve_year(int(day_el.get_text(strip=True)), month, today)
 
             href = link_el["href"]
@@ -74,7 +78,11 @@ def _parse(html: str, today: date) -> list[Concert]:
                 venue=VENUE,
                 date=event_date,
                 band=title_el.get_text(strip=True),
-                description=location,
+                # ``location`` is the constant "KAAP | De Werf" for every kept
+                # event; putting it in ``description`` would leak into the CSV's
+                # "Event Description" column via main._lookup_event_description's
+                # fallback. The card carries no blurb, so leave it empty.
+                description="",
                 ticket_link=ticket_link,
             ))
         except Exception:  # noqa: BLE001 - one malformed entry must not drop the whole venue

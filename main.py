@@ -124,19 +124,11 @@ def _push_html_to_github(paths: list[Path]) -> None:
         print(f"Warning: Could not push to GitHub: {exc}")
 
 
-def run(city: City) -> None:
+def run(city: City, playlist_id: str) -> None:
     store = CsvStore(city.csv_path)
     tracker = PlaylistTracker(city.tracker_path)
 
     today = date.today()
-    # get_or_create_playlist is the first real YouTube Music API call.
-    # Browser auth headers aren't validated when the client is built, so
-    # an expired/invalid cookie isn't detected by load_client at all: it
-    # only surfaces here, and with an exception type that does not
-    # subclass ytmusicapi's own YTMusicError hierarchy. It propagates out
-    # of _run_all into main()'s except clauses, which give it the fatal
-    # auth-failure message instead of an uncaught traceback.
-    playlist_id = get_or_create_playlist(city.playlist_name)
 
     all_concerts: list[Concert] = []
     scrape_failures: list[str] = []
@@ -271,19 +263,26 @@ def _select_cities(argv: list[str]) -> list[City]:
     return [CITIES[key]]
 
 
-def _run_all(selected: list[City]) -> None:
+def _run_all(selected: list[City]) -> list[City]:
+    """Run every selected city; return the ones that completed successfully."""
     load_client(AUTH_PATH)
-    for i, city in enumerate(selected):
-        if i == 0:
-            # First city's auth-ish failures (an expired cookie surfaces on the
-            # first real API call, i.e. get_or_create_playlist) propagate to
-            # main()'s re-auth handler — nothing has been written yet.
-            run(city)
-        else:
-            try:
-                run(city)
-            except Exception as exc:  # noqa: BLE001 - one city must never abort the others
-                print(f"City '{city.key}' failed, continuing: {exc}")
+    completed: list[City] = []
+    for city in selected:
+        # get_or_create_playlist is the first real YouTube Music API call.
+        # Browser auth headers aren't validated when the client is built, so
+        # an expired/invalid cookie isn't detected by load_client at all: it
+        # only surfaces here, and with an exception type that does not
+        # subclass ytmusicapi's own YTMusicError hierarchy. Auth is global,
+        # so this one call is deliberately left OUTSIDE the per-city
+        # try/except: it propagates to main()'s re-auth handler from any city.
+        playlist_id = get_or_create_playlist(city.playlist_name)
+        try:
+            run(city, playlist_id)
+        except Exception as exc:  # noqa: BLE001 - one city must never abort the others
+            print(f"City '{city.key}' failed, continuing: {exc}")
+            continue
+        completed.append(city)
+    return completed
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -299,13 +298,13 @@ def main(argv: list[str] | None = None) -> None:
     selected = _select_cities(argv)
 
     try:
-        _run_all(selected)
+        completed = _run_all(selected)
     except YTMusicAuthError as exc:
         print(f"YouTube Music authentication failed: {exc}")
         if not _handle_auth_failure(AUTH_PATH):
             sys.exit(1)
         try:
-            _run_all(selected)
+            completed = _run_all(selected)
         except Exception as retry_exc:  # noqa: BLE001
             print(f"Authentication still failed: {retry_exc}")
             sys.exit(1)
@@ -314,12 +313,17 @@ def main(argv: list[str] | None = None) -> None:
         if not _handle_auth_failure(AUTH_PATH):
             sys.exit(1)
         try:
-            _run_all(selected)
+            completed = _run_all(selected)
         except Exception as retry_exc:  # noqa: BLE001
             print(f"Authentication still failed: {retry_exc}")
             sys.exit(1)
 
-    written = [city.html_path for city in selected]
+    # Only cities that got all the way through write_html have an HTML file on
+    # disk; `git add` on a missing path aborts the whole commit, which would
+    # keep a *successful* city's regenerated page off GitHub Pages.
+    written = [city.html_path for city in completed]
+    if not written:
+        return
     _push_html_to_github(written)
     for path in written:
         webbrowser.open(path.resolve().as_uri())

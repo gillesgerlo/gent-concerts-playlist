@@ -1,10 +1,10 @@
 # Concerts Playlist
 
 Manually-triggered CLI: for each configured city (Gent and Brugge) it scrapes
-that city's venues for concerts in the next 30 days, adds each new one's top 2
+that city's venues for concerts in the next 91 days, adds each new one's top 2
 YouTube Music tracks to that city's `Upcoming Concerts <City>` YouTube Music
-playlist, looks up the artist's YouTube Music bio (falling back to a Last.fm
-genre tag when YouTube has no bio), and logs a row to
+playlist, looks up the artist's genre on Last.fm and the event's description on
+the venue's own ticket page, and logs a row to
 `data/<city>/concerts.csv`. Each run also regenerates one HTML page per city
 (`index.html` for Gent, `brugge.html` for Brugge) — each a sortable table of
 that city's still-upcoming concerts with clickable ticket links, cross-linked
@@ -18,6 +18,19 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 - `python main.py gent` / `python main.py brugge` runs just that one.
 - Add a new venue by creating a scraper module under `scrapers/<city>/` and
   appending it to that package's `SCRAPERS` list.
+
+### One-time migration (existing Gent checkout)
+
+Per-city data moved under `data/<city>/`. The CSV and the playlist tracker are
+gitignored, so they only exist in your own checkout at the old top-level paths.
+Move them before your first run after this change, or the run will treat every
+upcoming Gent concert as new and reprocess it:
+
+```
+mkdir -p data/gent
+mv data/concerts.csv data/gent/concerts.csv
+mv data/playlist_tracks.json data/gent/playlist_tracks.json
+```
 
 ## Setup
 

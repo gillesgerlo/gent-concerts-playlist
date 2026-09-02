@@ -102,7 +102,8 @@ def test_fetch_events_pages_until_all_items_are_collected(monkeypatch, fake_resp
     assert offsets == [0, uiv.PAGE_SIZE]
 
 
-def test_fetch_events_sends_the_expected_filter_variables(monkeypatch, fake_response):
+@pytest.mark.parametrize("nis_code", ["nis-44021", "nis-31005"])
+def test_fetch_events_sends_the_expected_filter_variables(monkeypatch, fake_response, nis_code):
     monkeypatch.setattr(uiv.config, "WINDOW_DAYS", 10)
     captured = {}
 
@@ -112,14 +113,14 @@ def test_fetch_events_sends_the_expected_filter_variables(monkeypatch, fake_resp
 
     monkeypatch.setattr(uiv.requests, "post", _fake_post)
 
-    uiv._fetch_events(date(2026, 8, 17), "nis-44021")
+    uiv._fetch_events(date(2026, 8, 17), nis_code)
 
     variables = captured["variables"]
     assert variables["dateFrom"] == "2026-08-17T00:00:00.000Z"
     assert variables["dateTo"] == "2026-08-27T23:59:59.999Z"
     assert variables["eventTypes"] == uiv.EVENT_TYPE_IDS
     assert "themes" not in variables
-    assert variables["nisCodes"] == ["nis-44021"]
+    assert variables["nisCodes"] == [nis_code]
 
 
 def test_fetch_events_raises_a_clear_error_on_a_graphql_error_response(monkeypatch, fake_response):

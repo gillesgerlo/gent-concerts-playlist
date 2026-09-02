@@ -14,9 +14,21 @@ _DEDICATED: list[tuple[str, Scraper]] = [
     (SNUFFEL_VENUE, SnuffelScraper()),
 ]
 
-# KAAP's venue is billed as "De Werf" in UiTinVlaanderen listings, so the
-# dedup set carries both names.
-KNOWN_VENUE_NAMES: tuple[str, ...] = tuple(name for name, _ in _DEDICATED) + ("De Werf",)
+# Venue names as UiTdatabank spells them for the nis-31005 catch-all — NOT the
+# same vocabulary as our scraper display labels (it calls Snuffel "De Snuffel"
+# and KAAP's hall "KAAP | De Werf"). _is_known_venue substring-matches both ways.
+#
+# Deliberately absent: "Stadsschouwburg" and "MaZ". Cactus programmes only a
+# couple of its shows in those halls, so excluding them wholesale would suppress
+# ~22 concerts no dedicated scraper covers. The handful of residual
+# Cactus-at-Stadsschouwburg duplicates is the cheaper trade.
+KNOWN_VENUE_NAMES: tuple[str, ...] = (
+    "Cactus Muziekcentrum",
+    "Het Entrepot",
+    "KAAP",
+    "De Werf",
+    "Snuffel",  # matches both "De Snuffel" and "Snuffel Hostel"
+)
 
 SCRAPERS: list[tuple[str, Scraper]] = _DEDICATED + [
     (UIT_VENUE, UitScraper(BRUGGE_NIS_CODE, KNOWN_VENUE_NAMES)),

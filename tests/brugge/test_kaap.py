@@ -53,6 +53,14 @@ def test_events_outside_de_werf_are_excluded():
     assert "Transitional Dance x Infinite Dances" not in bands  # Martelarenplein | Leuven
 
 
+def test_description_is_left_empty_rather_than_repeating_the_venue():
+    # The location string is the constant "KAAP | De Werf" for every kept event;
+    # it must not end up as the CSV's "Event Description" fallback.
+    concerts = _parse(FIXTURE, today=TODAY)
+    assert concerts
+    assert all(c.description == "" for c in concerts)
+
+
 def test_ticket_links_are_absolute_kaap_urls():
     concerts = _parse(FIXTURE, today=TODAY)
     assert concerts

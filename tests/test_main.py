@@ -260,12 +260,16 @@ def test_main_isolates_a_failing_city_from_the_rest(monkeypatch, tmp_path, capsy
     city1 = _city("beta", [("Missy Sippy", _FakeScraper([]))])
     monkeypatch.setattr(main, "CITIES", {"alpha": city0, "beta": city1})
 
-    def _playlist(title):
-        if title == city1.playlist_name:
+    # The failure has to come from inside run() — get_or_create_playlist now
+    # runs before the per-city try/except on purpose, because auth is global.
+    def _existing_track_ids(playlist_id):
+        if _existing_track_ids.calls:
             raise RuntimeError("beta pipeline blew up")
-        return "PL1"
+        _existing_track_ids.calls.append(playlist_id)
+        return set()
 
-    monkeypatch.setattr(main, "get_or_create_playlist", _playlist)
+    _existing_track_ids.calls = []
+    monkeypatch.setattr(main, "get_existing_track_ids", _existing_track_ids)
 
     main.main([])  # all cities; must not raise and must not sys.exit
 
@@ -275,6 +279,77 @@ def test_main_isolates_a_failing_city_from_the_rest(monkeypatch, tmp_path, capsy
     out = capsys.readouterr().out
     assert "City 'beta' failed, continuing:" in out
     assert "authentication failed" not in out
+
+
+def test_main_publishes_only_the_cities_that_completed(monkeypatch, tmp_path, capsys):
+    # A failed city never reaches write_html, so its HTML file does not exist.
+    # Handing that path to `git add` fails the whole commit and would keep the
+    # *successful* city's regenerated page off GitHub Pages.
+    from cities import City
+
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    def _city(key):
+        base = tmp_path / key
+        return City(
+            key=key,
+            display_name=key.title(),
+            playlist_name=f"Upcoming Concerts {key.title()}",
+            csv_path=base / "concerts.csv",
+            html_path=base / "listing.html",
+            tracker_path=base / "playlist_tracks.json",
+            scrapers=[("Missy Sippy", _FakeScraper([]))],
+        )
+
+    city0, city1 = _city("alpha"), _city("beta")
+    monkeypatch.setattr(main, "CITIES", {"alpha": city0, "beta": city1})
+
+    def _existing_track_ids(playlist_id):
+        if _existing_track_ids.calls:
+            raise RuntimeError("beta pipeline blew up")
+        _existing_track_ids.calls.append(playlist_id)
+        return set()
+
+    _existing_track_ids.calls = []
+    monkeypatch.setattr(main, "get_existing_track_ids", _existing_track_ids)
+
+    pushed: list[list] = []
+    opened: list[str] = []
+    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
+
+    main.main([])
+
+    assert pushed == [[city0.html_path]]  # beta's non-existent page is not staged
+    assert opened == [city0.html_path.resolve().as_uri()]
+
+
+def test_main_skips_the_push_when_no_city_completed(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
+
+    def _boom(playlist_id):
+        raise RuntimeError("pipeline blew up")
+
+    monkeypatch.setattr(main, "get_existing_track_ids", _boom)
+
+    pushed: list[list] = []
+    opened: list[str] = []
+    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
+
+    main.main(["test"])  # must not raise, must not sys.exit
+
+    assert pushed == []
+    assert opened == []
+    assert "City 'test' failed, continuing:" in capsys.readouterr().out
 
 
 def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
@@ -302,7 +377,7 @@ def test_run_writes_genre_and_event_description_columns(monkeypatch, tmp_path):
 
     monkeypatch.setattr(main, "genre_for_artist", _fake_genre)
 
-    main.run(city)
+    main.run(city, "PL1")
 
     # Genre is looked up unconditionally now, no longer gated on a missing YouTube bio.
     assert genre_calls == ["Full Info Band"]
@@ -328,7 +403,7 @@ def test_run_falls_back_to_listing_blurb_when_page_fetch_has_no_description(monk
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Soul")
     # fetch_description already stubbed to return None by _stub_env_and_auth.
 
-    main.run(city)
+    main.run(city, "PL1")
 
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
     row = next(r for r in rows if "Blurb Band" in r).split(",")
@@ -350,7 +425,7 @@ def test_run_leaves_columns_blank_when_no_genre_or_description_found(monkeypatch
     monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
     # fetch_description already stubbed to return None by _stub_env_and_auth.
 
-    main.run(city)
+    main.run(city, "PL1")
 
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
     row = next(r for r in rows if "Empty Band" in r).split(",")
@@ -382,7 +457,7 @@ def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, cap
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
 
-    main.run(city)  # must not raise
+    main.run(city, "PL1")  # must not raise
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Good Band" in csv_content
@@ -414,7 +489,7 @@ def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(main, "add_tracks", _fake_add_tracks)
 
-    main.run(city)  # must not raise, even though every add_tracks call blows up
+    main.run(city, "PL1")  # must not raise, even though every add_tracks call blows up
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Good Band" in csv_content
@@ -465,7 +540,7 @@ def test_run_excludes_a_cover_gig_from_the_csv_and_the_playlist(monkeypatch, tmp
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: genre_calls.append(band) or "Rock")
 
-    main.run(city)
+    main.run(city, "PL1")
 
     assert search_calls == []  # never even looked up on YouTube Music
     assert genre_calls == []  # nor Last.fm — a confirmed tribute skips every other lookup
@@ -491,7 +566,7 @@ def test_run_includes_a_metal_show_now_that_genre_filtering_is_off(monkeypatch, 
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "black metal")
 
-    main.run(city)
+    main.run(city, "PL1")
 
     assert search_calls == ["Beherit"]
     rows = (tmp_path / "concerts.csv").read_text().strip().splitlines()
@@ -517,7 +592,7 @@ def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
     monkeypatch.setattr(main, "genre_for_artist", lambda band: "Britpop")
 
-    main.run(city)
+    main.run(city, "PL1")
 
     assert search_calls == []  # party: never looked up on YouTube Music
     csv_content = (tmp_path / "concerts.csv").read_text()
@@ -544,7 +619,7 @@ def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatc
     # add_tracks returns False (e.g. a non-"SUCCEEDED" response) rather than raising.
     monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: False)
 
-    main.run(city)
+    main.run(city, "PL1")
 
     out = capsys.readouterr().out
     assert f"Tracks added to '{city.playlist_name}': 0" in out  # not silently counted as a success
@@ -567,7 +642,7 @@ def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp
     monkeypatch.setattr(main, "search_artist", lambda band: None)
     monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
 
-    main.run(city)
+    main.run(city, "PL1")
 
     csv_content = (tmp_path / "concerts.csv").read_text()
     assert "Lunasix @ Ledebergse Feesten 2026" in csv_content

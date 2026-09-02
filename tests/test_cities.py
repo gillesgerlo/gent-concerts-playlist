@@ -23,12 +23,19 @@ def test_city_keys_and_paths_are_unique():
     assert len(keys) == len(set(keys))
     csv_paths = [c.csv_path for c in cities.CITIES.values()]
     html_paths = [c.html_path for c in cities.CITIES.values()]
+    tracker_paths = [c.tracker_path for c in cities.CITIES.values()]
     assert len(csv_paths) == len(set(csv_paths))
     assert len(html_paths) == len(set(html_paths))
+    assert len(tracker_paths) == len(set(tracker_paths))
 
 
 def test_registry_covers_every_defined_city():
-    assert cities.CITIES["gent"] is cities.GENT
+    # City is unhashable (it holds a list of scrapers), so compare by identity
+    # over a sorted-by-key list rather than with a set.
+    registered = [c for _, c in sorted(cities.CITIES.items())]
+    expected = [c for _, c in sorted((c.key, c) for c in (cities.GENT, cities.BRUGGE))]
+    assert registered == expected
+    assert all(a is b for a, b in zip(registered, expected))
 
 
 def test_brugge_city_has_expected_settings():
