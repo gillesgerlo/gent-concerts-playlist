@@ -8,19 +8,32 @@ import ytmusic_client
 class _FakeYTMusicClient:
     """Stands in for ytmusicapi.YTMusic — same method names/shapes as the real client."""
 
-    def __init__(self, search_results=None, artist_by_id=None, playlists=None, playlist_tracks=None):
+    def __init__(
+        self,
+        search_results=None,
+        artist_by_id=None,
+        playlists=None,
+        playlist_tracks=None,
+        album_by_id=None,
+    ):
         self.search_results = search_results or []
         self.artist_by_id = artist_by_id or {}
         self.playlists = playlists or []
         self.playlist_tracks = playlist_tracks or {}
+        self.album_by_id = album_by_id or {}
         self.created_playlists = []
         self.added_items = []
+        self.get_album_calls = []
 
     def search(self, query, filter=None, limit=20):
         return self.search_results
 
     def get_artist(self, channelId):
         return self.artist_by_id[channelId]
+
+    def get_album(self, browseId):
+        self.get_album_calls.append(browseId)
+        return self.album_by_id[browseId]
 
     def get_library_playlists(self):
         return self.playlists
@@ -158,6 +171,33 @@ def test_search_artist_falls_back_to_unfiltered_search_when_the_artists_filter_r
     assert artist["browseId"] == "UC_real"
 
 
+def test_normalize_name_transliterates_diacritics_to_their_base_latin_letter():
+    # "Fanfare Ciocărlia" (the CSV/venue spelling) and "Fanfare Ciocarlia"
+    # (YT Music's own artist name for the same act) must normalize to the
+    # same string so the substring fuzzy-match in search_artist can bridge
+    # them, instead of the accented "ă" being deleted outright (which used
+    # to produce "fanfareciocrlia" — missing the letter, not folded to it).
+    assert ytmusic_client._normalize_name("Fanfare Ciocărlia") == "fanfareciocarlia"
+    assert ytmusic_client._normalize_name("Fanfare Ciocărlia") == ytmusic_client._normalize_name(
+        "Fanfare Ciocarlia"
+    )
+
+
+def test_search_artist_accepts_a_fuzzy_match_that_only_differs_by_diacritics(monkeypatch):
+    # Reproduces a real run: querying "Fanfare Ciocărlia" has no exact
+    # casefold match against YT Music's own "Fanfare Ciocarlia" listing, and
+    # the pre-fix substring fallback also failed because stripping (not
+    # transliterating) the diacritic left the query missing a letter.
+    results = [
+        {"artist": "Fanfare Ciocarlia", "browseId": "UC_ciocarlia"},
+    ]
+    monkeypatch.setattr(ytmusic_client, "_client", _FakeYTMusicClient(search_results=results))
+
+    artist = ytmusic_client.search_artist("Fanfare Ciocărlia")
+
+    assert artist["browseId"] == "UC_ciocarlia"
+
+
 def test_search_artist_returns_none_when_the_unfiltered_fallback_also_has_no_artist_rows(monkeypatch):
     class _FakeClient(_FakeYTMusicClient):
         def search(self, query, filter=None, limit=20):
@@ -210,6 +250,158 @@ def test_get_artist_info_returns_none_description_when_ytmusicapi_gives_an_empty
     _, description = ytmusic_client.get_artist_info("UC_no_bio")
 
     assert description is None
+
+
+def test_get_artist_info_falls_back_to_singles_when_songs_section_is_empty(monkeypatch):
+    # Reproduces a real run: band "PISSBUGS" (browseId
+    # UCTf1zDg4d0DpNNQhJExMp5w) has no top-tracks ("songs") section at all —
+    # artist.get("songs") is {"browseId": None}, no "results" key — but does
+    # have a single. get_artist_info must fall back to resolving a playable
+    # video ID from the single via get_album(browseId) instead of returning
+    # no tracks for an artist that was correctly matched.
+    artist_by_id = {
+        "UC_singles_only": {
+            "name": "PISSBUGS",
+            "description": "A band with only singles on YT Music.",
+            "songs": {"browseId": None},
+            "singles": {
+                "browseId": None,
+                "results": [
+                    {"title": "GANG VAN ZAKEN", "browseId": "MPREb_single1", "type": "Single"},
+                ],
+            },
+        }
+    }
+    album_by_id = {
+        "MPREb_single1": {
+            "title": "GANG VAN ZAKEN",
+            "tracks": [{"videoId": "v_single1", "title": "GANG VAN ZAKEN"}],
+        }
+    }
+    fake_client = _FakeYTMusicClient(artist_by_id=artist_by_id, album_by_id=album_by_id)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    songs, description = ytmusic_client.get_artist_info("UC_singles_only", track_limit=2)
+
+    assert [s["videoId"] for s in songs] == ["v_single1"]
+    assert description == "A band with only singles on YT Music."
+
+
+def test_get_artist_info_falls_back_to_albums_when_songs_and_singles_are_both_empty(monkeypatch):
+    artist_by_id = {
+        "UC_albums_only": {
+            "name": "Some Band",
+            "songs": {"browseId": None},
+            "singles": {"browseId": None, "results": []},
+            "albums": {
+                "browseId": None,
+                "results": [
+                    {"title": "Debut LP", "browseId": "MPREb_album1", "type": "Album"},
+                ],
+            },
+        }
+    }
+    album_by_id = {
+        "MPREb_album1": {
+            "title": "Debut LP",
+            "tracks": [
+                {"videoId": "v_album1_track1", "title": "Opener"},
+                {"videoId": "v_album1_track2", "title": "Second Track"},
+            ],
+        }
+    }
+    fake_client = _FakeYTMusicClient(artist_by_id=artist_by_id, album_by_id=album_by_id)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    songs, _description = ytmusic_client.get_artist_info("UC_albums_only", track_limit=2)
+
+    # Only the album's first (title) track is taken, matching the
+    # "top tracks" semantics of the songs-tab path this replaces.
+    assert [s["videoId"] for s in songs] == ["v_album1_track1"]
+
+
+def test_get_artist_info_combines_singles_then_albums_up_to_track_limit(monkeypatch):
+    artist_by_id = {
+        "UC_mixed": {
+            "name": "Some Band",
+            "songs": {"browseId": None},
+            "singles": {
+                "browseId": None,
+                "results": [{"title": "Single One", "browseId": "MPREb_single1", "type": "Single"}],
+            },
+            "albums": {
+                "browseId": None,
+                "results": [{"title": "Album One", "browseId": "MPREb_album1", "type": "Album"}],
+            },
+        }
+    }
+    album_by_id = {
+        "MPREb_single1": {"title": "Single One", "tracks": [{"videoId": "v_single1", "title": "Single One"}]},
+        "MPREb_album1": {"title": "Album One", "tracks": [{"videoId": "v_album1", "title": "Album One"}]},
+    }
+    fake_client = _FakeYTMusicClient(artist_by_id=artist_by_id, album_by_id=album_by_id)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    songs, _description = ytmusic_client.get_artist_info("UC_mixed", track_limit=2)
+
+    assert [s["videoId"] for s in songs] == ["v_single1", "v_album1"]
+
+
+def test_get_artist_info_stops_fetching_releases_once_track_limit_is_reached(monkeypatch):
+    # With track_limit=1 and two singles available, only the first single's
+    # release should be resolved via get_album — fetching the second would
+    # be a wasted network call.
+    artist_by_id = {
+        "UC_two_singles": {
+            "name": "Some Band",
+            "songs": {"browseId": None},
+            "singles": {
+                "browseId": None,
+                "results": [
+                    {"title": "Single One", "browseId": "MPREb_single1", "type": "Single"},
+                    {"title": "Single Two", "browseId": "MPREb_single2", "type": "Single"},
+                ],
+            },
+        }
+    }
+    album_by_id = {
+        "MPREb_single1": {"title": "Single One", "tracks": [{"videoId": "v_single1", "title": "Single One"}]},
+        "MPREb_single2": {"title": "Single Two", "tracks": [{"videoId": "v_single2", "title": "Single Two"}]},
+    }
+    fake_client = _FakeYTMusicClient(artist_by_id=artist_by_id, album_by_id=album_by_id)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    songs, _description = ytmusic_client.get_artist_info("UC_two_singles", track_limit=1)
+
+    assert [s["videoId"] for s in songs] == ["v_single1"]
+    assert fake_client.get_album_calls == ["MPREb_single1"]
+
+
+def test_get_artist_info_skips_releases_with_no_browse_id_or_no_tracks(monkeypatch):
+    artist_by_id = {
+        "UC_odd_releases": {
+            "name": "Some Band",
+            "songs": {"browseId": None},
+            "singles": {
+                "browseId": None,
+                "results": [
+                    {"title": "No Browse Id", "browseId": None, "type": "Single"},
+                    {"title": "Empty Release", "browseId": "MPREb_empty", "type": "Single"},
+                    {"title": "Good Single", "browseId": "MPREb_good", "type": "Single"},
+                ],
+            },
+        }
+    }
+    album_by_id = {
+        "MPREb_empty": {"title": "Empty Release", "tracks": []},
+        "MPREb_good": {"title": "Good Single", "tracks": [{"videoId": "v_good", "title": "Good Single"}]},
+    }
+    fake_client = _FakeYTMusicClient(artist_by_id=artist_by_id, album_by_id=album_by_id)
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    songs, _description = ytmusic_client.get_artist_info("UC_odd_releases", track_limit=2)
+
+    assert [s["videoId"] for s in songs] == ["v_good"]
 
 
 def test_get_or_create_playlist_returns_existing_id_when_title_matches(monkeypatch):

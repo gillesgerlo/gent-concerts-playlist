@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from pathlib import Path
 
 from ytmusicapi import YTMusic
@@ -24,7 +25,16 @@ def load_client(auth_path: Path) -> None:
 
 
 def _normalize_name(name: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", name.casefold())
+    # NFKD-decompose first so accented letters split into a base letter plus
+    # a combining mark (e.g. "ă" -> "a" + combining breve), then drop the
+    # combining marks. Without this, the plain [^a-z0-9] strip below deletes
+    # the accented letter entirely instead of folding it to its base Latin
+    # letter, which breaks matching a diacritic spelling (venue/CSV text)
+    # against YT Music's own plain-ASCII artist name for the same act (e.g.
+    # "Fanfare Ciocărlia" vs. YT Music's "Fanfare Ciocarlia").
+    decomposed = unicodedata.normalize("NFKD", name.casefold())
+    without_marks = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    return re.sub(r"[^a-z0-9]", "", without_marks)
 
 
 def _normalize_artist_result(result: dict) -> dict | None:
@@ -71,11 +81,43 @@ def search_artist(name: str) -> dict | None:
     return None
 
 
+def _tracks_from_releases(releases: list[dict], limit: int) -> list[dict]:
+    # Resolve playable tracks from an artist's "singles"/"albums" list. Each
+    # release entry only carries the release's own browseId (an album-style
+    # id), not a video ID, so each candidate needs its own get_album() call
+    # to find one — take just the first (title) track per release, and stop
+    # as soon as `limit` tracks are found so a large discography doesn't
+    # trigger one get_album() request per release.
+    tracks = []
+    for release in releases:
+        if len(tracks) >= limit:
+            break
+        browse_id = release.get("browseId")
+        if not browse_id:
+            continue
+        album_tracks = _client.get_album(browse_id).get("tracks") or []
+        if album_tracks:
+            tracks.append(album_tracks[0])
+    return tracks
+
+
 def get_artist_info(channel_id: str, track_limit: int = 2) -> tuple[list[dict], str | None]:
     artist = _client.get_artist(channel_id)
-    songs = artist.get("songs", {}).get("results", [])
+    songs = artist.get("songs", {}).get("results", [])[:track_limit]
     description = artist.get("description") or None
-    return songs[:track_limit], description
+
+    if not songs:
+        # Some artists' overview page (typically small/local acts) has no
+        # top-tracks ("songs") section at all, even when the artist page
+        # itself was matched correctly — fall back to their singles, then
+        # albums, rather than reporting zero tracks for a correct match.
+        singles = artist.get("singles", {}).get("results", []) or []
+        songs = _tracks_from_releases(singles, track_limit)
+        if len(songs) < track_limit:
+            albums = artist.get("albums", {}).get("results", []) or []
+            songs += _tracks_from_releases(albums, track_limit - len(songs))
+
+    return songs, description
 
 
 def get_or_create_playlist(title: str) -> str:
