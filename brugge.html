@@ -328,7 +328,7 @@ function sortTable(colIndex) {
   const table = document.getElementById("concerts");
   const tbody = table.tBodies[0];
   const rows = Array.from(tbody.rows);
-  const ascending = table.dataset.sortCol == colIndex && table.dataset.sortDir !== "asc";
+  const ascending = table.dataset.sortCol != colIndex || table.dataset.sortDir === "desc";
   rows.sort((a, b) => {
     const x = a.cells[colIndex].dataset.sort ?? a.cells[colIndex].innerText;
     const y = b.cells[colIndex].dataset.sort ?? b.cells[colIndex].innerText;
