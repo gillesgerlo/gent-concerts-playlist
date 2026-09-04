@@ -30,7 +30,19 @@
   h1 {
     font-size: 1.5rem;
     font-weight: 600;
+    margin: 0;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin: 0 0 1.25rem;
+  }
+  .top-links {
+    font-size: 0.85rem;
+    white-space: nowrap;
   }
   .nav {
     font-size: 0.85rem;
@@ -96,8 +108,11 @@
 </head>
 <body>
 <div class="page">
-<h1>Upcoming Concerts — Brugge</h1>
-<p class="nav"><a href="https://music.youtube.com/playlist?list=PLBLMxHWQqAK4" target="_blank">YouTube Music Playlist</a> · <a href="index.html">Gent</a></p>
+<div class="header">
+  <h1>Upcoming Concerts — Brugge</h1>
+  <p class="top-links"><a href="https://github.com/gillesgerlo/gent-concerts-playlist" target="_blank">Contribute on GitHub</a> · <a href="https://www.instagram.com/hopeless.fanatics/" target="_blank">Contact me via IG</a></p>
+</div>
+<p class="nav"><a href="https://music.youtube.com/playlist?list=PLBLMxHWQqAK4" target="_blank">YouTube Music Playlist</a> · <a href="index.html">Switch to Gent</a></p>
 <div class="filters">
   <label>Venue
     <select id="venue-filter"><option value="">All</option><option value="&#x27;t Zand Brugge">&#x27;t Zand Brugge</option><option value="Adornesdomein &amp; Jeruzalemkapel">Adornesdomein &amp; Jeruzalemkapel</option><option value="BRUSK">BRUSK</option><option value="Brocante Café">Brocante Café</option><option value="Brugse binnenstad">Brugse binnenstad</option><option value="Burg, 8000 Brugge">Burg, 8000 Brugge</option><option value="CC De Dijk">CC De Dijk</option><option value="Cactus Muziekcentrum">Cactus Muziekcentrum</option><option value="Cinema Lumière Brugge">Cinema Lumière Brugge</option><option value="Concertgebouw">Concertgebouw</option><option value="Concertgebouw - Kamermuziekzaal">Concertgebouw - Kamermuziekzaal</option><option value="Concertgebouw, concertzaal">Concertgebouw, concertzaal</option><option value="Congrescentrum Oud Sint-Jan - Brugge">Congrescentrum Oud Sint-Jan - Brugge</option><option value="De Elf">De Elf</option><option value="De Kelk">De Kelk</option><option value="Engels Klooster">Engels Klooster</option><option value="Engels Klooster Carmersstraat 83b">Engels Klooster Carmersstraat 83b</option><option value="Heilig Hart en Sint-Philippuskerk Steenbrugge">Heilig Hart en Sint-Philippuskerk Steenbrugge</option><option value="Heilig-bloed kapel">Heilig-bloed kapel</option><option value="Het Entrepot">Het Entrepot</option><option value="Het Pannenhuis">Het Pannenhuis</option><option value="Jeugdhuis Thope">Jeugdhuis Thope</option><option value="KAAP">KAAP</option><option value="KOM!,">KOM!,</option><option value="KORF">KORF</option><option value="Koningin Astridpark Brugge">Koningin Astridpark Brugge</option><option value="Koningin astridpark">Koningin astridpark</option><option value="Koninklijke Stadsschouwburg">Koninklijke Stadsschouwburg</option><option value="MaZ">MaZ</option><option value="Magdalenakerk">Magdalenakerk</option><option value="Natuurcentrum Beisbroek">Natuurcentrum Beisbroek</option><option value="Polyvalente zaal in het tuinpaviljoen van &#x27;De Brug&#x27;">Polyvalente zaal in het tuinpaviljoen van &#x27;De Brug&#x27;</option><option value="Provinciaal Hof">Provinciaal Hof</option><option value="Psychiatrisch Ziekenhuis Onze-Lieve-Vrouw">Psychiatrisch Ziekenhuis Onze-Lieve-Vrouw</option><option value="Rode Kruis Opvangcentrum Brugge">Rode Kruis Opvangcentrum Brugge</option><option value="Royal Municipal Theatre">Royal Municipal Theatre</option><option value="Sint-Andriesabdij, Zevenkerken 4">Sint-Andriesabdij, Zevenkerken 4</option><option value="Sint-Gilliskerk">Sint-Gilliskerk</option><option value="Sint-Jacobskerk">Sint-Jacobskerk</option><option value="Sint-Michielskerk">Sint-Michielskerk</option><option value="Sint-Salvatorkathedraal">Sint-Salvatorkathedraal</option><option value="Snuffel Hostel">Snuffel Hostel</option><option value="Sport Vlaanderen Brugge">Sport Vlaanderen Brugge</option><option value="Stadsschouwburg Brugge">Stadsschouwburg Brugge</option><option value="Ter Muiden Veldzicht">Ter Muiden Veldzicht</option><option value="Verschillende locaties">Verschillende locaties</option></select>

@@ -167,7 +167,7 @@ def test_render_html_puts_the_city_name_in_the_title_and_heading():
 def test_render_html_renders_cross_links_to_other_pages():
     html = render_html([], "Gent", other_pages=[("Brugge", "brugge.html")])
     assert 'href="brugge.html"' in html
-    assert ">Brugge<" in html
+    assert ">Switch to Brugge<" in html
 
 
 def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():

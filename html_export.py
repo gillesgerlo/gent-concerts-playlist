@@ -35,19 +35,32 @@ def _filter_options(rows: list[dict], col: str) -> str:
     return f'<option value="">All</option>{options}'
 
 
+GITHUB_URL = "https://github.com/gillesgerlo/gent-concerts-playlist"
+INSTAGRAM_URL = "https://www.instagram.com/hopeless.fanatics/"
+
+
 def _nav_html(other_pages: list[tuple[str, str]], playlist_id: str | None = None) -> str:
     links = []
     if playlist_id:
         playlist_url = f"https://music.youtube.com/playlist?list={playlist_id}"
         links.append(f'<a href="{html.escape(playlist_url)}" target="_blank">YouTube Music Playlist</a>')
     links.extend(
-        f'<a href="{html.escape(url)}">{html.escape(name)}</a>'
+        f'<a href="{html.escape(url)}">Switch to {html.escape(name)}</a>'
         for name, url in other_pages
     )
     if not links:
         return ""
     nav_text = " · ".join(links)
     return f'<p class="nav">{nav_text}</p>\n'
+
+
+def _top_links_html() -> str:
+    return (
+        '<p class="top-links">'
+        f'<a href="{html.escape(GITHUB_URL)}" target="_blank">Contribute on GitHub</a> · '
+        f'<a href="{html.escape(INSTAGRAM_URL)}" target="_blank">Contact me via IG</a>'
+        '</p>'
+    )
 
 
 def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str, str]] = (), playlist_id: str | None = None) -> str:
@@ -111,7 +124,19 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
   h1 {{
     font-size: 1.5rem;
     font-weight: 600;
+    margin: 0;
+  }}
+  .header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin: 0 0 1.25rem;
+  }}
+  .top-links {{
+    font-size: 0.85rem;
+    white-space: nowrap;
   }}
   .nav {{
     font-size: 0.85rem;
@@ -177,7 +202,10 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
 </head>
 <body>
 <div class="page">
-<h1>{html.escape(title)}</h1>
+<div class="header">
+  <h1>{html.escape(title)}</h1>
+  {_top_links_html()}
+</div>
 {nav}<div class="filters">
   <label>Venue
     <select id="venue-filter">{venue_options}</select>

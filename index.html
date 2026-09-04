@@ -30,7 +30,19 @@
   h1 {
     font-size: 1.5rem;
     font-weight: 600;
+    margin: 0;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin: 0 0 1.25rem;
+  }
+  .top-links {
+    font-size: 0.85rem;
+    white-space: nowrap;
   }
   .nav {
     font-size: 0.85rem;
@@ -96,8 +108,11 @@
 </head>
 <body>
 <div class="page">
-<h1>Upcoming Concerts — Gent</h1>
-<p class="nav"><a href="https://music.youtube.com/playlist?list=PLHNvhdg9ZQKM" target="_blank">YouTube Music Playlist</a> · <a href="brugge.html">Brugge</a></p>
+<div class="header">
+  <h1>Upcoming Concerts — Gent</h1>
+  <p class="top-links"><a href="https://github.com/gillesgerlo/gent-concerts-playlist" target="_blank">Contribute on GitHub</a> · <a href="https://www.instagram.com/hopeless.fanatics/" target="_blank">Contact me via IG</a></p>
+</div>
+<p class="nav"><a href="https://music.youtube.com/playlist?list=PLHNvhdg9ZQKM" target="_blank">YouTube Music Playlist</a> · <a href="brugge.html">Switch to Brugge</a></p>
 <div class="filters">
   <label>Venue
     <select id="venue-filter"><option value="">All</option><option value="Anatomisch Theater - Bijlokesite">Anatomisch Theater - Bijlokesite</option><option value="Bar Lume">Bar Lume</option><option value="Bibliotheek de Krook">Bibliotheek de Krook</option><option value="Borluutpark">Borluutpark</option><option value="Café de Loge">Café de Loge</option><option value="Charlatan">Charlatan</option><option value="Chinastraat">Chinastraat</option><option value="Cinema Sphinx">Cinema Sphinx</option><option value="Concertzaal Muziekcentrum De Bijloke">Concertzaal Muziekcentrum De Bijloke</option><option value="Conservatorium, Achtersikkel">Conservatorium, Achtersikkel</option><option value="De Bijloke">De Bijloke</option><option value="De Centrale">De Centrale</option><option value="De Centrale ">De Centrale </option><option value="De Gang">De Gang</option><option value="De Kleine Kunst">De Kleine Kunst</option><option value="De Koer">De Koer</option><option value="De Vierde Zaal">De Vierde Zaal</option><option value="Design Museum Gent">Design Museum Gent</option><option value="Ensemble">Ensemble</option><option value="Eskimofabriek">Eskimofabriek</option><option value="Eskimofabriek - #ANT">Eskimofabriek - #ANT</option><option value="Geheel de Uwe">Geheel de Uwe</option><option value="Gentse binnenstad">Gentse binnenstad</option><option value="Gentse binnentuinen">Gentse binnentuinen</option><option value="Ha Concerts">Ha Concerts</option><option value="Ham Sessions">Ham Sessions</option><option value="Houtdok">Houtdok</option><option value="IOA - Podiumroom">IOA - Podiumroom</option><option value="Industriemuseum">Industriemuseum</option><option value="Kalandenberg">Kalandenberg</option><option value="Kapel Petit">Kapel Petit</option><option value="Kasteelsite Ter Beken">Kasteelsite Ter Beken</option><option value="Kunsthal Gent">Kunsthal Gent</option><option value="Logos tetraëder">Logos tetraëder</option><option value="MIRY concertzaal">MIRY concertzaal</option><option value="Minardschouwburg">Minardschouwburg</option><option value="Miry zaal (conservatorium Gent)">Miry zaal (conservatorium Gent)</option><option value="Missy Sippy">Missy Sippy</option><option value="Muziekcentrum De Bijloke Gent">Muziekcentrum De Bijloke Gent</option><option value="Muziekcentrum Kinky Star">Muziekcentrum Kinky Star</option><option value="Muziekkiosk">Muziekkiosk</option><option value="NTG  Sint Baafsplein">NTG  Sint Baafsplein</option><option value="NTGent Schouwburg">NTGent Schouwburg</option><option value="O.L.V. Sint-Pieterskerk">O.L.V. Sint-Pieterskerk</option><option value="OLV Sint-Pieterskerk">OLV Sint-Pieterskerk</option><option value="Palmarium UGent">Palmarium UGent</option><option value="Parochiekerk Sint-Bernadette">Parochiekerk Sint-Bernadette</option><option value="Paulushuis">Paulushuis</option><option value="Plantentuin Ugent">Plantentuin Ugent</option><option value="Ringo Music Bar">Ringo Music Bar</option><option value="Schouwburg De Minard (via ingang Korianderstraat)">Schouwburg De Minard (via ingang Korianderstraat)</option><option value="Sint Michiels Kerk">Sint Michiels Kerk</option><option value="Sint Niklaaskerk">Sint Niklaaskerk</option><option value="Sint-Baafs kathedraal">Sint-Baafs kathedraal</option><option value="Sint-Baafsabdij">Sint-Baafsabdij</option><option value="Sint-Baafshuis">Sint-Baafshuis</option><option value="Sint-Baafskathedraal">Sint-Baafskathedraal</option><option value="Sint-Bernadettekerk">Sint-Bernadettekerk</option><option value="Sint-Catharinakerk">Sint-Catharinakerk</option><option value="Sint-Coleta Kerk">Sint-Coleta Kerk</option><option value="Sint-Coletakerk">Sint-Coletakerk</option><option value="Theaterzaal NTGent">Theaterzaal NTGent</option><option value="VIERNULVIER">VIERNULVIER</option><option value="Vooruit (concertzaal)">Vooruit (concertzaal)</option><option value="WZC De Liberteyt">WZC De Liberteyt</option><option value="Walstraat (WZC De vijvers )">Walstraat (WZC De vijvers )</option><option value="Wintercircus">Wintercircus</option><option value="Zaal Goedleven">Zaal Goedleven</option><option value="Zorgcampus Glorieux">Zorgcampus Glorieux</option><option value="de Felix, danzaal">de Felix, danzaal</option></select>
