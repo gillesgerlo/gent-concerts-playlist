@@ -7,6 +7,10 @@ COLUMNS = [
     "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
 ]
 
+COLUMN_LABELS = {
+    "Ticket/Event Link": "Links",
+}
+
 
 def _format_date(iso_date: str) -> str:
     parsed = datetime.strptime(iso_date, "%Y-%m-%d").date()
@@ -63,10 +67,24 @@ def _top_links_html() -> str:
     )
 
 
-def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str, str]] = (), playlist_id: str | None = None) -> str:
+def _song_url(video_id: str, playlist_id: str | None) -> str:
+    if playlist_id:
+        return f"https://music.youtube.com/watch?v={video_id}&list={playlist_id}"
+    return f"https://music.youtube.com/watch?v={video_id}"
+
+
+def render_html(
+    rows: list[dict],
+    display_name: str,
+    other_pages: list[tuple[str, str]] = (),
+    playlist_id: str | None = None,
+    track_lookup: dict[str, list[str]] | None = None,
+) -> str:
     title = f"Upcoming Concerts — {display_name}"
     nav = _nav_html(list(other_pages), playlist_id=playlist_id)
-    header_cells = "".join(f"<th onclick=\"sortTable({i})\">{col}</th>" for i, col in enumerate(COLUMNS))
+    header_cells = "".join(
+        f"<th onclick=\"sortTable({i})\">{COLUMN_LABELS.get(col, col)}</th>" for i, col in enumerate(COLUMNS)
+    )
 
     venue_col = COLUMNS.index("Venue")
     genre_col = COLUMNS.index("Genre")
@@ -77,10 +95,15 @@ def render_html(rows: list[dict], display_name: str, other_pages: list[tuple[str
         for col in COLUMNS:
             value = row.get(col) or ""
             if col == "Ticket/Event Link":
+                links = []
                 if value:
-                    cells.append(f'<td><a href="{html.escape(value)}" target="_blank">Tickets</a></td>')
-                else:
-                    cells.append('<td>—</td>')
+                    links.append(f'<a href="{html.escape(value)}" target="_blank">Event</a>')
+                key = f"{row.get('Venue') or ''}|{row.get('Date') or ''}|{row.get('Band') or ''}"
+                video_ids = (track_lookup or {}).get(key)
+                if video_ids:
+                    song_url = _song_url(video_ids[0], playlist_id)
+                    links.append(f'<a href="{html.escape(song_url)}" target="_blank">▶ Listen</a>')
+                cells.append(f'<td>{" · ".join(links) if links else "—"}</td>')
             elif col == "Date":
                 cells.append(f'<td data-sort="{html.escape(value)}">{html.escape(_format_date(value))}</td>')
             else:
@@ -264,7 +287,11 @@ def write_html(
     today: date | None = None,
     playlist_id: str | None = None,
     other_pages: list[tuple[str, str]] = (),
+    track_lookup: dict[str, list[str]] | None = None,
 ) -> None:
     rows = load_upcoming_rows(csv_path, today or date.today())
     html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(render_html(rows, display_name, other_pages, playlist_id=playlist_id), encoding="utf-8")
+    html_path.write_text(
+        render_html(rows, display_name, other_pages, playlist_id=playlist_id, track_lookup=track_lookup),
+        encoding="utf-8",
+    )

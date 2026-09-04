@@ -184,3 +184,62 @@ def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():
     assert "Future Band" in html
 
 
+def test_render_html_labels_the_ticket_column_header_as_links():
+    html = render_html([], "Gent")
+    assert "<th onclick=\"sortTable(5)\">Links</th>" in html
+
+
+def test_render_html_labels_the_ticket_link_as_event():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent")
+
+    assert '<a href="http://future" target="_blank">Event</a>' in html
+
+
+def test_render_html_adds_a_listen_link_when_track_lookup_has_a_matching_entry():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+    track_lookup = {"Missy Sippy|2026-08-20|Future Band": ["abc123", "def456"]}
+
+    html = render_html(rows, "Gent", track_lookup=track_lookup, playlist_id="PL1")
+
+    assert (
+        '<a href="https://music.youtube.com/watch?v=abc123&amp;list=PL1" '
+        'target="_blank">▶ Listen</a>'
+    ) in html
+    assert "def456" not in html
+
+
+def test_render_html_omits_the_listen_link_when_track_lookup_has_no_matching_entry():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent", track_lookup={}, playlist_id="PL1")
+
+    assert "▶ Listen" not in html
+
+
+def test_render_html_listen_link_omits_list_param_without_a_playlist_id():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+    track_lookup = {"Missy Sippy|2026-08-20|Future Band": ["abc123"]}
+
+    html = render_html(rows, "Gent", track_lookup=track_lookup)
+
+    assert '<a href="https://music.youtube.com/watch?v=abc123" target="_blank">▶ Listen</a>' in html
+
+

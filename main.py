@@ -273,7 +273,10 @@ def run(city: City, playlist_id: str) -> None:
         for c in CITIES.values()
         if c.key != city.key
     ]
-    write_html(city.csv_path, city.html_path, city.display_name, playlist_id=playlist_id, other_pages=other_pages)
+    write_html(
+        city.csv_path, city.html_path, city.display_name,
+        playlist_id=playlist_id, other_pages=other_pages, track_lookup=tracker.data,
+    )
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {rows_written}")
