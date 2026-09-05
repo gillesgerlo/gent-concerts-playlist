@@ -3,6 +3,11 @@ from scrapers.uit import VENUE as UIT_VENUE, UitScraper
 
 from .bar_lume import VENUE as BAR_LUME_VENUE, BarLumeScraper
 from .charlatan import VENUE as CHARLATAN_VENUE, CharlatanScraper
+from .chinastraat import (
+    BAR_BRICOLAGE_VENUE,
+    VENUE as CHINASTRAAT_VENUE,
+    ChinastraatScraper,
+)
 from .hot_club_gent import VENUE as HOT_CLUB_GENT_VENUE, HotClubGentScraper
 from .kinky_star import VENUE as KINKY_STAR_VENUE, KinkyStarScraper
 from .missy_sippy import VENUE as MISSY_SIPPY_VENUE, MissySippyScraper
@@ -23,9 +28,13 @@ _DEDICATED: list[tuple[str, Scraper]] = [
     (BAR_LUME_VENUE, BarLumeScraper()),
     (HOT_CLUB_GENT_VENUE, HotClubGentScraper()),
     (KINKY_STAR_VENUE, KinkyStarScraper()),
+    (CHINASTRAAT_VENUE, ChinastraatScraper()),
 ]
 
-KNOWN_VENUE_NAMES: tuple[str, ...] = tuple(name for name, _ in _DEDICATED)
+# ChinastraatScraper emits concerts under two distinct venue names (its own
+# cards carry no venue tag; Bar Bricolage's do) from a single scrape() call,
+# so the second name isn't derivable from _DEDICATED's (label, scraper) pairs.
+KNOWN_VENUE_NAMES: tuple[str, ...] = tuple(name for name, _ in _DEDICATED) + (BAR_BRICOLAGE_VENUE,)
 
 SCRAPERS: list[tuple[str, Scraper]] = _DEDICATED + [
     (UIT_VENUE, UitScraper(GENT_NIS_CODE, KNOWN_VENUE_NAMES)),
