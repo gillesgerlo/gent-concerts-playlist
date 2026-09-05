@@ -14,6 +14,7 @@ from .missy_sippy import VENUE as MISSY_SIPPY_VENUE, MissySippyScraper
 from .ringo import VENUE as RINGO_VENUE, RingoScraper
 from .trefpunt import VENUE as TREFPUNT_VENUE, TrefpuntScraper
 from .viernulvier import VENUE as VIERNULVIER_VENUE, ViernulvierScraper
+from .vieze_gasten import VENUE as VIEZE_GASTEN_VENUE, ViezeGastenScraper
 from .wintercircus import VENUE as WINTERCIRCUS_VENUE, WintercircusScraper
 
 GENT_NIS_CODE = "nis-44021"
@@ -29,6 +30,7 @@ _DEDICATED: list[tuple[str, Scraper]] = [
     (HOT_CLUB_GENT_VENUE, HotClubGentScraper()),
     (KINKY_STAR_VENUE, KinkyStarScraper()),
     (CHINASTRAAT_VENUE, ChinastraatScraper()),
+    (VIEZE_GASTEN_VENUE, ViezeGastenScraper()),
 ]
 
 # ChinastraatScraper emits concerts under two distinct venue names (its own
