@@ -11,3 +11,4 @@ data/playlist_tracks.json
 /docs/*
 !/docs/superpowers/
 CLAUDE.md
+.claude/skills/
