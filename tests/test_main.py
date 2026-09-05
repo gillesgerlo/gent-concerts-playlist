@@ -57,6 +57,28 @@ def test_search_query_handles_x_screening_title_with_curly_quotes():
     assert main._search_query("múm x ‘La Vie Rêvée’") == "múm"
 
 
+def test_search_query_strips_a_kinky_star_style_series_name_prefix():
+    # Kinky Star names its own recurring concert nights ("IN DIE STER",
+    # "NNC", "STAR TRIP", ...) and prefixes the h2 title with that name, so
+    # the scraped Band field is "SERIES NAME: Artist (BE) + Support (BE)".
+    # That prefix isn't a co-bill separator, so it survived query-building
+    # untouched and made both the YT Music and Last.fm lookups fail.
+    band = "IN DIE STER: Fake Alien (BE) + De Standaardmaat (BE)"
+    assert main._search_query(band) == "Fake Alien"
+
+
+def test_search_query_strips_a_series_name_prefix_with_no_co_bill():
+    assert main._search_query("Queer Stars: AMUKA (BE)") == "AMUKA"
+
+
+def test_search_query_leaves_a_colon_without_a_trailing_origin_tag_untouched():
+    # Only strip a "Prefix: " lead-in when what follows still ends in a
+    # short origin tag like "(BE)" — the actual signature of Kinky Star's
+    # series-name prefix. Without that signal, a colon can be part of a
+    # real title (e.g. a DJ set name), so leave it alone.
+    assert main._search_query("Kinky & Bass: Ado Invites") == "Kinky & Bass: Ado Invites"
+
+
 def test_lookup_artist_info_returns_video_ids_on_a_match(monkeypatch):
     monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": "Radiohead"})
     monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (

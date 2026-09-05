@@ -44,6 +44,17 @@ _X_SEPARATOR_RE = re.compile(r"\s+x\s+", re.IGNORECASE)
 _TRAILING_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
 _QUOTE_CHARS = "'\"‘’“”"
 
+# Kinky Star names its own recurring concert nights ("IN DIE STER", "NNC",
+# "STAR TRIP", ...) and prefixes its listing titles with that name, e.g.
+# "IN DIE STER: Fake Alien (BE) + De Standaardmaat (BE)". That prefix isn't
+# a co-bill separator or trailing qualifier, so it survives into the search
+# query untouched otherwise. Only strip it when what follows still ends in a
+# short origin tag like "(BE)"/"(DE/BR)" — the actual signature of this
+# pattern — so an unrelated colon (e.g. a DJ set name) is left alone.
+_SERIES_PREFIX_RE = re.compile(
+    r"^[^:()]{1,40}:\s+(?=.*\([A-Za-z]{2,4}(?:/[A-Za-z]{2,4})?\)\s*$)"
+)
+
 
 def _is_quoted(segment: str) -> bool:
     segment = segment.strip()
@@ -73,6 +84,7 @@ def _search_query(band: str) -> str:
         text = x_parts[1] if _is_quoted(x_parts[0]) else x_parts[0]
 
     query = _SUBTITLE_SEPARATOR_RE.split(text, maxsplit=1)[0]
+    query = _SERIES_PREFIX_RE.sub("", query, count=1)
     query = _TRAILING_PARENTHETICAL_RE.sub("", query)
     return query.strip()
 

@@ -165,6 +165,44 @@ def test_genre_for_artist_rejects_a_resolved_artist_unrelated_to_the_query(monke
     assert lastfm_client.genre_for_artist("Eat Me") is None
 
 
+def test_genre_for_artist_strips_a_kinky_star_style_series_name_prefix(monkeypatch, fake_response):
+    # Kinky Star prefixes its own listings with the recurring series name
+    # ("IN DIE STER: Fake Alien (BE) + De Standaardmaat (BE)"), which isn't a
+    # co-bill separator or trailing qualifier, so it previously survived into
+    # the Last.fm query untouched and the lookup failed for the real artist.
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response({"toptags": {"tag": {"name": "rock"}, "@attr": {"artist": "Fake Alien"}}})
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("IN DIE STER: Fake Alien (BE) + De Standaardmaat (BE)")
+
+    assert captured["artist"] == "Fake Alien"
+
+
+def test_genre_for_artist_strips_a_series_name_prefix_with_no_co_bill(monkeypatch, fake_response):
+    # Same Kinky Star pattern but for a single-act night with no "+" co-bill
+    # to split on first (e.g. "Queer Stars: AMUKA (BE)") — stripping the
+    # trailing "(BE)" before checking for the series prefix would destroy
+    # the signal the prefix-strip relies on, so order matters here.
+    captured = {}
+
+    def _fake_get(url, params=None, timeout=None):
+        captured["artist"] = params["artist"]
+        return fake_response({"toptags": {"tag": {"name": "pop"}, "@attr": {"artist": "AMUKA"}}})
+
+    monkeypatch.setattr(lastfm_client.requests, "get", _fake_get)
+    lastfm_client.set_api_key("test-key")
+
+    lastfm_client.genre_for_artist("Queer Stars: AMUKA (BE)")
+
+    assert captured["artist"] == "AMUKA"
+
+
 def test_genre_for_artist_accepts_a_resolved_artist_that_overlaps_the_query(monkeypatch, fake_response):
     payload = {
         "toptags": {
