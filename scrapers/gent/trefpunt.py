@@ -1,46 +1,51 @@
-from datetime import datetime
+import re
+from datetime import date
 
 import requests
 from bs4 import BeautifulSoup
 
-from scrapers.base import Concert
+from scrapers.base import Concert, DUTCH_MONTHS, resolve_year
 
-URL = "https://trefpunt.be/agenda"
-SITE_BASE_URL = "https://trefpunt.be"
+URL = "https://trefpuntfestival.be/programma"
 VENUE = "Trefpunt"
+CONCERT_ROOMS = {"Concertzaal", "Café"}
+
+DATE_RE = re.compile(r"(\d{1,2})\s+([a-z]+)", re.IGNORECASE)
 
 
-def _parse(html: str) -> list[Concert]:
+def _parse(html: str, today: date) -> list[Concert]:
     soup = BeautifulSoup(html, "lxml")
     concerts = []
-    for row in soup.find_all("div", class_="agenda-row"):
+    for card in soup.find_all("a", class_="c-thumbnail-default"):
         try:
-            info_el = row.find("div", class_="info")
-            if not info_el or "CONCERTZAAL" not in info_el.get_text():
+            meta = card.find("div", class_="c-thumbnail-default__meta")
+            if not meta:
                 continue
 
-            title_el = row.find("div", class_="title")
-            link_el = row.find("a", class_="tickets-link")
-            if not (title_el and link_el):
+            room_el = meta.find("span", class_="c-label__label")
+            room = room_el.get_text(strip=True) if room_el else ""
+            if room not in CONCERT_ROOMS:
                 continue
 
-            event_date = datetime.strptime(row.get("data-date", ""), "%d/%m/%Y").date()
+            date_el = meta.find("div", class_="c-label").find_next_sibling("span")
+            match = DATE_RE.search(date_el.get_text(strip=True)) if date_el else None
+            if not match:
+                continue
+            month = DUTCH_MONTHS[match.group(2).lower()]
+            event_date = resolve_year(int(match.group(1)), month, today)
 
-            lines = [line.strip() for line in title_el.get_text(separator="\n").split("\n") if line.strip()]
-            band = lines[-1]
+            title_el = card.find("h3", class_="c-thumbnail-default__title")
+            if not title_el:
+                continue
+            band = title_el.get_text(strip=True)
 
-            description = ""
-            for col in row.find_all("div", class_="col-xs-6"):
-                p_el = col.find("p")
-                if p_el:
-                    description = p_el.get_text(strip=True)
-                    break
+            desc_el = card.find("p", class_="c-thumbnail-default__description")
+            description = desc_el.get_text(strip=True) if desc_el else ""
 
-            href = link_el.get("href", "")
-            ticket_link = href if href.startswith("http") else f"{SITE_BASE_URL}{href}"
+            ticket_link = card.get("href", "")
 
             concerts.append(Concert(
-                venue=VENUE,
+                venue=f"{VENUE} - {room}",
                 date=event_date,
                 band=band,
                 description=description,
@@ -60,4 +65,4 @@ def _fetch_html() -> str:
 
 class TrefpuntScraper:
     def scrape(self) -> list[Concert]:
-        return _parse(_fetch_html())
+        return _parse(_fetch_html(), date.today())
