@@ -1,6 +1,7 @@
 """Track which YouTube Music track IDs were added for each concert."""
 
 import json
+from datetime import date
 from pathlib import Path
 
 
@@ -31,6 +32,36 @@ class PlaylistTracker:
             return
         key = self._make_key(venue, date, band)
         self.data[key] = video_ids
+
+    def prune_past(self, today: date) -> None:
+        """Drop entries for concerts whose date has already passed.
+
+        "Past" is strictly before `today`: a concert happening today is kept
+        through today and only dropped starting tomorrow's run.
+        """
+        self.data = {
+            key: ids for key, ids in self.data.items() if self._key_date(key) >= today
+        }
+
+    def ordered_video_ids(self) -> list[str]:
+        """Every tracked video ID, sorted by concert date (ascending).
+
+        A concert's tracks were recorded together as one list, so they stay
+        in recorded order and adjacent. This has no date filter of its own —
+        call prune_past() first if past concerts should be excluded.
+        """
+        return [
+            video_id
+            for _key, ids in sorted(
+                self.data.items(), key=lambda item: self._key_date(item[0])
+            )
+            for video_id in ids
+        ]
+
+    @staticmethod
+    def _key_date(key: str) -> date:
+        """Parse the ISO date out of a "venue|YYYY-MM-DD|band" key."""
+        return date.fromisoformat(key.split("|", 2)[1])
 
     def get_tracks(self, venue: str, date: str, band: str) -> list[str]:
         """Get the video IDs that were added for a concert."""
