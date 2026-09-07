@@ -497,3 +497,36 @@ def test_rebuild_playlist_fetches_the_current_playlist_exactly_once(monkeypatch)
     ytmusic_client.rebuild_playlist("PL1", ["new1"])
 
     assert len(calls) == 1
+
+
+def test_rebuild_playlist_raises_when_the_add_call_is_rejected(monkeypatch):
+    # ytmusicapi returns the response dict instead of raising when an edit is
+    # rejected — a non-SUCCEEDED status must be turned into an exception, or a
+    # rejected re-add after a successful remove leaves the playlist empty.
+    class _RejectingAdd(_FakeYTMusicClient):
+        def add_playlist_items(self, playlistId, videoIds, duplicates=False):
+            self.added_items.append((playlistId, videoIds, duplicates))
+            return {"status": "STATUS_FAILED"}
+
+    fake_client = _RejectingAdd(
+        playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}
+    )
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    with pytest.raises(RuntimeError):
+        ytmusic_client.rebuild_playlist("PL1", ["new1"])
+
+
+def test_rebuild_playlist_raises_when_the_remove_call_is_rejected(monkeypatch):
+    class _RejectingRemove(_FakeYTMusicClient):
+        def remove_playlist_items(self, playlistId, videos):
+            self.removed_items.append((playlistId, videos))
+            return {"status": "STATUS_FAILED"}
+
+    fake_client = _RejectingRemove(
+        playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}
+    )
+    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
+
+    with pytest.raises(RuntimeError):
+        ytmusic_client.rebuild_playlist("PL1", ["new1"])

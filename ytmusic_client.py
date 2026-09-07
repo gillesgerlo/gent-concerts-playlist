@@ -153,6 +153,25 @@ def rebuild_playlist(
     # YTMusicUserError on an empty list, and add_playlist_items raises it
     # when given neither videoIds nor source_playlist.
     if current:
-        _client.remove_playlist_items(playlist_id, current)
+        _ensure_succeeded(
+            _client.remove_playlist_items(playlist_id, current), "remove_playlist_items"
+        )
     if ordered_video_ids:
-        _client.add_playlist_items(playlist_id, ordered_video_ids, duplicates=True)
+        _ensure_succeeded(
+            _client.add_playlist_items(playlist_id, ordered_video_ids, duplicates=True),
+            "add_playlist_items",
+        )
+
+
+def _ensure_succeeded(response: object, call: str) -> None:
+    """Raise if a playlist edit did not succeed.
+
+    ytmusicapi's add_playlist_items / remove_playlist_items return the API
+    response dict and do NOT raise when the edit is rejected — a non-SUCCEEDED
+    status has to be checked by hand, or a rejected re-add after a successful
+    remove would leave the playlist empty while the run reports success.
+    """
+    if not isinstance(response, dict) or "SUCCEEDED" not in str(
+        response.get("status", "")
+    ):
+        raise RuntimeError(f"YouTube Music {call} did not succeed: {response!r}")

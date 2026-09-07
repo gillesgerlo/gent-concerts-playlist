@@ -593,7 +593,7 @@ def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp
 
     out = capsys.readouterr().out
     assert "Tracks in rebuilt playlist: 0" in out
-    assert "Skipped playlist add (party/DJ set): BRITPOP! - A Night Out" in out
+    assert "Party/DJ set, no track lookup: BRITPOP! - A Night Out" in out
 
 
 def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp_path):
@@ -861,6 +861,46 @@ def test_run_survives_a_rebuild_playlist_exception(monkeypatch, tmp_path, capsys
 
     out = capsys.readouterr().out
     assert "Warning: failed to rebuild playlist" in out
+
+
+def test_run_skips_the_rebuild_and_tracker_save_when_the_tracker_file_is_unreadable(
+    monkeypatch, tmp_path, capsys
+):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+
+    junk = "{not valid json"
+    (tmp_path / "playlist_tracks.json").write_text(junk)
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 9, 20), band="Some Band",
+                description="", ticket_link="http://x"),
+    ]
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "v1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    rebuild_calls = []
+    monkeypatch.setattr(
+        main, "rebuild_playlist",
+        lambda playlist_id, ordered_video_ids, dry_run=False: rebuild_calls.append(playlist_id),
+    )
+
+    main.run(city, "PL1")  # must not raise
+
+    assert rebuild_calls == []  # rebuild skipped entirely
+    # The unreadable file is left exactly as it was, not clobbered with {}.
+    assert (tmp_path / "playlist_tracks.json").read_text() == junk
+    # The rest of the run still completed.
+    assert (tmp_path / "concerts.csv").exists()
+    assert "Some Band" in (tmp_path / "concerts.csv").read_text()
+    assert city.html_path.exists()
+
+    out = capsys.readouterr().out
+    assert "could not read" in out
+    assert str(city.tracker_path) in out
 
 
 def test_main_strips_the_dry_run_flag_and_threads_it_into_run(monkeypatch, tmp_path):

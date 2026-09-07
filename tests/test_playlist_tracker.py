@@ -73,3 +73,40 @@ def test_ordered_video_ids_is_stable_for_same_date_entries(tmp_path):
 
 def test_ordered_video_ids_on_empty_data_returns_an_empty_list(tmp_path):
     assert _tracker(tmp_path, {}).ordered_video_ids() == []
+
+
+def test_ordered_video_ids_drops_a_duplicate_id_keeping_the_earliest_dated_occurrence(tmp_path):
+    # The same act recorded under two venue/title spellings (~8% of live data)
+    # shares a video ID; the wholesale rebuild must not list it twice.
+    t = _tracker(tmp_path, {
+        "Charlatan|2026-09-20|Act (BE)": ["shared", "early_only"],
+        "Missy Sippy|2026-10-05|Act": ["shared", "late_only"],
+    })
+
+    assert t.ordered_video_ids() == ["shared", "early_only", "late_only"]
+
+
+def test_load_failed_is_false_for_an_absent_tracker_file(tmp_path):
+    t = PlaylistTracker(tmp_path / "nope.json")
+    assert t.load_failed is False
+    assert t.data == {}
+
+
+def test_load_failed_is_false_for_a_valid_tracker_file(tmp_path):
+    path = tmp_path / "playlist_tracks.json"
+    path.write_text('{"V|2026-09-20|Band": ["v1"]}')
+
+    t = PlaylistTracker(path)
+
+    assert t.load_failed is False
+    assert t.data == {"V|2026-09-20|Band": ["v1"]}
+
+
+def test_load_failed_is_true_and_data_empty_for_a_corrupt_tracker_file(tmp_path):
+    path = tmp_path / "playlist_tracks.json"
+    path.write_text("{not json at all")
+
+    t = PlaylistTracker(path)
+
+    assert t.load_failed is True
+    assert t.data == {}

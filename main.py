@@ -263,13 +263,23 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
         )
         rows_written += 1
 
-    tracker.prune_past(today)
-    ordered_video_ids = tracker.ordered_video_ids()
-    try:
-        rebuild_playlist(playlist_id, ordered_video_ids, dry_run=dry_run)
-    except Exception as exc:  # noqa: BLE001 - a rebuild failure must never abort the rest of the run
-        print(f"Warning: failed to rebuild playlist: {exc}")
-    tracker.save()
+    if tracker.load_failed:
+        # A corrupt/unreadable tracker file loaded as {}. Rebuilding from
+        # that would wipe the live playlist; saving would clobber the file
+        # with {}. Skip both this run and let the next run recover.
+        print(
+            f"Warning: could not read {tracker.tracker_path}; "
+            f"skipping playlist rebuild and tracker save this run"
+        )
+        ordered_video_ids: list[str] = []
+    else:
+        tracker.prune_past(today)
+        ordered_video_ids = tracker.ordered_video_ids()
+        try:
+            rebuild_playlist(playlist_id, ordered_video_ids, dry_run=dry_run)
+        except Exception as exc:  # noqa: BLE001 - a rebuild failure must never abort the rest of the run
+            print(f"Warning: failed to rebuild playlist: {exc}")
+        tracker.save()
 
     other_pages = [
         (c.display_name, c.html_path.name)
@@ -293,7 +303,7 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
     if excluded_cover:
         print(f"Excluded as cover/tribute gigs: {', '.join(excluded_cover)}")
     if excluded_party:
-        print(f"Skipped playlist add (party/DJ set): {', '.join(excluded_party)}")
+        print(f"Party/DJ set, no track lookup: {', '.join(excluded_party)}")
     if unconfirmed_by_vndg:
         print(f"Not corroborated by vndg.be (double-check band name): {', '.join(unconfirmed_by_vndg)}")
     if lookup_errors:
