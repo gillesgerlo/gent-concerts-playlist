@@ -8,7 +8,6 @@ auth/ytmusic_auth.json
 data/*/concerts.csv
 data/*/playlist_tracks.json
 data/playlist_tracks.json
-/docs/*
-!/docs/superpowers/
+/docs/
 CLAUDE.md
 .claude/skills/
