@@ -28,11 +28,10 @@ from vndg_crosscheck import (
 from yt_auth_har import prompt_for_har_and_save
 from ytmusic_client import (
     YTMusicAuthError,
-    add_tracks,
     get_artist_info,
-    get_existing_track_ids,
     get_or_create_playlist,
     load_client,
+    rebuild_playlist,
     search_artist,
 )
 from playlist_tracker import PlaylistTracker
@@ -144,7 +143,7 @@ def _push_html_to_github(paths: list[Path]) -> None:
         print(f"Warning: Could not push to GitHub: {exc}")
 
 
-def run(city: City, playlist_id: str) -> None:
+def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
     store = CsvStore(city.csv_path)
     tracker = PlaylistTracker(city.tracker_path)
 
@@ -192,14 +191,10 @@ def run(city: City, playlist_id: str) -> None:
     new_concerts = filter_new(upcoming, store)
     print(f"Found {len(upcoming)} concerts, {len(new_concerts)} new.")
 
-    existing_track_ids = get_existing_track_ids(playlist_id)
-
     rows_written = 0
-    tracks_added = 0
     no_track_match: list[str] = []
     no_genre_match: list[str] = []
     no_description_match: list[str] = []
-    add_failures: list[str] = []
     lookup_errors: list[str] = []
     excluded_cover: list[str] = []
     excluded_party: list[str] = []
@@ -249,19 +244,9 @@ def run(city: City, playlist_id: str) -> None:
                 tracks_errored = True
 
         if track_ids:
-            added_ok = False
-            add_tracks_errored = False
-            try:
-                added_ok = add_tracks(playlist_id, track_ids, existing_track_ids)
-            except Exception as exc:  # noqa: BLE001 - one artist's failure must never abort the run
-                lookup_errors.append(f"{concert.band} (add tracks): {exc}")
-                add_tracks_errored = True
-
-            if added_ok:
-                tracks_added += len(track_ids)
-                tracker.record_tracks(concert.venue, concert.date.isoformat(), concert.band, track_ids)
-            elif not add_tracks_errored:
-                add_failures.append(concert.band)
+            tracker.record_tracks(
+                concert.venue, concert.date.isoformat(), concert.band, track_ids
+            )
         elif is_party_event:
             excluded_party.append(concert.band)
         elif not tracks_errored:
@@ -278,7 +263,23 @@ def run(city: City, playlist_id: str) -> None:
         )
         rows_written += 1
 
-    tracker.save()
+    if tracker.load_failed:
+        # A corrupt/unreadable tracker file loaded as {}. Rebuilding from
+        # that would wipe the live playlist; saving would clobber the file
+        # with {}. Skip both this run and let the next run recover.
+        print(
+            f"Warning: could not read {tracker.tracker_path}; "
+            f"skipping playlist rebuild and tracker save this run"
+        )
+        ordered_video_ids: list[str] = []
+    else:
+        tracker.prune_past(today)
+        ordered_video_ids = tracker.ordered_video_ids()
+        try:
+            rebuild_playlist(playlist_id, ordered_video_ids, dry_run=dry_run)
+        except Exception as exc:  # noqa: BLE001 - a rebuild failure must never abort the rest of the run
+            print(f"Warning: failed to rebuild playlist: {exc}")
+        tracker.save()
 
     other_pages = [
         (c.display_name, c.html_path.name)
@@ -292,11 +293,9 @@ def run(city: City, playlist_id: str) -> None:
 
     print(f"Concerts found in next {config.WINDOW_DAYS} days: {len(upcoming)}")
     print(f"New concerts recorded: {rows_written}")
-    print(f"Tracks added to '{city.playlist_name}': {tracks_added}")
+    print(f"Tracks in rebuilt playlist: {len(ordered_video_ids)}")
     if no_track_match:
         print(f"No YouTube Music match for: {', '.join(no_track_match)}")
-    if add_failures:
-        print(f"Failed to add tracks for: {', '.join(add_failures)}")
     if no_genre_match:
         print(f"No genre found for: {', '.join(no_genre_match)}")
     if no_description_match:
@@ -304,7 +303,7 @@ def run(city: City, playlist_id: str) -> None:
     if excluded_cover:
         print(f"Excluded as cover/tribute gigs: {', '.join(excluded_cover)}")
     if excluded_party:
-        print(f"Skipped playlist add (party/DJ set): {', '.join(excluded_party)}")
+        print(f"Party/DJ set, no track lookup: {', '.join(excluded_party)}")
     if unconfirmed_by_vndg:
         print(f"Not corroborated by vndg.be (double-check band name): {', '.join(unconfirmed_by_vndg)}")
     if lookup_errors:
@@ -324,7 +323,7 @@ def _select_cities(argv: list[str]) -> list[City]:
     return [CITIES[key]]
 
 
-def _run_all(selected: list[City]) -> list[City]:
+def _run_all(selected: list[City], dry_run: bool = False) -> list[City]:
     """Run every selected city; return the ones that completed successfully."""
     load_client(AUTH_PATH)
     completed: list[City] = []
@@ -338,7 +337,7 @@ def _run_all(selected: list[City]) -> list[City]:
         # try/except: it propagates to main()'s re-auth handler from any city.
         playlist_id = get_or_create_playlist(city.playlist_name)
         try:
-            run(city, playlist_id)
+            run(city, playlist_id, dry_run)
         except Exception as exc:  # noqa: BLE001 - one city must never abort the others
             print(f"City '{city.key}' failed, continuing: {exc}")
             continue
@@ -356,16 +355,18 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
     set_api_key(lastfm_api_key)
 
+    dry_run = "--dry-run" in argv
+    argv = [arg for arg in argv if arg != "--dry-run"]
     selected = _select_cities(argv)
 
     try:
-        completed = _run_all(selected)
+        completed = _run_all(selected, dry_run)
     except YTMusicAuthError as exc:
         print(f"YouTube Music authentication failed: {exc}")
         if not _handle_auth_failure(AUTH_PATH):
             sys.exit(1)
         try:
-            completed = _run_all(selected)
+            completed = _run_all(selected, dry_run)
         except Exception as retry_exc:  # noqa: BLE001
             print(f"Authentication still failed: {retry_exc}")
             sys.exit(1)
@@ -374,7 +375,7 @@ def main(argv: list[str] | None = None) -> None:
         if not _handle_auth_failure(AUTH_PATH):
             sys.exit(1)
         try:
-            completed = _run_all(selected)
+            completed = _run_all(selected, dry_run)
         except Exception as retry_exc:  # noqa: BLE001
             print(f"Authentication still failed: {retry_exc}")
             sys.exit(1)

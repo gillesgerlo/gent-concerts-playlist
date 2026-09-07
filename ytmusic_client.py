@@ -128,29 +128,50 @@ def get_or_create_playlist(title: str) -> str:
     return _client.create_playlist(title=title, description="")
 
 
-def get_existing_track_ids(playlist_id: str) -> set[str]:
-    # The CSV is the only thing that normally stops a concert from being
-    # reprocessed, but it's local/gitignored and isn't guaranteed to survive
-    # (e.g. a fresh checkout, a deleted data/ dir) — so add_tracks also checks
-    # the playlist's actual current contents before adding, instead of
-    # trusting the caller not to send something that's already there. Fetch
-    # it once per run (not once per concert): full-catalog runs process
-    # hundreds of concerts, and re-fetching the whole playlist per concert
-    # turned that into an O(n^2) number of YouTube Music requests.
-    return {t["videoId"] for t in _client.get_playlist(playlist_id, limit=None).get("tracks", [])}
+def rebuild_playlist(
+    playlist_id: str, ordered_video_ids: list[str], dry_run: bool = False
+) -> None:
+    """Make the live playlist a wholesale copy of `ordered_video_ids`.
+
+    Fetches the current playlist exactly once (for the setVideoId values
+    remove_playlist_items needs), removes every current item — tracked or
+    not; anything added outside this script is dropped and does not come
+    back — then re-adds the given IDs in list order.
+
+    dry_run previews the two mutating calls without making either.
+    """
+    current = _client.get_playlist(playlist_id, limit=None).get("tracks", [])
+
+    if dry_run:
+        print(
+            f"[dry-run] would remove {len(current)} tracks, "
+            f"re-add {len(ordered_video_ids)} in date order"
+        )
+        return
+
+    # Both guards are load-bearing: remove_playlist_items raises
+    # YTMusicUserError on an empty list, and add_playlist_items raises it
+    # when given neither videoIds nor source_playlist.
+    if current:
+        _ensure_succeeded(
+            _client.remove_playlist_items(playlist_id, current), "remove_playlist_items"
+        )
+    if ordered_video_ids:
+        _ensure_succeeded(
+            _client.add_playlist_items(playlist_id, ordered_video_ids, duplicates=True),
+            "add_playlist_items",
+        )
 
 
-def add_tracks(playlist_id: str, track_ids: list[str], existing_ids: set[str]) -> bool:
-    new_ids = [t for t in track_ids if t not in existing_ids]
-    if not new_ids:
-        return True
+def _ensure_succeeded(response: object, call: str) -> None:
+    """Raise if a playlist edit did not succeed.
 
-    # duplicates=True: without it, add_playlist_items rejects the WHOLE call
-    # (adding nothing) if ANY given video ID is already in the playlist. That
-    # can still happen for IDs added earlier in this same call, so keep it as
-    # a backstop even though new_ids is now pre-filtered.
-    response = _client.add_playlist_items(playlist_id, new_ids, duplicates=True)
-    succeeded = isinstance(response, dict) and "SUCCEEDED" in response.get("status", "")
-    if succeeded:
-        existing_ids.update(new_ids)
-    return succeeded
+    ytmusicapi's add_playlist_items / remove_playlist_items return the API
+    response dict and do NOT raise when the edit is rejected — a non-SUCCEEDED
+    status has to be checked by hand, or a rejected re-add after a successful
+    remove would leave the playlist empty while the run reports success.
+    """
+    if not isinstance(response, dict) or "SUCCEEDED" not in str(
+        response.get("status", "")
+    ):
+        raise RuntimeError(f"YouTube Music {call} did not succeed: {response!r}")

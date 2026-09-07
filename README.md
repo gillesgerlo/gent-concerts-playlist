@@ -1,14 +1,19 @@
 # Concerts Playlist
 
 Manually-triggered CLI: for each configured city (Gent and Brugge) it scrapes
-that city's venues for concerts in the next 91 days, adds each new one's top 2
-YouTube Music tracks to that city's `Upcoming Concerts <City>` YouTube Music
-playlist, looks up the artist's genre on Last.fm and the event's description on
-the venue's own ticket page, and logs a row to
-`data/<city>/concerts.csv`. Each run also regenerates one HTML page per city
-(`index.html` for Gent, `brugge.html` for Brugge) — each a sortable table of
-that city's still-upcoming concerts with clickable ticket links, cross-linked
-to the other city's page — and opens it in your browser.
+that city's venues for concerts in the next 91 days, and for each new one looks
+up the artist's genre on Last.fm and the event's description on the venue's own
+ticket page, records the artist's top 2 YouTube Music tracks, and logs a row to
+`data/<city>/concerts.csv`. Every run then **empties that city's
+`Upcoming Concerts <City>` YouTube Music playlist and rebuilds it wholesale**
+from the recorded tracks — in concert-date order, dropping concerts whose date
+has already passed. The live playlist is therefore a pure reflection of what
+the script has recorded: anything you add to it by hand in the YouTube Music
+app is removed on the next run and does not come back. Each run also
+regenerates one HTML page per city (`index.html` for Gent, `brugge.html` for
+Brugge) — each a sortable table of that city's still-upcoming concerts with
+clickable ticket links, cross-linked to the other city's page — and opens it in
+your browser.
 
 Concerts are also cross-checked against vndg.be, an independent Gent
 events calendar — see `vndg_crosscheck.py` for what that does and why.
@@ -28,6 +33,11 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 - `python main.py` runs every configured city.
 - `python main.py gent` / `python main.py brugge` runs just that one.
+- `python main.py --dry-run` (or `python main.py <city> --dry-run`) previews
+  only the playlist remove/re-add — it prints what the rebuild would do and
+  makes no playlist changes. Scraping, the `concerts.csv` write,
+  `playlist_tracks.json`, HTML regeneration and the GitHub push all still
+  happen.
 - Add a new venue by creating a scraper module under `scrapers/<city>/` and
   appending it to that package's `SCRAPERS` list.
 

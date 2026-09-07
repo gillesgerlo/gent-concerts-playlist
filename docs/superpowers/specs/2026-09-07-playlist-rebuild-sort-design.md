@@ -193,3 +193,12 @@ end-to-end implementation.
   with the whole list in one request; batch size limits haven't been
   hit in practice (`get_existing_track_ids` already fetched full playlists
   the same way) but worth watching on the first real run.
+
+## Amendments (2026-09-07, post-review)
+
+- `rebuild_playlist` now checks the `add`/`remove` response status and raises on a
+  non-SUCCEEDED result (ytmusicapi returns the dict rather than raising); the
+  spec's pseudo-code ignored the return, letting a rejected re-add pass as success.
+- `ordered_video_ids()` de-duplicates video IDs, keeping the earliest-dated
+  occurrence — the wholesale rebuild would otherwise re-introduce duplicates the
+  old `add_tracks` dedupe removed.
