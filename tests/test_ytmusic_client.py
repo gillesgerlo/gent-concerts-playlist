@@ -52,7 +52,10 @@ class _FakeYTMusicClient:
 
     def remove_playlist_items(self, playlistId, videos):
         self.removed_items.append((playlistId, videos))
-        return {"status": "STATUS_SUCCEEDED"}
+        # ytmusicapi's real remove_playlist_items returns the bare status
+        # STRING (response.get("status", response)), not a dict like
+        # add_playlist_items does.
+        return "STATUS_SUCCEEDED"
 
 
 def test_load_client_raises_ytmusic_auth_error_when_auth_file_is_missing(tmp_path):
@@ -521,7 +524,7 @@ def test_rebuild_playlist_raises_when_the_remove_call_is_rejected(monkeypatch):
     class _RejectingRemove(_FakeYTMusicClient):
         def remove_playlist_items(self, playlistId, videos):
             self.removed_items.append((playlistId, videos))
-            return {"status": "STATUS_FAILED"}
+            return "STATUS_FAILED"
 
     fake_client = _RejectingRemove(
         playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}

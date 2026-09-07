@@ -166,12 +166,21 @@ def rebuild_playlist(
 def _ensure_succeeded(response: object, call: str) -> None:
     """Raise if a playlist edit did not succeed.
 
-    ytmusicapi's add_playlist_items / remove_playlist_items return the API
-    response dict and do NOT raise when the edit is rejected — a non-SUCCEEDED
-    status has to be checked by hand, or a rejected re-add after a successful
-    remove would leave the playlist empty while the run reports success.
+    ytmusicapi's add/remove playlist calls do NOT raise when an edit is
+    rejected — a non-SUCCEEDED status has to be checked by hand, or a
+    rejected re-add after a successful remove would leave the playlist empty
+    while the run reports success. The two calls return different shapes:
+    add_playlist_items returns a dict ``{"status": "...", ...}``, while
+    remove_playlist_items returns the bare status string (or, only when the
+    response carried no status at all, the raw response). Accept SUCCEEDED
+    in either form.
     """
-    if not isinstance(response, dict) or "SUCCEEDED" not in str(
-        response.get("status", "")
-    ):
+    if isinstance(response, str):
+        status = response
+    elif isinstance(response, dict):
+        status = str(response.get("status", ""))
+    else:
+        status = ""
+
+    if "SUCCEEDED" not in status:
         raise RuntimeError(f"YouTube Music {call} did not succeed: {response!r}")
