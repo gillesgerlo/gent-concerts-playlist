@@ -191,8 +191,7 @@ def _stub_env_and_auth(monkeypatch):
     monkeypatch.setattr(main, "load_client", lambda auth_path: None)
     monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
-    monkeypatch.setattr(main, "get_existing_track_ids", lambda playlist_id: set())
-    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: True)
+    monkeypatch.setattr(main, "rebuild_playlist", lambda playlist_id, ordered_video_ids, dry_run=False: None)
     monkeypatch.setattr(main, "fetch_description", lambda url: None)
     monkeypatch.setattr(main, "fetch_events", lambda today, window_days: [])
 
@@ -285,14 +284,16 @@ def test_main_isolates_a_failing_city_from_the_rest(monkeypatch, tmp_path, capsy
 
     # The failure has to come from inside run() — get_or_create_playlist now
     # runs before the per-city try/except on purpose, because auth is global.
-    def _existing_track_ids(playlist_id):
-        if _existing_track_ids.calls:
-            raise RuntimeError("beta pipeline blew up")
-        _existing_track_ids.calls.append(playlist_id)
-        return set()
+    real_write_html = main.write_html
 
-    _existing_track_ids.calls = []
-    monkeypatch.setattr(main, "get_existing_track_ids", _existing_track_ids)
+    def _write_html(*args, **kwargs):
+        if _write_html.calls:
+            raise RuntimeError("beta pipeline blew up")
+        _write_html.calls.append(args)
+        return real_write_html(*args, **kwargs)
+
+    _write_html.calls = []
+    monkeypatch.setattr(main, "write_html", _write_html)
 
     main.main([])  # all cities; must not raise and must not sys.exit
 
@@ -331,14 +332,16 @@ def test_main_publishes_only_the_cities_that_completed(monkeypatch, tmp_path, ca
     city0, city1 = _city("alpha"), _city("beta")
     monkeypatch.setattr(main, "CITIES", {"alpha": city0, "beta": city1})
 
-    def _existing_track_ids(playlist_id):
-        if _existing_track_ids.calls:
-            raise RuntimeError("beta pipeline blew up")
-        _existing_track_ids.calls.append(playlist_id)
-        return set()
+    real_write_html = main.write_html
 
-    _existing_track_ids.calls = []
-    monkeypatch.setattr(main, "get_existing_track_ids", _existing_track_ids)
+    def _write_html(*args, **kwargs):
+        if _write_html.calls:
+            raise RuntimeError("beta pipeline blew up")
+        _write_html.calls.append(args)
+        return real_write_html(*args, **kwargs)
+
+    _write_html.calls = []
+    monkeypatch.setattr(main, "write_html", _write_html)
 
     pushed: list[list] = []
     opened: list[str] = []
@@ -358,10 +361,10 @@ def test_main_skips_the_push_when_no_city_completed(monkeypatch, tmp_path, capsy
     city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))])
     monkeypatch.setattr(main, "CITIES", {"test": city})
 
-    def _boom(playlist_id):
+    def _boom(*args, **kwargs):
         raise RuntimeError("pipeline blew up")
 
-    monkeypatch.setattr(main, "get_existing_track_ids", _boom)
+    monkeypatch.setattr(main, "write_html", _boom)
 
     pushed: list[list] = []
     opened: list[str] = []
@@ -492,39 +495,6 @@ def test_run_survives_a_single_artists_lookup_failure(monkeypatch, tmp_path, cap
     assert "No YouTube Music match for: Bad Band" not in out  # a transient error, not a genuine no-match
 
 
-def test_run_survives_an_add_tracks_exception(monkeypatch, tmp_path, capsys):
-    _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
-    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
-
-    concerts = [
-        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band", description="", ticket_link="http://x"),
-        Concert(venue="Missy Sippy", date=date(2026, 8, 21), band="Bad Band", description="", ticket_link="http://y"),
-    ]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
-
-    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
-    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
-    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
-
-    def _fake_add_tracks(playlist_id, track_ids, existing_ids):
-        raise RuntimeError("YouTube Music API error: playlist not found")
-
-    monkeypatch.setattr(main, "add_tracks", _fake_add_tracks)
-
-    main.run(city, "PL1")  # must not raise, even though every add_tracks call blows up
-
-    csv_content = (tmp_path / "concerts.csv").read_text()
-    assert "Good Band" in csv_content
-    assert "Bad Band" in csv_content  # both still recorded despite the add_tracks error
-
-    out = capsys.readouterr().out
-    assert f"Tracks added to '{city.playlist_name}': 0" in out  # nothing actually got added
-    assert "Lookup errors" in out
-    assert "(add tracks)" in out
-    assert "Good Band" in out and "Bad Band" in out
-
-
 def test_run_writes_html_export_and_opens_it_in_the_browser(monkeypatch, tmp_path):
     # Writing the HTML now happens in run(city); opening it and pushing to
     # GitHub moved to main(), so this exercises the whole main() path.
@@ -622,32 +592,8 @@ def test_run_logs_a_party_in_the_csv_but_skips_the_playlist_add(monkeypatch, tmp
     assert "BRITPOP! - A Night Out" in csv_content  # but still logged, per the CSV design
 
     out = capsys.readouterr().out
-    assert f"Tracks added to '{city.playlist_name}': 0" in out
+    assert "Tracks in rebuilt playlist: 0" in out
     assert "Skipped playlist add (party/DJ set): BRITPOP! - A Night Out" in out
-
-
-def test_run_reports_a_failed_add_tracks_without_counting_it_as_added(monkeypatch, tmp_path, capsys):
-    _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
-    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
-
-    concerts = [
-        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Quota Band", description="", ticket_link="http://x"),
-    ]
-    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
-
-    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
-    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
-    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
-    # add_tracks returns False (e.g. a non-"SUCCEEDED" response) rather than raising.
-    monkeypatch.setattr(main, "add_tracks", lambda playlist_id, track_ids, existing_ids: False)
-
-    main.run(city, "PL1")
-
-    out = capsys.readouterr().out
-    assert f"Tracks added to '{city.playlist_name}': 0" in out  # not silently counted as a success
-    assert "Failed to add tracks for: Quota Band" in out
-    assert "Lookup errors" not in out  # this is a reported failure, not an exception
 
 
 def test_run_includes_concerts_from_the_uitinvlaanderen_scraper(monkeypatch, tmp_path):
@@ -785,3 +731,163 @@ def test_run_survives_a_vndg_fetch_failure(monkeypatch, tmp_path, capsys):
 
     out = capsys.readouterr().out
     assert "vndg.be" in out
+
+
+def test_run_rebuilds_the_playlist_from_the_pruned_tracker_in_date_order(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+
+    # A stale entry already in the tracker file: must be pruned before the rebuild.
+    (tmp_path / "playlist_tracks.json").write_text(
+        '{"Missy Sippy|2026-09-01|Past Band": ["gone1"]}'
+    )
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 10, 1), band="Later Band",
+                description="", ticket_link="http://late"),
+        Concert(venue="Missy Sippy", date=date(2026, 9, 20), band="Sooner Band",
+                description="", ticket_link="http://soon"),
+    ]
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+
+    ids_by_browse_id = {"UC_Sooner Band": ["s1", "s2"], "UC_Later Band": ["l1", "l2"]}
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": f"UC_{band}", "artist": band})
+    monkeypatch.setattr(
+        main, "get_artist_info",
+        lambda channel_id, track_limit=2: ([{"videoId": v} for v in ids_by_browse_id[channel_id]], None),
+    )
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    captured = {}
+    monkeypatch.setattr(
+        main, "rebuild_playlist",
+        lambda playlist_id, ordered_video_ids, dry_run=False: captured.update(
+            playlist_id=playlist_id, ids=list(ordered_video_ids), dry_run=dry_run
+        ),
+    )
+
+    main.run(city, "PL1")
+
+    assert captured["playlist_id"] == "PL1"
+    assert captured["dry_run"] is False
+    # Sooner Band (2026-09-20) before Later Band (2026-10-01); stale Past Band dropped.
+    assert captured["ids"] == ["s1", "s2", "l1", "l2"]
+
+    import json
+    saved = json.loads((tmp_path / "playlist_tracks.json").read_text())
+    assert "Missy Sippy|2026-09-01|Past Band" not in saved
+    assert saved["Missy Sippy|2026-09-20|Sooner Band"] == ["s1", "s2"]
+
+
+def test_run_summary_reports_the_rebuilt_playlist_size(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 9, 20), band="Two Track Band",
+                description="", ticket_link="http://x"),
+    ]
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: (
+        [{"videoId": "a"}, {"videoId": "b"}], None
+    ))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    main.run(city, "PL1")
+
+    out = capsys.readouterr().out
+    assert "Tracks in rebuilt playlist: 2" in out
+    assert "Tracks added to" not in out
+
+
+def test_run_dry_run_previews_the_rebuild_but_still_writes_csv_tracker_and_html(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 9, 20), band="DryRun Band",
+                description="", ticket_link="http://x"),
+    ]
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "d1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+
+    captured = {}
+    monkeypatch.setattr(
+        main, "rebuild_playlist",
+        lambda playlist_id, ordered_video_ids, dry_run=False: captured.update(dry_run=dry_run),
+    )
+
+    main.run(city, "PL1", dry_run=True)
+
+    assert captured["dry_run"] is True
+    assert (tmp_path / "concerts.csv").read_text().count("DryRun Band") == 1
+    import json
+    saved = json.loads((tmp_path / "playlist_tracks.json").read_text())
+    assert saved["Missy Sippy|2026-09-20|DryRun Band"] == ["d1"]
+    assert city.html_path.exists()
+
+
+def test_run_survives_a_rebuild_playlist_exception(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+
+    concerts = [
+        Concert(venue="Missy Sippy", date=date(2026, 8, 20), band="Good Band",
+                description="", ticket_link="http://x"),
+    ]
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper(concerts))])
+    monkeypatch.setattr(main, "search_artist", lambda band: {"browseId": "UC1", "artist": band})
+    monkeypatch.setattr(main, "get_artist_info", lambda channel_id, track_limit=2: ([{"videoId": "vid1"}], None))
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: "Rock")
+
+    def _boom(playlist_id, ordered_video_ids, dry_run=False):
+        raise RuntimeError("YouTube Music API error: playlist not found")
+
+    monkeypatch.setattr(main, "rebuild_playlist", _boom)
+
+    main.run(city, "PL1")  # must not raise
+
+    assert "Good Band" in (tmp_path / "concerts.csv").read_text()
+    import json
+    saved = json.loads((tmp_path / "playlist_tracks.json").read_text())
+    assert saved["Missy Sippy|2026-08-20|Good Band"] == ["vid1"]  # tracker.save() still runs
+
+    out = capsys.readouterr().out
+    assert "Warning: failed to rebuild playlist" in out
+
+
+def test_main_strips_the_dry_run_flag_and_threads_it_into_run(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))], key="gent")
+    monkeypatch.setattr(main, "CITIES", {"gent": city})
+
+    calls = []
+    monkeypatch.setattr(main, "run", lambda c, playlist_id, dry_run=False: calls.append((c.key, dry_run)))
+
+    main.main(["gent", "--dry-run"])
+
+    assert calls == [("gent", True)]
+
+
+def test_main_dry_run_flag_works_without_a_city_argument(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))], key="gent")
+    monkeypatch.setattr(main, "CITIES", {"gent": city})
+
+    calls = []
+    monkeypatch.setattr(main, "run", lambda c, playlist_id, dry_run=False: calls.append((c.key, dry_run)))
+
+    main.main(["--dry-run"])
+
+    assert calls == [("gent", True)]
