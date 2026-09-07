@@ -154,3 +154,33 @@ def add_tracks(playlist_id: str, track_ids: list[str], existing_ids: set[str]) -
     if succeeded:
         existing_ids.update(new_ids)
     return succeeded
+
+
+def rebuild_playlist(
+    playlist_id: str, ordered_video_ids: list[str], dry_run: bool = False
+) -> None:
+    """Make the live playlist a wholesale copy of `ordered_video_ids`.
+
+    Fetches the current playlist exactly once (for the setVideoId values
+    remove_playlist_items needs), removes every current item — tracked or
+    not; anything added outside this script is dropped and does not come
+    back — then re-adds the given IDs in list order.
+
+    dry_run previews the two mutating calls without making either.
+    """
+    current = _client.get_playlist(playlist_id, limit=None).get("tracks", [])
+
+    if dry_run:
+        print(
+            f"[dry-run] would remove {len(current)} tracks, "
+            f"re-add {len(ordered_video_ids)} in date order"
+        )
+        return
+
+    # Both guards are load-bearing: remove_playlist_items raises
+    # YTMusicUserError on an empty list, and add_playlist_items raises it
+    # when given neither videoIds nor source_playlist.
+    if current:
+        _client.remove_playlist_items(playlist_id, current)
+    if ordered_video_ids:
+        _client.add_playlist_items(playlist_id, ordered_video_ids, duplicates=True)
