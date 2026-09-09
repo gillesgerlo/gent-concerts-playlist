@@ -72,6 +72,12 @@ def test_render_html_escapes_band_name_to_prevent_injection():
     assert "&lt;script&gt;" in html
 
 
+def _datalist_html(html: str, list_id: str) -> str:
+    start = html.index(f'<datalist id="{list_id}">')
+    end = html.index("</datalist>", start)
+    return html[start:end]
+
+
 def test_render_html_includes_venue_filter_options_for_distinct_venues():
     rows = [
         {
@@ -88,12 +94,11 @@ def test_render_html_includes_venue_filter_options_for_distinct_venues():
 
     html = render_html(rows, "Gent")
 
-    venue_select_start = html.index('id="venue-filter"')
-    venue_select_end = html.index("</select>", venue_select_start)
-    venue_select_html = html[venue_select_start:venue_select_end]
+    venue_options = _datalist_html(html, "venue-options")
 
-    assert '<option value="Missy Sippy">Missy Sippy</option>' in venue_select_html
-    assert '<option value="VIERNULVIER">VIERNULVIER</option>' in venue_select_html
+    assert '<input id="venue-filter" type="search" list="venue-options"' in html
+    assert '<option value="Missy Sippy"></option>' in venue_options
+    assert '<option value="VIERNULVIER"></option>' in venue_options
 
 
 def test_render_html_includes_genre_filter_options_for_distinct_genres():
@@ -112,12 +117,11 @@ def test_render_html_includes_genre_filter_options_for_distinct_genres():
 
     html = render_html(rows, "Gent")
 
-    genre_select_start = html.index('id="genre-filter"')
-    genre_select_end = html.index("</select>", genre_select_start)
-    genre_select_html = html[genre_select_start:genre_select_end]
+    genre_options = _datalist_html(html, "genre-options")
 
-    assert '<option value="Soul">Soul</option>' in genre_select_html
-    assert '<option value="Jazz">Jazz</option>' in genre_select_html
+    assert '<input id="genre-filter" type="search" list="genre-options"' in html
+    assert '<option value="Soul"></option>' in genre_options
+    assert '<option value="Jazz"></option>' in genre_options
 
 
 def test_render_html_genre_filter_excludes_blank_values():
@@ -136,11 +140,10 @@ def test_render_html_genre_filter_excludes_blank_values():
 
     html = render_html(rows, "Gent")
 
-    genre_select_start = html.index('id="genre-filter"')
-    genre_select_end = html.index("</select>", genre_select_start)
-    genre_select_html = html[genre_select_start:genre_select_end]
+    genre_options = _datalist_html(html, "genre-options")
 
-    assert genre_select_html.count('<option value="">') == 1
+    assert '<option value=""></option>' not in genre_options
+    assert genre_options.count("<option") == 1
 
 
 def test_write_html_writes_upcoming_rows_to_html_path(tmp_path):
@@ -184,9 +187,17 @@ def test_render_html_tolerates_a_row_dict_missing_the_newer_columns():
     assert "Future Band" in html
 
 
-def test_render_html_labels_the_ticket_column_header_as_links():
-    html = render_html([], "Gent")
-    assert "<th onclick=\"sortTable(5)\">Links</th>" in html
+def test_render_html_groups_listing_rows_under_a_day_heading():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent", today=date(2026, 8, 13))
+
+    assert '<section class="day-group" data-date="2026-08-20">' in html
+    assert "<h3 class=\"day\">Thursday 20 August</h3>" in html
 
 
 def test_render_html_labels_the_ticket_link_as_event():
@@ -198,7 +209,7 @@ def test_render_html_labels_the_ticket_link_as_event():
 
     html = render_html(rows, "Gent")
 
-    assert '<a href="http://future" target="_blank">Event</a>' in html
+    assert '<a class="btn" href="http://future" target="_blank">Event</a>' in html
 
 
 def test_render_html_adds_a_listen_link_when_track_lookup_has_a_matching_entry():
@@ -212,7 +223,7 @@ def test_render_html_adds_a_listen_link_when_track_lookup_has_a_matching_entry()
     html = render_html(rows, "Gent", track_lookup=track_lookup, playlist_id="PL1")
 
     assert (
-        '<a href="https://music.youtube.com/watch?v=abc123&amp;list=PL1" '
+        '<a class="btn btn--play" href="https://music.youtube.com/watch?v=abc123&amp;list=PL1" '
         'target="_blank">▶ Listen</a>'
     ) in html
     assert "def456" not in html
@@ -240,6 +251,6 @@ def test_render_html_listen_link_omits_list_param_without_a_playlist_id():
 
     html = render_html(rows, "Gent", track_lookup=track_lookup)
 
-    assert '<a href="https://music.youtube.com/watch?v=abc123" target="_blank">▶ Listen</a>' in html
+    assert '<a class="btn btn--play" href="https://music.youtube.com/watch?v=abc123" target="_blank">▶ Listen</a>' in html
 
 
