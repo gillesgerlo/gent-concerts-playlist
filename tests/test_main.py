@@ -931,3 +931,27 @@ def test_main_dry_run_flag_works_without_a_city_argument(monkeypatch, tmp_path):
     main.main(["--dry-run"])
 
     assert calls == [("gent", True)]
+
+
+def test_main_dry_run_skips_the_github_push_and_the_browser_open(monkeypatch, tmp_path, capsys):
+    # --dry-run is a full local run: the page is still regenerated on disk, but
+    # nothing leaves the machine -- no commit/push to the remote, no browser tab.
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 60)
+    _run_with_frozen_today(monkeypatch, date(2026, 9, 7))
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))], key="gent")
+    monkeypatch.setattr(main, "CITIES", {"gent": city})
+
+    pushed: list = []
+    opened: list = []
+    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
+
+    main.main(["gent", "--dry-run"])
+
+    assert pushed == []
+    assert opened == []
+    assert city.html_path.exists()  # page still regenerated locally
+    assert "dry-run" in capsys.readouterr().out

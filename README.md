@@ -33,11 +33,12 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 - `python main.py` runs every configured city.
 - `python main.py gent` / `python main.py brugge` runs just that one.
-- `python main.py --dry-run` (or `python main.py <city> --dry-run`) previews
-  only the playlist remove/re-add — it prints what the rebuild would do and
-  makes no playlist changes. Scraping, the `concerts.csv` write,
-  `playlist_tracks.json`, HTML regeneration and the GitHub push all still
-  happen.
+- `python main.py --dry-run` (or `python main.py <city> --dry-run`) is a full
+  local run that touches nothing off your machine. Scraping, the Last.fm /
+  YouTube Music lookups, the `concerts.csv` write, `playlist_tracks.json` and
+  HTML regeneration all still happen; the playlist remove/re-add is only
+  previewed (it prints what it would do), and the git commit/push to GitHub
+  Pages and the browser-open are skipped. See "Local development runs" below.
 - Add a new venue by creating a scraper module under `scrapers/<city>/` and
   appending it to that package's `SCRAPERS` list.
 
@@ -100,6 +101,46 @@ python main.py
 
 The script will then guide you through the HAR extraction process.
 
+
+## Local development runs
+
+To hack on a scraper or the pipeline without disturbing your real playlist,
+your working checkout, or GitHub Pages, work in a git worktree and use
+`--dry-run`:
+
+```
+git worktree add ../gcp-dev            # isolated checkout on its own branch
+cd ../gcp-dev
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+The `.env`, `auth/ytmusic_auth.json` and `data/<city>/` files are gitignored,
+so a fresh worktree doesn't have them. Copy them over from your main checkout:
+
+```
+cp ../gent-concerts-playlist/.env .
+cp ../gent-concerts-playlist/auth/ytmusic_auth.json auth/
+mkdir -p data/gent data/brugge
+cp ../gent-concerts-playlist/data/gent/*   data/gent/
+cp ../gent-concerts-playlist/data/brugge/* data/brugge/
+```
+
+Copying the CSV + tracker makes a dev run a fast incremental (only genuinely
+new concerts get processed). `rm` them instead if you want to exercise a cold
+full rebuild. Either way it's a private copy — the worktree can't corrupt your
+originals.
+
+Then:
+
+```
+python main.py gent --dry-run
+```
+
+This scrapes for real and does the read-only Last.fm / YouTube Music lookups,
+writes this worktree's own `concerts.csv` / `playlist_tracks.json` / HTML, and
+previews the playlist rebuild. It does **not** modify the YouTube Music
+playlist, commit, push, or open a browser tab.
 
 ## Tests
 

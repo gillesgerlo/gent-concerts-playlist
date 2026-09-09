@@ -386,6 +386,15 @@ def main(argv: list[str] | None = None) -> None:
     written = [city.html_path for city in completed]
     if not written:
         return
+    if dry_run:
+        # --dry-run is a full local run: scrape, look things up, regenerate the
+        # page(s) on disk and preview the playlist rebuild -- but touch nothing
+        # off this machine. Skip the commit/push to the remote and the browser.
+        print(
+            f"[dry-run] regenerated {len(written)} page(s) locally; "
+            f"skipping git push and browser open"
+        )
+        return
     _push_html_to_github(written)
     for path in written:
         webbrowser.open(path.resolve().as_uri())
