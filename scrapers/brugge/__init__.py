@@ -2,6 +2,7 @@ from scrapers.base import Scraper
 from scrapers.uit import VENUE as UIT_VENUE, UitScraper
 from .cactus import VENUE as CACTUS_VENUE, CactusScraper
 from .het_entrepot import VENUE as HET_ENTREPOT_VENUE, HetEntrepotScraper
+from .izzy import VENUE as IZZY_VENUE, IzzyScraper
 from .kaap import VENUE as KAAP_VENUE, KaapScraper
 from .snuffel import VENUE as SNUFFEL_VENUE, SnuffelScraper
 
@@ -10,6 +11,7 @@ BRUGGE_NIS_CODE = "nis-31005"
 _DEDICATED: list[tuple[str, Scraper]] = [
     (CACTUS_VENUE, CactusScraper()),
     (HET_ENTREPOT_VENUE, HetEntrepotScraper()),
+    (IZZY_VENUE, IzzyScraper()),
     (KAAP_VENUE, KaapScraper()),
     (SNUFFEL_VENUE, SnuffelScraper()),
 ]
@@ -28,6 +30,7 @@ KNOWN_VENUE_NAMES: tuple[str, ...] = (
     "KAAP",
     "De Werf",
     "Snuffel",  # matches both "De Snuffel" and "Snuffel Hostel"
+    "Izzy",  # matches "Izzy JazzClub" / "Izzy Jazz Club" however UiT spells it
 )
 
 SCRAPERS: list[tuple[str, Scraper]] = _DEDICATED + [
