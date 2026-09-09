@@ -46,32 +46,6 @@
   section { margin-bottom: var(--size-8, 3rem); }
   h2 { font-size: var(--font-size-1, .85rem); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin: 0 0 var(--size-4, 1rem); }
 
-  .lane {
-    display: flex; gap: var(--size-4, 1rem);
-    overflow-x: auto; scroll-snap-type: x mandatory;
-    padding-bottom: var(--size-3, .6rem);
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-    -webkit-overflow-scrolling: touch;
-  }
-  .lane::-webkit-scrollbar { height: 8px; }
-  .lane::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-  .gig {
-    flex: 0 0 clamp(260px, 80vw, 340px); scroll-snap-align: start;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-3, 12px); overflow: hidden;
-    display: grid; grid-template-columns: 76px 1fr; gap: var(--size-3, .85rem);
-    padding: var(--size-3, .7rem);
-    transition: border-color .15s var(--ease-3, ease), transform .15s var(--ease-3, ease);
-  }
-  .gig:hover { border-color: #3d3d44; transform: translateY(-2px); }
-  .gig__art { width: 76px; height: 76px; border-radius: var(--radius-2, 8px); background-size: cover; background-position: center; align-self: center; }
-  .gig__body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; padding: .1rem 0; }
-  .gig__when { margin: 0; font-size: var(--font-size-0, .72rem); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); font-weight: 700; }
-  .gig__band { margin: 0; font-size: var(--font-size-2, 1rem); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gig__meta { margin: 0; color: var(--muted); font-size: var(--font-size-1, .8rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gig__actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }
-  .gig__actions .btn { padding: .35rem .65rem; font-size: var(--font-size-0, .72rem); }
-
   .btn {
     display: inline-flex; align-items: center; gap: .3rem;
     padding: .45rem .8rem; border-radius: 999px;
@@ -127,7 +101,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .row__actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
-  .row.is-hidden, .day-group.is-hidden { display: none; }
+  .row.is-hidden, .day-group.is-hidden, .day-group.is-past { display: none; }
   .empty { color: var(--muted); }
 
   footer { margin-top: var(--size-9, 4rem); padding-top: var(--size-5, 1.5rem); border-top: 1px solid var(--border); color: var(--muted); font-size: var(--font-size-1, .85rem); }
@@ -148,65 +122,6 @@
     <ul class="links"><li><a href="https://github.com/gillesgerlo/gent-concerts-playlist" target="_blank">Contribute on GitHub</a></li><li><a href="https://www.instagram.com/hopeless.fanatics/" target="_blank">Contact me via IG</a></li><li><a href="https://music.youtube.com/playlist?list=PLHNvhdg9ZQKM" target="_blank">YouTube Music Playlist</a></li><li><a href="brugge.html">Switch to Brugge</a></li></ul>
   </header>
 
-  <section class="tonight">
-    <h2>Tonight in Gent</h2>
-    <div class="lane">
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(282 52% 22%), hsl(337 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">UITGESTELD / Fenne Kuppens + Laura De Jongh</h3>
-          <p class="gig__meta">VIERNULVIER</p>
-          <div class="gig__actions"><a class="btn" href="https://www.viernulvier.gent/nl/agenda/uitgesteld-fenne-kuppens-laura-de-jongh-thrt" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(195 52% 22%), hsl(250 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">Monkey Mask</h3>
-          <p class="gig__meta">Ringo Music Bar</p>
-          <div class="gig__actions"><a class="btn" href="https://ringogent.be/agenda/monkey-mask" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(126 52% 22%), hsl(181 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">Kathleen Vandenhoudt &amp; Bruno Deneckere</h3>
-          <p class="gig__meta">Café de Loge</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/kathleen-vandenhoudt-bruno-deneckere/2409eede-fcca-421e-bb78-1e34d9d67072" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(326 52% 22%), hsl(21 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">Palmarium: Fenne Kuppens + Laura De Jongh</h3>
-          <p class="gig__meta">Plantentuin Ugent</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/palmarium-fenne-kuppens-laura-de-jongh/f95d5351-24a8-4fe9-8e3d-86b5a2f021a1" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(146 52% 22%), hsl(201 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">EMC-3 PLUS + Bart Maris&#x27; Jam</h3>
-          <p class="gig__meta">Hot Club Gent</p>
-          <div class="gig__actions"><a class="btn" href="https://www.hotclub.gent/programma.php" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:url('https://i.ytimg.com/vi/CE4KIBUY50E/mqdefault.jpg'), linear-gradient(135deg, hsl(42 52% 22%), hsl(97 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tonight</p>
-          <h3 class="gig__band">IN DIE STER: Unyoke (BE) + Aloam (BE)</h3>
-          <p class="gig__meta">Muziekcentrum Kinky Star</p>
-          <div class="gig__actions"><a class="btn btn--play" href="https://music.youtube.com/watch?v=CE4KIBUY50E&amp;list=PLHNvhdg9ZQKM" target="_blank">▶ Listen</a><a class="btn" href="https://www.kinkystar.com/nl/events/2026-09-09-in-die-ster-unyoke-be-aloam-be" target="_blank">Event</a></div>
-        </div>
-      </article>
-    </div>
-  </section>
   <section class="listing">
     <div class="listing__head">
       <h2>All upcoming</h2>
@@ -4211,6 +4126,7 @@ Onder de naam ssaliva maakt Boulanger sinds 2011 hypnotische en etherische sound
         <div class="row__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/interlinie-met-ola-tunji-mother-tongue/1e285e3c-82f5-45c7-aa76-cebbb9094c31" target="_blank">Event</a></div>
       </article>
     </section>
+    <p class="empty" id="empty-state" hidden>No upcoming concerts right now — check back soon.</p>
   </section>
 
   <footer>
@@ -4234,8 +4150,23 @@ function applyFilters() {
     group.classList.toggle("is-hidden", visible === 0);
   });
 }
+// Concerts stay in the page until the next tool run regenerates it. Hide any
+// day that is already in the past relative to the visitor's current date so a
+// stale page still only shows upcoming shows.
+function prunePastDays() {
+  var today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Brussels" });
+  var future = 0;
+  document.querySelectorAll(".day-group").forEach(function (group) {
+    var past = group.dataset.date < today;
+    group.classList.toggle("is-past", past);
+    if (!past) future++;
+  });
+  var empty = document.getElementById("empty-state");
+  if (empty) empty.hidden = future !== 0;
+}
 document.getElementById("venue-filter").addEventListener("input", applyFilters);
 document.getElementById("genre-filter").addEventListener("input", applyFilters);
+prunePastDays();
 </script>
 </body>
 </html>
