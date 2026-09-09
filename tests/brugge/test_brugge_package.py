@@ -12,6 +12,7 @@ def test_known_venue_names_match_uitdatabanks_own_spellings():
     assert _is_known_venue("KAAP | De Werf", names) is True
     assert _is_known_venue("Cactus Muziekcentrum", names) is True
     assert _is_known_venue("Het Entrepot", names) is True
+    assert _is_known_venue("Izzy JazzClub", names) is True
 
 
 def test_known_venue_names_do_not_swallow_uncovered_venues():
@@ -21,6 +22,13 @@ def test_known_venue_names_do_not_swallow_uncovered_venues():
     # catch-all rather than being blanket-excluded.
     assert _is_known_venue("Stadsschouwburg Brugge", names) is False
     assert _is_known_venue("MaZ", names) is False
+
+
+def test_izzy_jazzclub_has_a_dedicated_scraper_wired_in():
+    from scrapers.brugge.izzy import IzzyScraper
+
+    wired = {name: s for name, s in brugge.SCRAPERS}
+    assert isinstance(wired.get("Izzy JazzClub"), IzzyScraper)
 
 
 def test_the_uit_catch_all_is_wired_with_the_dedup_names():
