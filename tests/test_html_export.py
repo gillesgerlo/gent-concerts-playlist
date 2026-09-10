@@ -254,3 +254,42 @@ def test_render_html_listen_link_omits_list_param_without_a_playlist_id():
     assert '<a class="btn btn--play" href="https://music.youtube.com/watch?v=abc123" target="_blank">▶ Listen</a>' in html
 
 
+def test_render_html_omits_the_swimlane_section():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "Soul", "Event Description": "", "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent", today=date(2026, 8, 13))
+
+    assert 'class="tonight"' not in html
+    assert 'class="gig"' not in html
+    assert 'class="lane"' not in html
+    assert "Tonight in" not in html
+    assert "This week in" not in html
+
+
+def test_render_html_includes_the_past_day_pruning_hook():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "Soul", "Event Description": "", "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent", today=date(2026, 8, 13))
+
+    assert ".day-group.is-past" in html
+    assert 'timeZone: "Europe/Brussels"' in html
+    assert "prunePastDays" in html
+
+
+def test_render_html_emits_a_hidden_empty_fallback_when_rows_exist():
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",
+        "Genre": "Soul", "Event Description": "", "Ticket/Event Link": "http://future",
+    }]
+
+    html = render_html(rows, "Gent", today=date(2026, 8, 13))
+
+    assert '<p class="empty" id="empty-state" hidden>' in html
+
+
