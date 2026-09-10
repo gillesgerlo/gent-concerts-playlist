@@ -46,32 +46,6 @@
   section { margin-bottom: var(--size-8, 3rem); }
   h2 { font-size: var(--font-size-1, .85rem); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin: 0 0 var(--size-4, 1rem); }
 
-  .lane {
-    display: flex; gap: var(--size-4, 1rem);
-    overflow-x: auto; scroll-snap-type: x mandatory;
-    padding-bottom: var(--size-3, .6rem);
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-    -webkit-overflow-scrolling: touch;
-  }
-  .lane::-webkit-scrollbar { height: 8px; }
-  .lane::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-  .gig {
-    flex: 0 0 clamp(260px, 80vw, 340px); scroll-snap-align: start;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-3, 12px); overflow: hidden;
-    display: grid; grid-template-columns: 76px 1fr; gap: var(--size-3, .85rem);
-    padding: var(--size-3, .7rem);
-    transition: border-color .15s var(--ease-3, ease), transform .15s var(--ease-3, ease);
-  }
-  .gig:hover { border-color: #3d3d44; transform: translateY(-2px); }
-  .gig__art { width: 76px; height: 76px; border-radius: var(--radius-2, 8px); background-size: cover; background-position: center; align-self: center; }
-  .gig__body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; padding: .1rem 0; }
-  .gig__when { margin: 0; font-size: var(--font-size-0, .72rem); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); font-weight: 700; }
-  .gig__band { margin: 0; font-size: var(--font-size-2, 1rem); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gig__meta { margin: 0; color: var(--muted); font-size: var(--font-size-1, .8rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gig__actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }
-  .gig__actions .btn { padding: .35rem .65rem; font-size: var(--font-size-0, .72rem); }
-
   .btn {
     display: inline-flex; align-items: center; gap: .3rem;
     padding: .45rem .8rem; border-radius: 999px;
@@ -127,7 +101,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .row__actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
-  .row.is-hidden, .day-group.is-hidden { display: none; }
+  .row.is-hidden, .day-group.is-hidden, .day-group.is-past { display: none; }
   .empty { color: var(--muted); }
 
   footer { margin-top: var(--size-9, 4rem); padding-top: var(--size-5, 1.5rem); border-top: 1px solid var(--border); color: var(--muted); font-size: var(--font-size-1, .85rem); }
@@ -148,83 +122,6 @@
     <ul class="links"><li><a href="https://github.com/gillesgerlo/gent-concerts-playlist" target="_blank">Contribute on GitHub</a></li><li><a href="https://www.instagram.com/hopeless.fanatics/" target="_blank">Contact me via IG</a></li><li><a href="https://music.youtube.com/playlist?list=PLBLMxHWQqAK4" target="_blank">YouTube Music Playlist</a></li><li><a href="index.html">Switch to Gent</a></li></ul>
   </header>
 
-  <section class="tonight">
-    <h2>This week in Brugge</h2>
-    <div class="lane">
-      <article class="gig">
-        <div class="gig__art" style="background-image:url('https://i.ytimg.com/vi/bGQkv4nKvIY/mqdefault.jpg'), linear-gradient(135deg, hsl(190 52% 22%), hsl(245 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tomorrow</p>
-          <h3 class="gig__band">Concert - Nandini</h3>
-          <p class="gig__meta">KORF · rallye label</p>
-          <div class="gig__actions"><a class="btn btn--play" href="https://music.youtube.com/watch?v=bGQkv4nKvIY&amp;list=PLBLMxHWQqAK4" target="_blank">▶ Listen</a><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/concert-nandini/85ef4532-7093-4cdd-b63b-05b1a2f5ab95" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(127 52% 22%), hsl(182 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tomorrow</p>
-          <h3 class="gig__band">Wagner, Debussy, Brahms, Britten by Kseniia Nikolaieva</h3>
-          <p class="gig__meta">Royal Municipal Theatre</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/wagner-debussy-brahms-britten-by-kseniia-nikolaieva/5206a04d-d210-4e91-bf34-dcaa2d60ec3e" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(143 52% 22%), hsl(198 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Tomorrow</p>
-          <h3 class="gig__band">Zomernocturne 2026</h3>
-          <p class="gig__meta">Adornesdomein &amp; Jeruzalemkapel</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/zomernocturne-2026/cb563745-9909-42d7-8c5f-71335eefdc09" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(208 52% 22%), hsl(263 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Sat 12 Sep</p>
-          <h3 class="gig__band">Internationaal Muziekfestival Adriaen Willaert</h3>
-          <p class="gig__meta">Heilig-bloed kapel</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/internationaal-muziekfestival-adriaen-willaert/368e7b30-0a49-48fc-bbc6-4a1689079547" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(255 52% 22%), hsl(310 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Sun 13 Sep</p>
-          <h3 class="gig__band">MAESTRO XAVIER DÍAZ-LATORRE — Stolen Roses —</h3>
-          <p class="gig__meta">Engels Klooster</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/maestro-xavier-d-az-latorre-stolen-roses/2bfdb360-8b19-4c13-a751-be51cef02317" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(162 52% 22%), hsl(217 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Sun 13 Sep</p>
-          <h3 class="gig__band">Gratis Concert van de Dore Male Choir uit Engeland</h3>
-          <p class="gig__meta">Sint-Gilliskerk</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/gratis-concert-van-de-dore-male-choir-uit-engeland/fb7289fe-6aa7-418c-aef5-182f814b0be0" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(302 52% 22%), hsl(357 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Thu 17 Sep</p>
-          <h3 class="gig__band">Werelddag Dementie in het Provinciaal Hof</h3>
-          <p class="gig__meta">Provinciaal Hof</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/werelddag-dementie-in-het-provinciaal-hof/0fa3a33a-c3cf-46f2-b48b-6d664d058d26" target="_blank">Event</a></div>
-        </div>
-      </article>
-      <article class="gig">
-        <div class="gig__art" style="background-image:linear-gradient(135deg, hsl(349 52% 22%), hsl(44 60% 11%));"></div>
-        <div class="gig__body">
-          <p class="gig__when">Thu 17 Sep</p>
-          <h3 class="gig__band">STOM! Festival van de Stille Film met live muziek in Brugge</h3>
-          <p class="gig__meta">Cinema Lumière Brugge</p>
-          <div class="gig__actions"><a class="btn" href="https://www.uitinvlaanderen.be/agenda/e/stom-festival-van-de-stille-film-met-live-muziek-in-brugge/92fd25f1-3cd4-4e0d-be49-6763999f99f7" target="_blank">Event</a></div>
-        </div>
-      </article>
-    </div>
-  </section>
   <section class="listing">
     <div class="listing__head">
       <h2>All upcoming</h2>
@@ -2051,6 +1948,7 @@ In de seventies schudden enkele muzikale aardverschuivingen de popwereld flink d
         <div class="row__actions"><a class="btn" href="https://www.cactusmusic.be/NL/Concerten/Kalender/the-tubs" target="_blank">Event</a><a class="btn btn--play" href="https://music.youtube.com/watch?v=BWgdTQZhdno&amp;list=PLBLMxHWQqAK4" target="_blank">▶ Listen</a></div>
       </article>
     </section>
+    <p class="empty" id="empty-state" hidden>No upcoming concerts right now — check back soon.</p>
   </section>
 
   <footer>
@@ -2074,8 +1972,23 @@ function applyFilters() {
     group.classList.toggle("is-hidden", visible === 0);
   });
 }
+// Concerts stay in the page until the next tool run regenerates it. Hide any
+// day that is already in the past relative to the visitor's current date so a
+// stale page still only shows upcoming shows.
+function prunePastDays() {
+  var today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Brussels" });
+  var future = 0;
+  document.querySelectorAll(".day-group").forEach(function (group) {
+    var past = group.dataset.date < today;
+    group.classList.toggle("is-past", past);
+    if (!past) future++;
+  });
+  var empty = document.getElementById("empty-state");
+  if (empty) empty.hidden = future !== 0;
+}
 document.getElementById("venue-filter").addEventListener("input", applyFilters);
 document.getElementById("genre-filter").addEventListener("input", applyFilters);
+prunePastDays();
 </script>
 </body>
 </html>
