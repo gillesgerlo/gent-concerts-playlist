@@ -1,7 +1,7 @@
 import csv
 import hashlib
 import html
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 
 COLUMNS = [
@@ -21,16 +21,6 @@ except OSError:
 def _format_date(iso_date: str) -> str:
     parsed = datetime.strptime(iso_date, "%Y-%m-%d").date()
     return parsed.strftime("%A %-d %B")
-
-
-def _short_day_label(iso_date: str, today: date) -> str:
-    parsed = datetime.strptime(iso_date, "%Y-%m-%d").date()
-    delta = (parsed - today).days
-    if delta <= 0:
-        return "Tonight"
-    if delta == 1:
-        return "Tomorrow"
-    return parsed.strftime("%a %-d %b")
 
 
 def load_upcoming_rows(csv_path: Path, today: date) -> list[dict]:
@@ -119,19 +109,6 @@ def _meta_line(row: dict) -> str:
     return " · ".join(html.escape(p) for p in parts if p)
 
 
-def _lane_card(row: dict, today: date, track_lookup, playlist_id) -> str:
-    actions = _listen_link(row, track_lookup, playlist_id) + _event_link(row)
-    return f"""      <article class="gig">
-        <div class="gig__art" style="{_art_style(row, track_lookup)}"></div>
-        <div class="gig__body">
-          <p class="gig__when">{html.escape(_short_day_label(row['Date'], today))}</p>
-          <h3 class="gig__band">{html.escape(row.get('Band') or '')}</h3>
-          <p class="gig__meta">{_meta_line(row)}</p>
-          <div class="gig__actions">{actions}</div>
-        </div>
-      </article>"""
-
-
 def _listing_row(row: dict, track_lookup, playlist_id) -> str:
     actions = _event_link(row) + _listen_link(row, track_lookup, playlist_id)
     description = html.escape(row.get("Event Description") or "")
@@ -147,30 +124,25 @@ def _listing_row(row: dict, track_lookup, playlist_id) -> str:
       </article>"""
 
 
-def _listing_html(rows: list[dict], today: date, track_lookup, playlist_id) -> str:
-    if not rows:
-        return '    <p class="empty">No upcoming concerts right now — check back soon.</p>'
+def _listing_html(rows: list[dict], track_lookup, playlist_id) -> str:
     groups: list[str] = []
     current_date: str | None = None
     buf: list[str] = []
     for row in rows:
         if row["Date"] != current_date:
             if buf:
-                groups.append(_day_group(current_date, today, buf))
+                groups.append(_day_group(current_date, buf))
             current_date = row["Date"]
             buf = []
         buf.append(_listing_row(row, track_lookup, playlist_id))
     if buf:
-        groups.append(_day_group(current_date, today, buf))
+        groups.append(_day_group(current_date, buf))
     return "\n".join(groups)
 
 
-def _day_group(iso_date: str, today: date, row_html: list[str]) -> str:
-    label = _short_day_label(iso_date, today)
-    full = _format_date(iso_date)
-    heading = full if label in ("Tonight", "Tomorrow") else full
+def _day_group(iso_date: str, row_html: list[str]) -> str:
     return f"""    <section class="day-group" data-date="{html.escape(iso_date)}">
-      <h3 class="day">{html.escape(heading)}</h3>
+      <h3 class="day">{html.escape(_format_date(iso_date))}</h3>
 {chr(10).join(row_html)}
     </section>"""
 
@@ -181,36 +153,14 @@ def render_html(
     other_pages: list[tuple[str, str]] = (),
     playlist_id: str | None = None,
     track_lookup: dict[str, list[str]] | None = None,
-    today: date | None = None,
+    today: date | None = None,  # noqa: ARG001 -- unused; the past-day cut is now client-side, callers still pass it
 ) -> str:
-    today = today or date.today()
     title = f"Upcoming Concerts — {display_name}"
-    today_iso = today.isoformat()
-
-    tonight = [r for r in rows if r["Date"] == today_iso]
-    if tonight:
-        lane_rows, lane_label = tonight, f"Tonight in {display_name}"
-    else:
-        week_end = (today + timedelta(days=7)).isoformat()
-        lane_rows = [r for r in rows if today_iso <= r["Date"] <= week_end][:12]
-        lane_label = f"This week in {display_name}"
-
-    lane_section = ""
-    if lane_rows:
-        cards = "\n".join(
-            _lane_card(r, today, track_lookup, playlist_id) for r in lane_rows
-        )
-        lane_section = f"""  <section class="tonight">
-    <h2>{html.escape(lane_label)}</h2>
-    <div class="lane">
-{cards}
-    </div>
-  </section>
-"""
 
     venue_options = _datalist_options(rows, "Venue")
     genre_options = _datalist_options(rows, "Genre")
-    listing = _listing_html(rows, today, track_lookup, playlist_id)
+    listing = _listing_html(rows, track_lookup, playlist_id)
+    empty_hidden = " hidden" if rows else ""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -259,32 +209,6 @@ def render_html(
 
   section {{ margin-bottom: var(--size-8, 3rem); }}
   h2 {{ font-size: var(--font-size-1, .85rem); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin: 0 0 var(--size-4, 1rem); }}
-
-  .lane {{
-    display: flex; gap: var(--size-4, 1rem);
-    overflow-x: auto; scroll-snap-type: x mandatory;
-    padding-bottom: var(--size-3, .6rem);
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-    -webkit-overflow-scrolling: touch;
-  }}
-  .lane::-webkit-scrollbar {{ height: 8px; }}
-  .lane::-webkit-scrollbar-thumb {{ background: var(--border); border-radius: 99px; }}
-  .gig {{
-    flex: 0 0 clamp(260px, 80vw, 340px); scroll-snap-align: start;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-3, 12px); overflow: hidden;
-    display: grid; grid-template-columns: 76px 1fr; gap: var(--size-3, .85rem);
-    padding: var(--size-3, .7rem);
-    transition: border-color .15s var(--ease-3, ease), transform .15s var(--ease-3, ease);
-  }}
-  .gig:hover {{ border-color: #3d3d44; transform: translateY(-2px); }}
-  .gig__art {{ width: 76px; height: 76px; border-radius: var(--radius-2, 8px); background-size: cover; background-position: center; align-self: center; }}
-  .gig__body {{ display: flex; flex-direction: column; gap: .15rem; min-width: 0; padding: .1rem 0; }}
-  .gig__when {{ margin: 0; font-size: var(--font-size-0, .72rem); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); font-weight: 700; }}
-  .gig__band {{ margin: 0; font-size: var(--font-size-2, 1rem); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-  .gig__meta {{ margin: 0; color: var(--muted); font-size: var(--font-size-1, .8rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-  .gig__actions {{ display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }}
-  .gig__actions .btn {{ padding: .35rem .65rem; font-size: var(--font-size-0, .72rem); }}
 
   .btn {{
     display: inline-flex; align-items: center; gap: .3rem;
@@ -341,7 +265,7 @@ def render_html(
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }}
   .row__actions {{ display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }}
-  .row.is-hidden, .day-group.is-hidden {{ display: none; }}
+  .row.is-hidden, .day-group.is-hidden, .day-group.is-past {{ display: none; }}
   .empty {{ color: var(--muted); }}
 
   footer {{ margin-top: var(--size-9, 4rem); padding-top: var(--size-5, 1.5rem); border-top: 1px solid var(--border); color: var(--muted); font-size: var(--font-size-1, .85rem); }}
@@ -362,7 +286,7 @@ def render_html(
     <ul class="links">{_nav_links(list(other_pages), playlist_id)}</ul>
   </header>
 
-{lane_section}  <section class="listing">
+  <section class="listing">
     <div class="listing__head">
       <h2>All upcoming</h2>
       <div class="filters">
@@ -377,6 +301,7 @@ def render_html(
       </div>
     </div>
 {listing}
+    <p class="empty" id="empty-state"{empty_hidden}>No upcoming concerts right now — check back soon.</p>
   </section>
 
   <footer>
@@ -400,8 +325,23 @@ function applyFilters() {{
     group.classList.toggle("is-hidden", visible === 0);
   }});
 }}
+// Concerts stay in the page until the next tool run regenerates it. Hide any
+// day that is already in the past relative to the visitor's current date so a
+// stale page still only shows upcoming shows.
+function prunePastDays() {{
+  var today = new Date().toLocaleDateString("en-CA", {{ timeZone: "Europe/Brussels" }});
+  var future = 0;
+  document.querySelectorAll(".day-group").forEach(function (group) {{
+    var past = group.dataset.date < today;
+    group.classList.toggle("is-past", past);
+    if (!past) future++;
+  }});
+  var empty = document.getElementById("empty-state");
+  if (empty) empty.hidden = future !== 0;
+}}
 document.getElementById("venue-filter").addEventListener("input", applyFilters);
 document.getElementById("genre-filter").addEventListener("input", applyFilters);
+prunePastDays();
 </script>
 </body>
 </html>
