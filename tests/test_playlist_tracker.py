@@ -86,6 +86,15 @@ def test_ordered_video_ids_drops_a_duplicate_id_keeping_the_earliest_dated_occur
     assert t.ordered_video_ids() == ["shared", "early_only", "late_only"]
 
 
+def test_get_tracks_finds_entry_recorded_with_a_differently_quoted_band_name(tmp_path):
+    # Two sources scraping the same concert can spell an apostrophe
+    # differently (curly vs. straight); the key must still line up.
+    t = _tracker(tmp_path, {})
+    t.record_tracks("Zaal Goedleven", "2026-09-25", "Howlin’ Bones", ["v1", "v2"])
+
+    assert t.get_tracks("Zaal Goedleven", "2026-09-25", "Howlin' Bones") == ["v1", "v2"]
+
+
 def test_load_failed_is_false_for_an_absent_tracker_file(tmp_path):
     t = PlaylistTracker(tmp_path / "nope.json")
     assert t.load_failed is False

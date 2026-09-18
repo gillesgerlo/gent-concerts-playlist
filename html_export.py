@@ -4,6 +4,8 @@ import html
 from datetime import date, datetime
 from pathlib import Path
 
+from text_normalize import normalize_for_dedup
+
 COLUMNS = [
     "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
 ]
@@ -66,7 +68,9 @@ def _song_url(video_id: str, playlist_id: str | None) -> str:
 
 
 def _track_key(row: dict) -> str:
-    return f"{row.get('Venue') or ''}|{row.get('Date') or ''}|{row.get('Band') or ''}"
+    venue = normalize_for_dedup(row.get("Venue") or "")
+    band = normalize_for_dedup(row.get("Band") or "")
+    return f"{venue}|{row.get('Date') or ''}|{band}"
 
 
 def _video_ids(row: dict, track_lookup: dict[str, list[str]] | None) -> list[str]:

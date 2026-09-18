@@ -229,6 +229,25 @@ def test_render_html_adds_a_listen_link_when_track_lookup_has_a_matching_entry()
     assert "def456" not in html
 
 
+def test_render_html_adds_a_listen_link_when_row_band_has_a_smart_quote_the_tracker_key_lacks():
+    # The tracker key is normalized (straight apostrophe) by PlaylistTracker,
+    # but the CSV's displayed Band text can still carry the scraped source's
+    # own punctuation (e.g. a curly apostrophe) -- the lookup must line up.
+    rows = [{
+        "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Howlin’ Bones",
+        "Genre": "", "Event Description": "",
+        "Ticket/Event Link": "http://future",
+    }]
+    track_lookup = {"Missy Sippy|2026-08-20|Howlin' Bones": ["abc123"]}
+
+    html = render_html(rows, "Gent", track_lookup=track_lookup, playlist_id="PL1")
+
+    assert (
+        '<a class="btn btn--play" href="https://music.youtube.com/watch?v=abc123&amp;list=PL1" '
+        'target="_blank">▶ Listen</a>'
+    ) in html
+
+
 def test_render_html_omits_the_listen_link_when_track_lookup_has_no_matching_entry():
     rows = [{
         "Venue": "Missy Sippy", "Date": "2026-08-20", "Band": "Future Band",

@@ -4,6 +4,8 @@ import json
 from datetime import date
 from pathlib import Path
 
+from text_normalize import normalize_for_dedup
+
 
 class PlaylistTracker:
     """Maps concert (venue, date, band) to the video IDs added to the playlist."""
@@ -35,8 +37,13 @@ class PlaylistTracker:
 
     @staticmethod
     def _make_key(venue: str, date: str, band: str) -> str:
-        """Create a consistent key for a concert."""
-        return f"{venue}|{date}|{band}"
+        """Create a consistent key for a concert.
+
+        Band/venue text is normalized (e.g. smart quotes -> straight) so the
+        same concert scraped from two sources with differing punctuation
+        glyphs maps to one key instead of silently forking into two.
+        """
+        return f"{normalize_for_dedup(venue)}|{date}|{normalize_for_dedup(band)}"
 
     def record_tracks(self, venue: str, date: str, band: str, video_ids: list[str]) -> None:
         """Record the video IDs added for a concert."""

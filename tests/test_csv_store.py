@@ -108,6 +108,13 @@ def test_csvstore_auto_upgrades_a_legacy_six_column_csv_header_on_load(tmp_path)
     assert store.is_known("Missy Sippy", date(2026, 8, 20), "Donovan Keith Band") is True
 
 
+def test_is_known_true_for_a_band_differing_only_by_smart_vs_straight_apostrophe(tmp_path):
+    store = CsvStore(tmp_path / "concerts.csv")
+    store.append_row(_concert(band="Howlin’ Bones"))
+
+    assert store.is_known("Missy Sippy", date(2026, 8, 20), "Howlin' Bones") is True
+
+
 def test_csvstore_does_not_touch_a_csv_already_on_the_current_header(tmp_path):
     path = tmp_path / "concerts.csv"
     with path.open("w", newline="", encoding="utf-8") as f:

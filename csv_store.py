@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from scrapers.base import Concert
+from text_normalize import normalize_for_dedup
 
 CSV_HEADER = [
     "Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link",
@@ -46,7 +47,15 @@ class CsvStore:
         if _is_legacy_prefix_header(header):
             self._rewrite_with_current_header(rows)
 
-        return {(row["Venue"], row["Date"], row["Band"]) for row in rows}
+        return {self._dedup_key(row["Venue"], row["Date"], row["Band"]) for row in rows}
+
+    @staticmethod
+    def _dedup_key(venue: str, event_date: str, band: str) -> tuple[str, str, str]:
+        return (
+            normalize_for_dedup(venue),
+            event_date,
+            normalize_for_dedup(band),
+        )
 
     def _rewrite_with_current_header(self, rows: list[dict]) -> None:
         with self.path.open("w", newline="", encoding="utf-8") as f:
@@ -56,7 +65,7 @@ class CsvStore:
                 writer.writerow([row.get(col) or "" for col in CSV_HEADER])
 
     def is_known(self, venue: str, event_date: date, band: str) -> bool:
-        return (venue, event_date.isoformat(), band) in self._known
+        return self._dedup_key(venue, event_date.isoformat(), band) in self._known
 
     def append_row(
         self,
@@ -78,4 +87,4 @@ class CsvStore:
                 event_description,
                 concert.ticket_link,
             ])
-        self._known.add((concert.venue, concert.date.isoformat(), concert.band))
+        self._known.add(self._dedup_key(concert.venue, concert.date.isoformat(), concert.band))
