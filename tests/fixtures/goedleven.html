@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="nl-NL">
+<head>
+	<meta charset="UTF-8" />
+<script>
+var gform;gform||(document.addEventListener("gform_main_scripts_loaded",function(){gform.scriptsLoaded=!0}),document.addEventListener("gform/theme/scripts_loaded",function(){gform.themeScriptsLoaded=!0}),window.addEventListener("DOMContentLoaded",function(){gform.domLoaded=!0}),gform={domLoaded:!1,scriptsLoaded:!1,themeScriptsLoaded:!1,isFormEditor:()=>"function"==typeof InitializeEditor,callIfLoaded:function(o){return!(!gform.domLoaded||!gform.scriptsLoaded||!gform.themeScriptsLoaded&&!gform.isFormEditor()||(gform.isFormEditor()&&console.warn("The use of gform.initializeOnLoaded() is deprecated in the form editor context and will be removed in Gravity Forms 3.1."),o(),0))},initializeOnLoaded:function(o){gform.callIfLoaded(o)||(document.addEventListener("gform_main_scripts_loaded",()=>{gform.scriptsLoaded=!0,gform.callIfLoaded(o)}),document.addEventListener("gform/theme/scripts_loaded",()=>{gform.themeScriptsLoaded=!0,gform.callIfLoaded(o)}),window.addEventListener("DOMContentLoaded",()=>{gform.domLoaded=!0,gform.callIfLoaded(o)}))},hooks:{action:{},filter:{}},addAction:function(o,r,e,t){gform.addHook("action",o,r,e,t)},addFilter:function(o,r,e,t){gform.addHook("filter",o,r,e,t)},doAction:function(o){gform.doHook("action",o,arguments)},applyFilters:function(o){return gform.doHook("filter",o,arguments)},removeAction:function(o,r){gform.removeHook("action",o,r)},removeFilter:function(o,r,e){gform.removeHook("filter",o,r,e)},addHook:function(o,r,e,t,n){null==gform.hooks[o][r]&&(gform.hooks[o][r]=[]);var d=gform.hooks[o][r];null==n&&(n=r+"_"+d.length),gform.hooks[o][r].push({tag:n,callable:e,priority:t=null==t?10:t})},doHook:function(r,o,e){var t;if(e=Array.prototype.slice.call(e,1),null!=gform.hooks[r][o]&&((o=gform.hooks[r][o]).sort(function(o,r){return o.priority-r.priority}),o.forEach(function(o){"function"!=typeof(t=o.callable)&&(t=window[t]),"action"==r?t.apply(null,e):e[0]=t.apply(null,e)})),"filter"==r)return e[0]},removeHook:function(o,r,t,n){var e;null!=gform.hooks[o][r]&&(e=(e=gform.hooks[o][r]).filter(function(o,r,e){return!!(null!=n&&n!=o.tag||null!=t&&t!=o.priority)}),gform.hooks[o][r]=e)}});
+</script>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO plugin v28.4 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<meta name="description" content="Zin in een avond vol muziek? Ontdek de concertagenda van Muziekcentrum Goedleven. Koop hier je concert tickets." />
+	<link rel="canonical" href="https://muziekcentrumgoedleven.be/concertagenda/" />
+	<meta property="og:locale" content="nl_NL" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Niet te missen | Concerten bij Muziekcentrum Goedleven" />
+	<meta property="og:description" content="Zin in een avond vol muziek? Ontdek de concertagenda van Muziekcentrum Goedleven. Koop hier je concert tickets." />
+	<meta property="og:url" content="https://muziekcentrumgoedleven.be/concertagenda/" />
+	<meta property="og:site_name" content="Muziekcentrum Goedleven" />
+	<meta property="article:modified_time" content="2026-03-30T14:27:40+00:00" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:label1" content="Geschatte leestijd" />
+	<meta name="twitter:data1" content="1 minuut" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"WebPage","@id":"https:\/\/muziekcentrumgoedleven.be\/concertagenda\/","url":"https:\/\/muziekcentrumgoedleven.be\/concertagenda\/","name":"Niet te missen | Concerten bij Muziekcentrum Goedleven","isPartOf":{"@id":"https:\/\/muziekcentrumgoedleven.be\/#website"},"datePublished":"2026-02-09T14:27:50+00:00","dateModified":"2026-03-30T14:27:40+00:00","description":"Zin in een avond vol muziek? Ontdek de concertagenda van Muziekcentrum Goedleven. Koop hier je concert tickets.","breadcrumb":{"@id":"https:\/\/muziekcentrumgoedleven.be\/concertagenda\/#breadcrumb"},"inLanguage":"nl-NL","potentialAction":[{"@type":"ReadAction","target":["https:\/\/muziekcentrumgoedleven.be\/concertagenda\/"]}]},{"@type":"BreadcrumbList","@id":"https:\/\/muziekcentrumgoedleven.be\/concertagenda\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/muziekcentrumgoedleven.be\/"},{"@type":"ListItem","position":2,"name":"Concertagenda"}]},{"@type":"WebSite","@id":"https:\/\/muziekcentrumgoedleven.be\/#website","url":"https:\/\/muziekcentrumgoedleven.be\/","name":"Muziekcentrum Goedleven","description":"","publisher":{"@id":"https:\/\/muziekcentrumgoedleven.be\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/muziekcentrumgoedleven.be\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"nl-NL"},{"@type":"Organization","@id":"https:\/\/muziekcentrumgoedleven.be\/#organization","name":"Muziekcentrum Goedleven","url":"https:\/\/muziekcentrumgoedleven.be\/","logo":{"@type":"ImageObject","inLanguage":"nl-NL","@id":"https:\/\/muziekcentrumgoedleven.be\/#\/schema\/logo\/image\/","url":"https:\/\/muziekcentrumgoedleven.be\/wp-content\/uploads\/2024\/11\/logo_simpel_1_goedleven-3.svg","contentUrl":"https:\/\/muziekcentrumgoedleven.be\/wp-content\/uploads\/2024\/11\/logo_simpel_1_goedleven-3.svg","width":117,"height":115,"caption":"Muziekcentrum Goedleven"},"image":{"@id":"https:\/\/muziekcentrumgoedleven.be\/#\/schema\/logo\/image\/"}}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<title>Niet te missen | Concerten bij Muziekcentrum Goedleven</title>
+<link rel='dns-prefetch' href='//www.google.com' />
+<link rel='dns-prefetch' href='//www.googletagmanager.com' />
+<link rel="alternate" type="application/rss+xml" title="Muziekcentrum Goedleven &raquo; feed" href="https://muziekcentrumgoedleven.be/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Muziekcentrum Goedleven &raquo; reacties feed" href="https://muziekcentrumgoedleven.be/comments/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://muziekcentrumgoedleven.be/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmuziekcentrumgoedleven.be%2Fconcertagenda%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://muziekcentrumgoedleven.be/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmuziekcentrumgoedleven.be%2Fconcertagenda%2F&#038;format=xml" />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-site-logo-inline-css">
+.wp-block-site-logo{box-sizing:border-box;line-height:0}.wp-block-site-logo a{display:inline-block;line-height:0}.wp-block-site-logo.is-default-size img{height:auto;width:120px}.wp-block-site-logo img{height:auto;max-width:100%}.wp-block-site-logo a,.wp-block-site-logo img{border-radius:inherit}.wp-block-site-logo.aligncenter{margin-left:auto;margin-right:auto;text-align:center}:root :where(.wp-block-site-logo.is-style-rounded){border-radius:9999px}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/site-logo/style.min.css */
+</style>
+<style id="wp-block-navigation-link-inline-css">
+.wp-block-navigation .wp-block-navigation-item__label{overflow-wrap:break-word}.wp-block-navigation .wp-block-navigation-item__description{display:none}.link-ui-tools{outline:1px solid #f0f0f0;padding:8px}.link-ui-block-inserter{padding-top:8px}.link-ui-block-inserter__back{margin-left:8px;text-transform:uppercase}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/navigation-link/style.min.css */
+</style>
+<link rel='stylesheet' id='wp-block-navigation-css' href='https://muziekcentrumgoedleven.be/wp-includes/blocks/navigation/style.min.css?ver=7.1' media='all' />
+<style id="wp-block-button-inline-css">
+.wp-block-button__link{align-content:center;box-sizing:border-box;cursor:pointer;display:inline-block;height:100%;text-align:center;word-break:break-word}.wp-block-button__link.aligncenter{text-align:center}.wp-block-button__link.alignright{text-align:right}:where(.wp-block-button__link){border-radius:9999px;box-shadow:none;padding:calc(.667em + 2px) calc(1.333em + 2px);text-decoration:none}.wp-block-button[style*=text-decoration] .wp-block-button__link{text-decoration:inherit}.wp-block-buttons>.wp-block-button.has-custom-width{max-width:none}.wp-block-buttons>.wp-block-button.has-custom-width .wp-block-button__link{width:100%}.wp-block-buttons>.wp-block-button.has-custom-font-size .wp-block-button__link{font-size:inherit}.wp-block-buttons>.wp-block-button[class*=wp-block-button__width]{width:calc(var(--wp--block-button--width)*1% - var(--wp--style--block-gap, .5em)*(1 - var(--wp--block-button--width)/100))}.wp-block-buttons>.wp-block-button.wp-block-button__width-25{width:calc(25% - var(--wp--style--block-gap, .5em)*.75)}.wp-block-buttons>.wp-block-button.wp-block-button__width-50{width:calc(50% - var(--wp--style--block-gap, .5em)*.5)}.wp-block-buttons>.wp-block-button.wp-block-button__width-75{width:calc(75% - var(--wp--style--block-gap, .5em)*.25)}.wp-block-buttons>.wp-block-button.wp-block-button__width-100{flex-basis:100%;width:100%}.wp-block-buttons.is-vertical>.wp-block-button[class*=wp-block-button__width]{width:calc(var(--wp--block-button--width)*1%)}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-25{width:25%}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-50{width:50%}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-75{width:75%}.wp-block-button.is-style-squared,.wp-block-button__link.wp-block-button.is-style-squared{border-radius:0}.wp-block-button.no-border-radius,.wp-block-button__link.no-border-radius{border-radius:0!important}:root :where(.wp-block-button .wp-block-button__link.is-style-outline),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link){border:2px solid;padding:.667em 1.333em}:root :where(.wp-block-button .wp-block-button__link.is-style-outline:not(.has-text-color)),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link:not(.has-text-color)){color:currentColor}:root :where(.wp-block-button .wp-block-button__link.is-style-outline:not(.has-background)),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link:not(.has-background)){background-color:transparent;background-image:none}
+
+			div.is-style-swt-button-secondary .wp-element-button {
+                color: var(--wp--preset--color--body);
+				background: var(--wp--preset--color--surface);
+			}
+
+            div.is-style-swt-button-secondary .wp-element-button:hover {
+                color: var(--wp--preset--color--body);
+				background: var(--wp--preset--color--surface);
+			}
+		
+
+			div.is-style-swt-button-inverse .wp-element-button {
+                color: #1F2937;
+				background: #fff;
+			}
+
+            div.is-style-swt-button-inverse .wp-element-button:hover {
+                color: #1F2937;
+				background: #fff;
+			}
+		
+/*# sourceURL=wp-block-button-inline-css */
+</style>
+<style id="wp-block-buttons-inline-css">
+.wp-block-buttons{box-sizing:border-box}.wp-block-buttons.is-vertical{flex-direction:column}.wp-block-buttons.is-vertical>.wp-block-button:last-child{margin-bottom:0}.wp-block-buttons>.wp-block-button{display:inline-block;margin:0}.wp-block-buttons.is-content-justification-left{justify-content:flex-start}.wp-block-buttons.is-content-justification-left.is-vertical{align-items:flex-start}.wp-block-buttons.is-content-justification-center{justify-content:center}.wp-block-buttons.is-content-justification-center.is-vertical{align-items:center}.wp-block-buttons.is-content-justification-right{justify-content:flex-end}.wp-block-buttons.is-content-justification-right.is-vertical{align-items:flex-end}.wp-block-buttons.is-content-justification-space-between{justify-content:space-between}.wp-block-buttons.aligncenter{text-align:center}.wp-block-buttons:not(.is-content-justification-space-between,.is-content-justification-right,.is-content-justification-left,.is-content-justification-center) .wp-block-button.aligncenter{margin-left:auto;margin-right:auto;width:100%}.wp-block-buttons[style*=text-decoration] .wp-block-button,.wp-block-buttons[style*=text-decoration] .wp-block-button__link{text-decoration:inherit}.wp-block-buttons.has-custom-font-size .wp-block-button__link{font-size:inherit}.wp-block-buttons .wp-block-button__link{width:100%}.wp-block-button.aligncenter{text-align:center}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/buttons/style.min.css */
+</style>
+<style id="wp-block-template-part-theme-inline-css">
+:root :where(.wp-block-template-part.has-background){margin-bottom:0;margin-top:0;padding:1.25em 2.375em}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/template-part/theme.min.css */
+</style>
+<style id="wp-block-post-template-inline-css">
+.wp-block-post-template{box-sizing:border-box;list-style:none;margin-bottom:0;margin-top:0;max-width:100%;padding:0}.wp-block-post-template.is-flex-container{display:flex;flex-direction:row;flex-wrap:wrap;gap:1.25em}.wp-block-post-template.is-flex-container>li{margin:0;width:100%}@media (min-width:600px){.wp-block-post-template.is-flex-container.is-flex-container.columns-2>li{width:calc(50% - .625em)}.wp-block-post-template.is-flex-container.is-flex-container.columns-3>li{width:calc(33.33333% - .83333em)}.wp-block-post-template.is-flex-container.is-flex-container.columns-4>li{width:calc(25% - .9375em)}.wp-block-post-template.is-flex-container.is-flex-container.columns-5>li{width:calc(20% - 1em)}.wp-block-post-template.is-flex-container.is-flex-container.columns-6>li{width:calc(16.66667% - 1.04167em)}}@media (max-width:600px){.wp-block-post-template-is-layout-grid[class*=columns-]:not(.has-native-responsive-grid){grid-template-columns:1fr}}.wp-block-post-template-is-layout-constrained>li>.alignright,.wp-block-post-template-is-layout-flow>li>.alignright{float:right;margin-inline-end:0;margin-inline-start:2em}.wp-block-post-template-is-layout-constrained>li>.alignleft,.wp-block-post-template-is-layout-flow>li>.alignleft{float:left;margin-inline-end:2em;margin-inline-start:0}.wp-block-post-template-is-layout-constrained>li>.aligncenter,.wp-block-post-template-is-layout-flow>li>.aligncenter{margin-inline-end:auto;margin-inline-start:auto}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/post-template/style.min.css */
+</style>
+<style id="wp-block-post-content-inline-css">
+.wp-block-post-content{display:flow-root}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/post-content/style.min.css */
+</style>
+<style id="wp-block-social-links-inline-css">
+.wp-block-social-links{background:none;box-sizing:border-box;margin-left:0;padding-left:0;padding-right:0;text-indent:0}.wp-block-social-links .wp-social-link a,.wp-block-social-links .wp-social-link a:hover{border-bottom:0;box-shadow:none;text-decoration:none}.wp-block-social-links .wp-social-link svg{height:1em;width:1em}.wp-block-social-links .wp-social-link span:not(.screen-reader-text){font-size:.65em;margin-left:.5em;margin-right:.5em}.wp-block-social-links.has-small-icon-size{font-size:16px}.wp-block-social-links,.wp-block-social-links.has-normal-icon-size{font-size:24px}.wp-block-social-links.has-large-icon-size{font-size:36px}.wp-block-social-links.has-huge-icon-size{font-size:48px}.wp-block-social-links.aligncenter{display:flex;justify-content:center}.wp-block-social-links.alignright{justify-content:flex-end}.wp-block-social-link{border-radius:9999px;display:block}@media not (prefers-reduced-motion){.wp-block-social-link{transition:transform .1s ease}}.wp-block-social-link{height:auto}.wp-block-social-link a{align-items:center;display:flex;line-height:0}.wp-block-social-link:hover{transform:scale(1.1)}.wp-block-social-links .wp-block-social-link.wp-social-link{display:inline-block;margin:0;padding:0}.wp-block-social-links .wp-block-social-link.wp-social-link .wp-block-social-link-anchor,.wp-block-social-links .wp-block-social-link.wp-social-link .wp-block-social-link-anchor svg,.wp-block-social-links .wp-block-social-link.wp-social-link .wp-block-social-link-anchor:active,.wp-block-social-links .wp-block-social-link.wp-social-link .wp-block-social-link-anchor:hover,.wp-block-social-links .wp-block-social-link.wp-social-link .wp-block-social-link-anchor:visited{fill:currentColor;color:currentColor}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link{background-color:#f0f0f0;color:#444}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-amazon{background-color:#f90;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-bandcamp{background-color:#1ea0c3;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-behance{background-color:#0757fe;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-bluesky{background-color:#0a7aff;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-codepen{background-color:#1e1f26;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-deviantart{background-color:#02e49b;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-discord{background-color:#5865f2;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-dribbble{background-color:#e94c89;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-dropbox{background-color:#4280ff;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-etsy{background-color:#f45800;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-facebook{background-color:#0866ff;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-fivehundredpx{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-flickr{background-color:#0461dd;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-foursquare{background-color:#e65678;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-github{background-color:#24292d;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-goodreads{background-color:#eceadd;color:#382110}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-google{background-color:#ea4434;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-gravatar{background-color:#1d4fc4;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-instagram{background-color:#f00075;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-lastfm{background-color:#e21b24;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-linkedin{background-color:#0d66c2;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-mastodon{background-color:#3288d4;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-medium{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-meetup{background-color:#f6405f;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-patreon{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-pinterest{background-color:#e60122;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-pocket{background-color:#ef4155;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-reddit{background-color:#ff4500;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-skype{background-color:#0478d7;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-snapchat{stroke:#000;background-color:#fefc00;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-soundcloud{background-color:#ff5600;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-spotify{background-color:#1bd760;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-telegram{background-color:#2aabee;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-threads{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-tiktok{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-tumblr{background-color:#011835;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-twitch{background-color:#6440a4;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-twitter{background-color:#1da1f2;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-vimeo{background-color:#1eb7ea;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-vk{background-color:#4680c2;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-wordpress{background-color:#3499cd;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-whatsapp{background-color:#25d366;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-x{background-color:#000;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-yelp{background-color:#d32422;color:#fff}:where(.wp-block-social-links:not(.is-style-logos-only)) .wp-social-link-youtube{background-color:red;color:#fff}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link{background:none}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link svg{height:1.25em;width:1.25em}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-amazon{color:#f90}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-bandcamp{color:#1ea0c3}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-behance{color:#0757fe}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-bluesky{color:#0a7aff}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-codepen{color:#1e1f26}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-deviantart{color:#02e49b}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-discord{color:#5865f2}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-dribbble{color:#e94c89}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-dropbox{color:#4280ff}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-etsy{color:#f45800}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-facebook{color:#0866ff}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-fivehundredpx{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-flickr{color:#0461dd}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-foursquare{color:#e65678}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-github{color:#24292d}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-goodreads{color:#382110}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-google{color:#ea4434}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-gravatar{color:#1d4fc4}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-instagram{color:#f00075}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-lastfm{color:#e21b24}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-linkedin{color:#0d66c2}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-mastodon{color:#3288d4}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-medium{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-meetup{color:#f6405f}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-patreon{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-pinterest{color:#e60122}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-pocket{color:#ef4155}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-reddit{color:#ff4500}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-skype{color:#0478d7}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-snapchat{stroke:#000;color:#fff}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-soundcloud{color:#ff5600}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-spotify{color:#1bd760}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-telegram{color:#2aabee}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-threads{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-tiktok{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-tumblr{color:#011835}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-twitch{color:#6440a4}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-twitter{color:#1da1f2}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-vimeo{color:#1eb7ea}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-vk{color:#4680c2}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-whatsapp{color:#25d366}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-wordpress{color:#3499cd}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-x{color:#000}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-yelp{color:#d32422}:where(.wp-block-social-links.is-style-logos-only) .wp-social-link-youtube{color:red}.wp-block-social-links.is-style-pill-shape .wp-social-link{width:auto}:root :where(.wp-block-social-links .wp-social-link a){padding:.25em}:root :where(.wp-block-social-links.is-style-logos-only .wp-social-link a){padding:0}:root :where(.wp-block-social-links.is-style-pill-shape .wp-social-link a){padding-left:.6666666667em;padding-right:.6666666667em}.wp-block-social-links:not(.has-icon-color):not(.has-icon-background-color) .wp-social-link-snapchat .wp-block-social-link-label{color:#000}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/social-links/style.min.css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<link rel='stylesheet' id='spectra-pro-block-css-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/spectra-pro/dist/style-blocks.css?ver=1.3.2' media='all' />
+<link rel='stylesheet' id='spectra-one-editor-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/css/minified/editor.min.css?ver=1.2.6' media='all' />
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--primary: #0074bd;--wp--preset--color--secondary: #ee3725;--wp--preset--color--heading: #ffffff;--wp--preset--color--body: #ffffff;--wp--preset--color--background: #FFFFFF;--wp--preset--color--tertiary: #ffffff;--wp--preset--color--quaternary: #ffffff;--wp--preset--color--surface: #ffffff;--wp--preset--color--foreground: #ffffff;--wp--preset--color--outline: #ffffff;--wp--preset--color--neutral: #ffffff;--wp--preset--color--transparent: #ffffff;--wp--preset--color--current-color: #8f9fa3;--wp--preset--color--inherit: #0c1518;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--gradient--primary: linear-gradient(286.83deg, #931CF0 -1.55%, #4F2CDD 100%);;--wp--preset--font-size--small: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.204), 16px);--wp--preset--font-size--medium: clamp(16px, 1rem + ((1vw - 3.2px) * 0.204), 18px);--wp--preset--font-size--large: clamp(20px, 1.25rem + ((1vw - 3.2px) * 0.204), 22px);--wp--preset--font-size--x-large: clamp(24px, 1.5rem + ((1vw - 3.2px) * 0.408), 28px);--wp--preset--font-size--x-small: clamp(12px, 0.75rem + ((1vw - 3.2px) * 0.204), 14px);--wp--preset--font-size--xx-large: clamp(28px, 1.75rem + ((1vw - 3.2px) * 0.816), 36px);--wp--preset--font-size--xxx-large: clamp(32px, 2rem + ((1vw - 3.2px) * 1.224), 44px);--wp--preset--font-size--xxxx-large: clamp(40px, 2.5rem + ((1vw - 3.2px) * 1.633), 56px);--wp--preset--font-family--inter: "Inter", sans-serif;--wp--preset--font-family--poppins: Poppins, sans-serif;--wp--preset--font-family--open-sans: "Open Sans", sans-serif;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--spacing--xxx-small: calc(var(--wp--preset--font-size--medium,1rem)/4);--wp--preset--spacing--xx-small: calc(var(--wp--preset--font-size--medium,1rem)/2);--wp--preset--spacing--x-small: calc(var(--wp--preset--font-size--medium,1rem));--wp--preset--spacing--small: calc(var(--wp--preset--font-size--medium,1rem)*1.5);--wp--preset--spacing--medium: calc(var(--wp--preset--font-size--medium,1rem)*2);--wp--preset--spacing--large: calc(var(--wp--preset--font-size--medium,1rem)*3);--wp--preset--spacing--x-large: calc(var(--wp--preset--font-size--medium,1rem)*4);--wp--preset--spacing--xx-large: calc(var(--wp--preset--font-size--medium,1rem)*6);--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);--wp--custom--font-weight--black: 900;--wp--custom--font-weight--extra-bold: 800;--wp--custom--font-weight--bold: 700;--wp--custom--font-weight--semi-bold: 600;--wp--custom--font-weight--medium: 500;--wp--custom--font-weight--regular: 400;--wp--custom--font-weight--light: 300;--wp--custom--font-weight--extra-light: 200;--wp--custom--font-weight--thin: 100;--wp--custom--line-height--initial: 1;--wp--custom--line-height--xx-small: 1.2;--wp--custom--line-height--x-small: 1.3;--wp--custom--line-height--small: 1.4;--wp--custom--line-height--medium: 1.45;--wp--custom--line-height--large: 1.6;--wp--custom--border-radius--xx-small: 4px;--wp--custom--border-radius--x-small: 6px;--wp--custom--border-radius--small: 8px;--wp--custom--border-radius--medium: 12px;--wp--custom--border-radius--large: 16px;--wp--custom--border-radius--x-large: 20px;--wp--custom--border-radius--xx-large: 24px;--wp--custom--border-radius--full: 999px;--wp--custom--font-family--body: var(--wp--preset--font-family--inter);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:root { --wp--style--global--content-size: 764px;--wp--style--global--wide-size: 1300px; }:where(body) { margin: 0; }.wp-site-blocks { padding-top: var(--wp--style--root--padding-top); padding-bottom: var(--wp--style--root--padding-bottom); }.has-global-padding { padding-right: var(--wp--style--root--padding-right); padding-left: var(--wp--style--root--padding-left); }.has-global-padding > .alignfull { margin-right: calc(var(--wp--style--root--padding-right) * -1); margin-left: calc(var(--wp--style--root--padding-left) * -1); }.has-global-padding :where(:not(.alignfull.is-layout-flow) > .has-global-padding:not(.wp-block-block, .alignfull)) { padding-right: 0; padding-left: 0; }.has-global-padding :where(:not(.alignfull.is-layout-flow) > .has-global-padding:not(.wp-block-block, .alignfull)) > .alignfull { margin-left: 0; margin-right: 0; }.wp-site-blocks > .alignleft { float: left; margin-right: 2em; }.wp-site-blocks > .alignright { float: right; margin-left: 2em; }.wp-site-blocks > .aligncenter { justify-content: center; margin-left: auto; margin-right: auto; }:where(.wp-site-blocks) > * { margin-block-start: var(--wp--preset--spacing--x-small); margin-block-end: 0; }:where(.wp-site-blocks) > :first-child { margin-block-start: 0; }:where(.wp-site-blocks) > :last-child { margin-block-end: 0; }:root { --wp--style--block-gap: var(--wp--preset--spacing--x-small); }:root :where(.is-layout-flow) > :first-child{margin-block-start: 0;}:root :where(.is-layout-flow) > :last-child{margin-block-end: 0;}:root :where(.is-layout-flow) > *{margin-block-start: var(--wp--preset--spacing--x-small);margin-block-end: 0;}:root :where(.is-layout-constrained) > :first-child{margin-block-start: 0;}:root :where(.is-layout-constrained) > :last-child{margin-block-end: 0;}:root :where(.is-layout-constrained) > *{margin-block-start: var(--wp--preset--spacing--x-small);margin-block-end: 0;}:root :where(.is-layout-flex){gap: var(--wp--preset--spacing--x-small);}:root :where(.is-layout-grid){gap: var(--wp--preset--spacing--x-small);}.is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{background-color: var(--wp--preset--color--background);color: var(--wp--preset--color--inherit);font-family: var(--wp--preset--font-family--open-sans);font-size: 16px;font-style: normal;font-weight: 500;line-height: 1.3;--wp--style--root--padding-top: 0px;--wp--style--root--padding-right: 0px;--wp--style--root--padding-bottom: 0px;--wp--style--root--padding-left: 0px;}a:where(:not(.wp-element-button)){color: var(--wp--preset--color--primary);font-family: var(--wp--preset--font-family--open-sans);text-decoration: none;}:root :where(a:where(:not(.wp-element-button)):hover){color: var(--wp--preset--color--inherit);}h1, h2, h3, h4, h5, h6{color: var(--wp--preset--color--inherit);font-family: var(--wp--preset--font-family--poppins);line-height: 1.1;}h1{font-family: var(--wp--preset--font-family--poppins);font-size: 70px;font-style: normal;font-weight: 700;letter-spacing: 0px;line-height: 1.1;margin-bottom: var(--wp--preset--spacing--small);text-transform: uppercase;}h2{font-family: var(--wp--preset--font-family--poppins);font-size: 70px;font-style: normal;font-weight: 700;letter-spacing: 0px;line-height: 1.1;margin-top: var(--wp--preset--spacing--medium);margin-bottom: var(--wp--preset--spacing--x-small);text-transform: uppercase;}h3{font-size: var(--wp--preset--font-size--xx-large);font-weight: var(--wp--custom--font-weight--medium);letter-spacing: 0px;line-height: 1.1;margin-top: var(--wp--preset--spacing--medium);margin-bottom: var(--wp--preset--spacing--x-small);}h4{font-size: var(--wp--preset--font-size--x-large);font-weight: var(--wp--custom--font-weight--semi-bold);letter-spacing: -0.25px;line-height: var(--wp--custom--line-height--x-small);margin-top: var(--wp--preset--spacing--small);margin-bottom: var(--wp--preset--spacing--xx-small);}h5{font-size: var(--wp--preset--font-size--large);font-weight: var(--wp--custom--font-weight--semi-bold);line-height: var(--wp--custom--line-height--medium);margin-top: var(--wp--preset--spacing--small);margin-bottom: var(--wp--preset--spacing--xx-small);}h6{font-size: var(--wp--preset--font-size--medium);font-weight: var(--wp--custom--font-weight--semi-bold);line-height: var(--wp--custom--line-height--medium);margin-top: var(--wp--preset--spacing--x-small);margin-bottom: var(--wp--preset--spacing--xx-small);}:root :where(.wp-element-button, .wp-block-button__link){background-color: var(--wp--preset--color--primary);border-radius: 0.375em;border-color: var(--wp--preset--color--primary);border-width: 0;color: var(--wp--preset--color--heading);font-family: inherit;font-size: var(--wp--preset--font-size--small);font-style: inherit;font-weight: var(--wp--custom--font-weight--medium);letter-spacing: inherit;line-height: var(--wp--custom--line-height--initial);padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}:root :where(.wp-element-button:hover, .wp-block-button__link:hover){background-color: var(--wp--preset--color--secondary);}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-primary-color{color: var(--wp--preset--color--primary) !important;}.has-secondary-color{color: var(--wp--preset--color--secondary) !important;}.has-heading-color{color: var(--wp--preset--color--heading) !important;}.has-body-color{color: var(--wp--preset--color--body) !important;}.has-background-color{color: var(--wp--preset--color--background) !important;}.has-tertiary-color{color: var(--wp--preset--color--tertiary) !important;}.has-quaternary-color{color: var(--wp--preset--color--quaternary) !important;}.has-surface-color{color: var(--wp--preset--color--surface) !important;}.has-foreground-color{color: var(--wp--preset--color--foreground) !important;}.has-outline-color{color: var(--wp--preset--color--outline) !important;}.has-neutral-color{color: var(--wp--preset--color--neutral) !important;}.has-transparent-color{color: var(--wp--preset--color--transparent) !important;}.has-current-color-color{color: var(--wp--preset--color--current-color) !important;}.has-inherit-color{color: var(--wp--preset--color--inherit) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-primary-background-color{background-color: var(--wp--preset--color--primary) !important;}.has-secondary-background-color{background-color: var(--wp--preset--color--secondary) !important;}.has-heading-background-color{background-color: var(--wp--preset--color--heading) !important;}.has-body-background-color{background-color: var(--wp--preset--color--body) !important;}.has-background-background-color{background-color: var(--wp--preset--color--background) !important;}.has-tertiary-background-color{background-color: var(--wp--preset--color--tertiary) !important;}.has-quaternary-background-color{background-color: var(--wp--preset--color--quaternary) !important;}.has-surface-background-color{background-color: var(--wp--preset--color--surface) !important;}.has-foreground-background-color{background-color: var(--wp--preset--color--foreground) !important;}.has-outline-background-color{background-color: var(--wp--preset--color--outline) !important;}.has-neutral-background-color{background-color: var(--wp--preset--color--neutral) !important;}.has-transparent-background-color{background-color: var(--wp--preset--color--transparent) !important;}.has-current-color-background-color{background-color: var(--wp--preset--color--current-color) !important;}.has-inherit-background-color{background-color: var(--wp--preset--color--inherit) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-primary-border-color{border-color: var(--wp--preset--color--primary) !important;}.has-secondary-border-color{border-color: var(--wp--preset--color--secondary) !important;}.has-heading-border-color{border-color: var(--wp--preset--color--heading) !important;}.has-body-border-color{border-color: var(--wp--preset--color--body) !important;}.has-background-border-color{border-color: var(--wp--preset--color--background) !important;}.has-tertiary-border-color{border-color: var(--wp--preset--color--tertiary) !important;}.has-quaternary-border-color{border-color: var(--wp--preset--color--quaternary) !important;}.has-surface-border-color{border-color: var(--wp--preset--color--surface) !important;}.has-foreground-border-color{border-color: var(--wp--preset--color--foreground) !important;}.has-outline-border-color{border-color: var(--wp--preset--color--outline) !important;}.has-neutral-border-color{border-color: var(--wp--preset--color--neutral) !important;}.has-transparent-border-color{border-color: var(--wp--preset--color--transparent) !important;}.has-current-color-border-color{border-color: var(--wp--preset--color--current-color) !important;}.has-inherit-border-color{border-color: var(--wp--preset--color--inherit) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-primary-gradient-background{background: var(--wp--preset--gradient--primary) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-x-small-font-size{font-size: var(--wp--preset--font-size--x-small) !important;}.has-xx-large-font-size{font-size: var(--wp--preset--font-size--xx-large) !important;}.has-xxx-large-font-size{font-size: var(--wp--preset--font-size--xxx-large) !important;}.has-xxxx-large-font-size{font-size: var(--wp--preset--font-size--xxxx-large) !important;}.has-inter-font-family{font-family: var(--wp--preset--font-family--inter) !important;}.has-poppins-font-family{font-family: var(--wp--preset--font-family--poppins) !important;}.has-open-sans-font-family{font-family: var(--wp--preset--font-family--open-sans) !important;}
+:root :where(.wp-block-button .wp-block-button__link){border-top-left-radius: 30px;border-top-right-radius: 30px;border-bottom-left-radius: 30px;border-bottom-right-radius: 30px;font-size: 20px;font-style: normal;font-weight: 600;letter-spacing: 0px;line-height: 1.1;padding-top: 14px;padding-right: 32px;padding-bottom: 14px;padding-left: 32px;text-transform: uppercase;}
+:root :where(.wp-block-navigation){font-size: var(--wp--preset--font-size--small);font-weight: var(--wp--custom--font-weight--regular);letter-spacing: 0.25px;line-height: var(--wp--custom--line-height--large);}:root :where(.wp-block-navigation-is-layout-flow) > :first-child{margin-block-start: 0;}:root :where(.wp-block-navigation-is-layout-flow) > :last-child{margin-block-end: 0;}:root :where(.wp-block-navigation-is-layout-flow) > *{margin-block-start: var(--wp--preset--spacing--small);margin-block-end: 0;}:root :where(.wp-block-navigation-is-layout-constrained) > :first-child{margin-block-start: 0;}:root :where(.wp-block-navigation-is-layout-constrained) > :last-child{margin-block-end: 0;}:root :where(.wp-block-navigation-is-layout-constrained) > *{margin-block-start: var(--wp--preset--spacing--small);margin-block-end: 0;}:root :where(.wp-block-navigation-is-layout-flex){gap: var(--wp--preset--spacing--small);}:root :where(.wp-block-navigation-is-layout-grid){gap: var(--wp--preset--spacing--small);}
+:root :where(.wp-block-post-content){padding-right: 0;padding-left: 0;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+<style id="core-block-supports-inline-css">
+.wp-container-core-navigation-is-layout-c6276331{flex-wrap:nowrap;gap:60px;}.wp-container-core-post-template-is-layout-1ffe91a5 > *{margin-block-start:0;margin-block-end:0;}.wp-container-core-post-template-is-layout-1ffe91a5 > * + *{margin-block-start:0px;margin-block-end:0;}.wp-container-core-post-content-is-layout-367661c0 > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width:1164px;margin-left:auto !important;margin-right:auto !important;}.wp-container-core-post-content-is-layout-367661c0 > .alignwide{max-width:1164px;}.wp-container-core-post-content-is-layout-367661c0 .alignfull{max-width:none;}.wp-container-core-post-content-is-layout-367661c0 > .alignfull{margin-right:calc(0px * -1);margin-left:calc(0px * -1);}.wp-container-core-navigation-is-layout-bf101f8f{flex-wrap:nowrap;gap:50px;}.wp-container-core-social-links-is-layout-fa7f2986{flex-wrap:nowrap;gap:0 var(--wp--preset--spacing--xx-small);}
+/*# sourceURL=core-block-supports-inline-css */
+</style>
+<style id="wp-block-template-skip-link-inline-css">
+/*! This file is auto-generated */
+.skip-link.screen-reader-text{border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute!important;width:1px;word-wrap:normal!important;word-break:normal!important}.skip-link.screen-reader-text:focus{background-color:#eee;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}
+/*# sourceURL=/wp-includes/css/wp-block-template-skip-link.min.css */
+</style>
+<link rel='stylesheet' id='cmplz-general-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/complianz-gdpr/assets/css/cookieblocker.min.css?ver=1789379905' media='all' />
+<link rel='stylesheet' id='uagb-block-positioning-css-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/ultimate-addons-for-gutenberg/assets/css/spectra-block-positioning.min.css?ver=2.20.3' media='all' />
+<link rel='stylesheet' id='uag-style-258-css' href='https://muziekcentrumgoedleven.be/wp-content/uploads/uag-plugin/assets/0/uag-css-258.css?ver=1789719953' media='all' />
+<link rel='stylesheet' id='parent-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/style.css?ver=7.1' media='all' />
+<link rel='stylesheet' id='child-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/style.css?ver=7.1' media='all' />
+<link rel='stylesheet' id='default-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/assets/css/default.css?ver=1' media='all' />
+<link rel='stylesheet' id='custom-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/assets/css/custom.css?ver=1' media='all' />
+<link rel='stylesheet' id='header-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/assets/css/header.css?ver=1' media='all' />
+<link rel='stylesheet' id='footer-style-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/assets/css/footer.css?ver=1' media='all' />
+<link rel='stylesheet' id='spectra-one-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/css/minified/style.min.css?ver=1.2.6' media='all' />
+<style id="spectra-one-inline-css">
+body [class*='uagb-block-']{margin-top:0px;margin-block-start:0px;}@media (min-width:1025px){.swt-hide-desktop{display:none !important;}}@media (min-width:768px) and (max-width:1024px){.swt-hide-tablet{display:none !important ;}}@media (max-width:767px){.swt-hide-mobile{display:none !important;}}.wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content, .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content .wp-block-navigation-item, .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content .wp-block-navigation__container, .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content .wp-block-page-list{align-items:center;}
+/*# sourceURL=spectra-one-inline-css */
+</style>
+<link rel='stylesheet' id='spectra-one-gutenberg-css' href='https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/css/minified/gutenberg.min.css?ver=1.2.6' media='all' />
+<link rel='stylesheet' id='gform_basic-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/css/dist/basic.min.css?ver=3.1.1' media='all' />
+<link rel='stylesheet' id='gform_theme_components-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/css/dist/theme-components.min.css?ver=3.1.1' media='all' />
+<link rel='stylesheet' id='gform_theme-css' href='https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/css/dist/theme.min.css?ver=3.1.1' media='all' />
+<link rel='stylesheet' id='cmplz-banner-1-optin-css' href='https://muziekcentrumgoedleven.be/wp-content/uploads/complianz/css/banner-1-optin.css?ver=1789379944' media='all' />
+<script id="jquery-core-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+<script id="jquery-migrate-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"></script>
+<script id="gform_json-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/js/jquery.json.min.js?ver=3.1.1"></script>
+<script id="gform_gravityforms-js-extra">
+var gf_global = {"gf_currency_config":{"name":"Amerikaanse dollar","symbol_left":"$","symbol_right":"","symbol_padding":"","thousand_separator":",","decimal_separator":".","decimals":2,"code":"USD"},"base_url":"https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms","number_formats":[],"version_hash":"054904bce881629e86c469381d7620d1","countries":{"AF":"Afghanistan","AX":"Aland-eilanden","AL":"Albani\u00eb","DZ":"Algerije","AS":"Amerikaans Samoa","AD":"Andorra","AO":"Angola","AI":"Anguilla","AQ":"Antarctica","AG":"Antigua en Barbuda","AR":"Argentini\u00eb","AM":"Armeni\u00eb","AW":"Aruba","AU":"Australi\u00eb","AT":"Oostenrijk","AZ":"Azerbeidzjan","BS":"Bahama's","BH":"Bahrein","BD":"Bangladesh","BB":"Barbados","BY":"Wit-Rusland","BE":"Belgi\u00eb","BZ":"Belize","BJ":"Benin","BM":"Bermuda","BT":"Bhutan","BO":"Bolivia","BQ":"Bonaire, Sint Eustatius en Saba","BA":"Bosni\u00eb en Herzegovina","BW":"Botswana","BV":"Bouvet eiland","BR":"Brazili\u00eb","IO":"Brits-Indisch oceaan gebied","BN":"Brunei Darussalam","BG":"Bulgarije","BF":"Burkina Faso","BI":"Burundi","CV":"Kaapverdi\u00eb","KH":"Cambodja","CM":"Kameroen","CA":"Canada","KY":"Kaaimaneilanden","CF":"Centraal-Afrikaanse Republiek","TD":"Tsjaad","CL":"Chili","CN":"China","CX":"Kersteiland","CC":"Cocoseilanden","CO":"Colombia","KM":"Comoren","CD":"Congo, Democratische Republiek","CG":"Congo","CK":"Cook eilanden","CR":"Costa Rica","CI":"Ivoorkust","HR":"Kroati\u00eb","CU":"Cuba","CW":"Cura\u00e7ao","CY":"Cyprus","CZ":"Tsjechi\u00eb","DK":"Denemarken","DJ":"Djibouti","DM":"Dominica","DO":"Dominicaanse Republiek","EC":"Ecuador","EG":"Egypte","SV":"El Salvador","GQ":"Equatoriaal-Guinea","ER":"Eritrea","EE":"Estland","SZ":"Eswatini","ET":"Ethiopi\u00eb","FK":"Falkland eilanden","FO":"Faer\u00f6er","FJ":"Fiji","FI":"Finland","FR":"Frankrijk","GF":"Frans Guyana","PF":"Frans-Polynesi\u00eb","TF":"Franse zuidelijke gebieden","GA":"Gabon","GM":"Gambia","GE":"Georgi\u00eb","DE":"Duitsland","GH":"Ghana","GI":"Gibraltar","GR":"Griekenland","GL":"Groenland","GD":"Grenada","GP":"Guadeloupe","GU":"Guam","GT":"Guatemala","GG":"Guernsey","GN":"Guinee","GW":"Guinee-Bissau","GY":"Guyana","HT":"Ha\u00efti","HM":"Heard Eiland en McDonald Eilanden","VA":"Vaticaanstad","HN":"Honduras","HK":"Hong Kong","HU":"Hongarije","IS":"IJsland","IN":"India","ID":"Indonesi\u00eb","IR":"Iran","IQ":"Irak","IE":"Ierland","IM":"Man","IL":"Isra\u00ebl","IT":"Itali\u00eb","JM":"Jamaica","JP":"Japan","JE":"Jersey","JO":"Jordani\u00eb","KZ":"Kazachstan","KE":"Kenia","KI":"Kiribati","KP":"Korea, Democratische Volksrepubliek","KR":"Korea, Republiek van","KW":"Koeweit","KG":"Kirgizi\u00eb","LA":"Lao Democratische Volksrepubliek","LV":"Letland","LB":"Libanon","LS":"Lesotho","LR":"Liberia","LY":"Libi\u00eb","LI":"Liechtenstein","LT":"Litouwen","LU":"Luxemburg","MO":"Macau","MG":"Madagaskar","MW":"Malawi","MY":"Maleisi\u00eb","MV":"Maldiven","ML":"Mali","MT":"Malta","MH":"Marshalleilanden","MQ":"Martinique","MR":"Mauritani\u00eb","MU":"Mauritius","YT":"Mayotte","MX":"Mexico","FM":"Micronesia","MD":"Moldavi\u00eb","MC":"Monaco","MN":"Mongoli\u00eb","ME":"Montenegro","MS":"Montserrat","MA":"Marokko","MZ":"Mozambique","MM":"Myanmar","NA":"Namibi\u00eb","NR":"Nauru","NP":"Nepal","NL":"Nederland","NC":"Nieuw-Caledoni\u00eb","NZ":"Nieuw-Zeeland","NI":"Nicaragua","NE":"Niger","NG":"Nigeria","NU":"Niue","NF":"Norfolk eiland","MK":"Noord-Macedoni\u00eb","MP":"Noordelijke Marianen","NO":"Noorwegen","OM":"Oman","PK":"Pakistan","PW":"Palau","PS":"Palestina, Staat","PA":"Panama","PG":"Papoea-Nieuw-Guinea","PY":"Paraguay","PE":"Peru","PH":"Filipijnen","PN":"Pitcairn","PL":"Polen","PT":"Portugal","PR":"Puerto Rico","QA":"Qatar","RE":"R\u00e9union","RO":"Roemeni\u00eb","RU":"Russische Federatie","RW":"Rwanda","BL":"Saint Barth\u00e9lemy","SH":"Sint-Helena, Hemelvaart en Tristan da Cunha","KN":"Saint Kitts en Nevis","LC":"Saint Lucia","MF":"Sint Maarten","PM":"Saint Pierre en Miquelon","VC":"Saint Vincent en de Grenadines","WS":"Samoa","SM":"San Marino","ST":"Sao Tom\u00e9 en Principe","SA":"Saoedi-Arabi\u00eb","SN":"Senegal","RS":"Servi\u00eb","SC":"Seychellen","SL":"Sierra Leone","SG":"Singapore","SX":"Sint Maarten","SK":"Slowakije","SI":"Sloveni\u00eb","SB":"Salomonseilanden","SO":"Somali\u00eb","ZA":"Zuid-Afrika","GS":"Ji\u017en\u00ed Georgie a Ji\u017en\u00ed Sandwichovy ostrovy","SS":"Zuid Soedan","ES":"Spanje","LK":"Sri Lanka","SD":"Soedan","SR":"Suriname","SJ":"Spitsbergen en Jan Mayen","SE":"Zweden","CH":"Zwitserland","SY":"Arabische Republiek Syri\u00eb","TW":"Taiwan","TJ":"Tadzjikistan","TZ":"Tanzania, de Verenigde Republiek van","TH":"Thailand","TL":"Timor-Leste","TG":"Togo","TK":"Tokelau","TO":"Tonga","TT":"Trinidad en Tobago","TN":"Tunesi\u00eb","TR":"Turkije","TM":"Turkmenistan","TC":"Turks- en Caicoseilanden","TV":"Tuvalu","UG":"Oeganda","UA":"Oekra\u00efne","AE":"Verenigde Arabische Emiraten","GB":"Verenigd Koninkrijk","US":"Verenigde Staten","UY":"Uruguay","UM":"Kleine eilanden van de Verenigde Staten","UZ":"Oezbekistan","VU":"Vanuatu","VE":"Venezuela","VN":"Vietnam","VG":"Britse Maagdeneilanden","VI":"Amerikaanse Maagdeneilanden","WF":"Wallis en Futuna","EH":"Westelijke Sahara","YE":"Yemen","ZM":"Zambia","ZW":"Zimbabwe"},"strings":{"newRowAdded":"Nieuwe rij toegevoegd.","rowRemoved":"Rij verwijderd","formSaved":"Het formulier is opgeslagen. De inhoud bevat de link om terug te keren en het formulier in te vullen."}};
+var gf_global = {"gf_currency_config":{"name":"Amerikaanse dollar","symbol_left":"$","symbol_right":"","symbol_padding":"","thousand_separator":",","decimal_separator":".","decimals":2,"code":"USD"},"base_url":"https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms","number_formats":[],"version_hash":"054904bce881629e86c469381d7620d1","countries":{"AF":"Afghanistan","AX":"Aland-eilanden","AL":"Albani\u00eb","DZ":"Algerije","AS":"Amerikaans Samoa","AD":"Andorra","AO":"Angola","AI":"Anguilla","AQ":"Antarctica","AG":"Antigua en Barbuda","AR":"Argentini\u00eb","AM":"Armeni\u00eb","AW":"Aruba","AU":"Australi\u00eb","AT":"Oostenrijk","AZ":"Azerbeidzjan","BS":"Bahama's","BH":"Bahrein","BD":"Bangladesh","BB":"Barbados","BY":"Wit-Rusland","BE":"Belgi\u00eb","BZ":"Belize","BJ":"Benin","BM":"Bermuda","BT":"Bhutan","BO":"Bolivia","BQ":"Bonaire, Sint Eustatius en Saba","BA":"Bosni\u00eb en Herzegovina","BW":"Botswana","BV":"Bouvet eiland","BR":"Brazili\u00eb","IO":"Brits-Indisch oceaan gebied","BN":"Brunei Darussalam","BG":"Bulgarije","BF":"Burkina Faso","BI":"Burundi","CV":"Kaapverdi\u00eb","KH":"Cambodja","CM":"Kameroen","CA":"Canada","KY":"Kaaimaneilanden","CF":"Centraal-Afrikaanse Republiek","TD":"Tsjaad","CL":"Chili","CN":"China","CX":"Kersteiland","CC":"Cocoseilanden","CO":"Colombia","KM":"Comoren","CD":"Congo, Democratische Republiek","CG":"Congo","CK":"Cook eilanden","CR":"Costa Rica","CI":"Ivoorkust","HR":"Kroati\u00eb","CU":"Cuba","CW":"Cura\u00e7ao","CY":"Cyprus","CZ":"Tsjechi\u00eb","DK":"Denemarken","DJ":"Djibouti","DM":"Dominica","DO":"Dominicaanse Republiek","EC":"Ecuador","EG":"Egypte","SV":"El Salvador","GQ":"Equatoriaal-Guinea","ER":"Eritrea","EE":"Estland","SZ":"Eswatini","ET":"Ethiopi\u00eb","FK":"Falkland eilanden","FO":"Faer\u00f6er","FJ":"Fiji","FI":"Finland","FR":"Frankrijk","GF":"Frans Guyana","PF":"Frans-Polynesi\u00eb","TF":"Franse zuidelijke gebieden","GA":"Gabon","GM":"Gambia","GE":"Georgi\u00eb","DE":"Duitsland","GH":"Ghana","GI":"Gibraltar","GR":"Griekenland","GL":"Groenland","GD":"Grenada","GP":"Guadeloupe","GU":"Guam","GT":"Guatemala","GG":"Guernsey","GN":"Guinee","GW":"Guinee-Bissau","GY":"Guyana","HT":"Ha\u00efti","HM":"Heard Eiland en McDonald Eilanden","VA":"Vaticaanstad","HN":"Honduras","HK":"Hong Kong","HU":"Hongarije","IS":"IJsland","IN":"India","ID":"Indonesi\u00eb","IR":"Iran","IQ":"Irak","IE":"Ierland","IM":"Man","IL":"Isra\u00ebl","IT":"Itali\u00eb","JM":"Jamaica","JP":"Japan","JE":"Jersey","JO":"Jordani\u00eb","KZ":"Kazachstan","KE":"Kenia","KI":"Kiribati","KP":"Korea, Democratische Volksrepubliek","KR":"Korea, Republiek van","KW":"Koeweit","KG":"Kirgizi\u00eb","LA":"Lao Democratische Volksrepubliek","LV":"Letland","LB":"Libanon","LS":"Lesotho","LR":"Liberia","LY":"Libi\u00eb","LI":"Liechtenstein","LT":"Litouwen","LU":"Luxemburg","MO":"Macau","MG":"Madagaskar","MW":"Malawi","MY":"Maleisi\u00eb","MV":"Maldiven","ML":"Mali","MT":"Malta","MH":"Marshalleilanden","MQ":"Martinique","MR":"Mauritani\u00eb","MU":"Mauritius","YT":"Mayotte","MX":"Mexico","FM":"Micronesia","MD":"Moldavi\u00eb","MC":"Monaco","MN":"Mongoli\u00eb","ME":"Montenegro","MS":"Montserrat","MA":"Marokko","MZ":"Mozambique","MM":"Myanmar","NA":"Namibi\u00eb","NR":"Nauru","NP":"Nepal","NL":"Nederland","NC":"Nieuw-Caledoni\u00eb","NZ":"Nieuw-Zeeland","NI":"Nicaragua","NE":"Niger","NG":"Nigeria","NU":"Niue","NF":"Norfolk eiland","MK":"Noord-Macedoni\u00eb","MP":"Noordelijke Marianen","NO":"Noorwegen","OM":"Oman","PK":"Pakistan","PW":"Palau","PS":"Palestina, Staat","PA":"Panama","PG":"Papoea-Nieuw-Guinea","PY":"Paraguay","PE":"Peru","PH":"Filipijnen","PN":"Pitcairn","PL":"Polen","PT":"Portugal","PR":"Puerto Rico","QA":"Qatar","RE":"R\u00e9union","RO":"Roemeni\u00eb","RU":"Russische Federatie","RW":"Rwanda","BL":"Saint Barth\u00e9lemy","SH":"Sint-Helena, Hemelvaart en Tristan da Cunha","KN":"Saint Kitts en Nevis","LC":"Saint Lucia","MF":"Sint Maarten","PM":"Saint Pierre en Miquelon","VC":"Saint Vincent en de Grenadines","WS":"Samoa","SM":"San Marino","ST":"Sao Tom\u00e9 en Principe","SA":"Saoedi-Arabi\u00eb","SN":"Senegal","RS":"Servi\u00eb","SC":"Seychellen","SL":"Sierra Leone","SG":"Singapore","SX":"Sint Maarten","SK":"Slowakije","SI":"Sloveni\u00eb","SB":"Salomonseilanden","SO":"Somali\u00eb","ZA":"Zuid-Afrika","GS":"Ji\u017en\u00ed Georgie a Ji\u017en\u00ed Sandwichovy ostrovy","SS":"Zuid Soedan","ES":"Spanje","LK":"Sri Lanka","SD":"Soedan","SR":"Suriname","SJ":"Spitsbergen en Jan Mayen","SE":"Zweden","CH":"Zwitserland","SY":"Arabische Republiek Syri\u00eb","TW":"Taiwan","TJ":"Tadzjikistan","TZ":"Tanzania, de Verenigde Republiek van","TH":"Thailand","TL":"Timor-Leste","TG":"Togo","TK":"Tokelau","TO":"Tonga","TT":"Trinidad en Tobago","TN":"Tunesi\u00eb","TR":"Turkije","TM":"Turkmenistan","TC":"Turks- en Caicoseilanden","TV":"Tuvalu","UG":"Oeganda","UA":"Oekra\u00efne","AE":"Verenigde Arabische Emiraten","GB":"Verenigd Koninkrijk","US":"Verenigde Staten","UY":"Uruguay","UM":"Kleine eilanden van de Verenigde Staten","UZ":"Oezbekistan","VU":"Vanuatu","VE":"Venezuela","VN":"Vietnam","VG":"Britse Maagdeneilanden","VI":"Amerikaanse Maagdeneilanden","WF":"Wallis en Futuna","EH":"Westelijke Sahara","YE":"Yemen","ZM":"Zambia","ZW":"Zimbabwe"},"strings":{"newRowAdded":"Nieuwe rij toegevoegd.","rowRemoved":"Rij verwijderd","formSaved":"Het formulier is opgeslagen. De inhoud bevat de link om terug te keren en het formulier in te vullen."}};
+var gform_i18n = {"datepicker":{"wdOffset":1,"helpTextShort":"Press F1 for help","helpText":"Press the arrow keys to navigate by day, PageUp and PageDown to navigate by month, Alt+PageUp and Alt+PageDown to navigate by year, or Escape to cancel.","openOnFocusHelpText":"Press Down arrow to browse the calendar, or Escape to close.","tooltipTxt":"Press Escape to cancel","disabledTxt":"Uitgeschakeld","markedTxt":"Geselecteerd","prevTxt":"Vorige","nextTxt":"Volgende","monthTxt":"Maand","yearTxt":"Jaar","months":["Januari","Februari","Maart","April","May","Juni","Juli","Augustus","September","Oktober","November","December"],"days":[{"s":"S","l":"Zondag"},{"s":"M","l":"Maandag"},{"s":"T","l":"Dinsdag"},{"s":"W","l":"Woensdag"},{"s":"T","l":"Donderdag"},{"s":"F","l":"Vrijdag"},{"s":"S","l":"Zaterdag"}]}};
+var gf_legacy_multi = {"1":""};
+var gform_gravityforms = {"strings":{"invalid_file_extension":"Dit bestandstype is niet toegestaan. Moet \u00e9\u00e9n van de volgende zijn:","file_uploaded":"Bestand ge\u00fcpload","delete_file":"Dit bestand verwijderen","in_progress":"in behandeling","file_exceeds_limit":"Bestand overschrijdt limiet bestandsgrootte","illegal_extension":"Dit type bestand is niet toegestaan.","max_reached":"Maximale aantal bestanden bereikt","unknown_error":"Er was een probleem bij het opslaan van het bestand op de server","currently_uploading":"Wacht tot het uploaden is voltooid","cancel":"Annuleren","cancel_upload":"Deze upload annuleren","cancelled":"Geannuleerd","error":"Fout","message":"Bericht"},"vars":{"images_url":"https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/images"}};
+//# sourceURL=gform_gravityforms-js-extra
+</script>
+<script id="gform_gravityforms-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/js/gravityforms.min.js?ver=3.1.1"></script>
+<script id="gform_gravityforms_utils-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/js/dist/utils.min.js?ver=69a9db57304a9f86c3d1a0bea5fd2cf9"></script>
+
+<!-- Google tag (gtag.js) snippet added by Site Kit -->
+<!-- Google Analytics snippet added by Site Kit -->
+<script id="google_gtagjs-js" src="https://www.googletagmanager.com/gtag/js?id=GT-TWM7T2WC" async></script>
+<script id="google_gtagjs-js-after">
+window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}
+gtag("set","linker",{"domains":["muziekcentrumgoedleven.be"]});
+gtag("js", new Date());
+gtag("set", "developer_id.dZTNiMT", true);
+gtag("config", "GT-TWM7T2WC");
+ window._googlesitekit = window._googlesitekit || {}; window._googlesitekit.throttledEvents = []; window._googlesitekit.gtagEvent = (name, data) => { var key = JSON.stringify( { name, data } ); if ( !! window._googlesitekit.throttledEvents[ key ] ) { return; } window._googlesitekit.throttledEvents[ key ] = true; setTimeout( () => { delete window._googlesitekit.throttledEvents[ key ]; }, 5 ); gtag( "event", name, { ...data, event_source: "site-kit" } ); }; 
+//# sourceURL=google_gtagjs-js-after
+</script>
+<link rel="https://api.w.org/" href="https://muziekcentrumgoedleven.be/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://muziekcentrumgoedleven.be/wp-json/wp/v2/pages/258" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://muziekcentrumgoedleven.be/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 7.1" />
+<link rel='shortlink' href='https://muziekcentrumgoedleven.be/?p=258' />
+<meta name="generator" content="Site Kit by Google 1.187.0" />			<style>.cmplz-hidden {
+					display: none !important;
+				}</style>
+					<script id='nav_detail'>
+		window.addEventListener('DOMContentLoaded', () => {
+			if(document.querySelector('.mobile-menu')){
+
+				let mobileMenu = document.querySelector('.mobile-menu');
+				let toggle = document.querySelector('.menu-open-icon');
+				let toggleClose = document.querySelector('.menu-close-icon');
+				let header = document.querySelector('header');
+
+				const openMenu = () => {
+					mobileMenu.classList.add('active');
+					document.body.classList.add('active');
+					header.classList.add('active');
+				};
+
+				const closeMenu = () => {
+					mobileMenu.classList.remove('active');
+					document.body.classList.remove('active');
+					header.classList.remove('active');
+				};
+
+				toggle.addEventListener('click', openMenu);
+				toggleClose.addEventListener('click', closeMenu);
+
+				document.querySelectorAll('.mobile-menu a[href^="#"]').forEach(link => {
+					link.addEventListener('click', () => {
+						closeMenu();
+					});
+				});
+				
+			}
+		})
+	</script>
+<script id="wp-importmap" type="importmap">
+{"imports":{"@wordpress/interactivity":"https://muziekcentrumgoedleven.be/wp-includes/js/dist/script-modules/interactivity/index.min.js?ver=efaa5193bbad9c60ffd1"}}
+</script>
+<link rel="modulepreload" href="https://muziekcentrumgoedleven.be/wp-includes/js/dist/script-modules/interactivity/index.min.js?ver=efaa5193bbad9c60ffd1" id="@wordpress/interactivity-js-modulepreload" fetchpriority="low">
+<style class="wp-fonts-local">
+@font-face{font-family:Inter;font-style:normal;font-weight:100;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-Thin.woff2') format('woff2');}
+@font-face{font-family:Inter;font-style:normal;font-weight:300;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-Light.woff2') format('woff2');}
+@font-face{font-family:Inter;font-style:normal;font-weight:400;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-Regular.woff2') format('woff2');}
+@font-face{font-family:Inter;font-style:normal;font-weight:500;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-Medium.woff2') format('woff2');}
+@font-face{font-family:Inter;font-style:normal;font-weight:600;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-SemiBold.woff2') format('woff2');}
+@font-face{font-family:Inter;font-style:normal;font-weight:700;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/fonts/inter/Inter-Bold.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:300;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiByp8kv8JHgFVrLDz8V15vFP-KUEg.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:400;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiEyp8kv8JHgFVrFJXUc1NECPY.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:500;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiByp8kv8JHgFVrLGT9V15vFP-KUEg.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:600;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiByp8kv8JHgFVrLEj6V15vFP-KUEg.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:700;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiByp8kv8JHgFVrLCz7V15vFP-KUEg.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:normal;font-weight:900;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiByp8kv8JHgFVrLBT5V15vFP-KUEg.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:300;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiDyp8kv8JHgFVrJJLm21llFd2PQEhcqw.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:400;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiGyp8kv8JHgFVrJJLecnFBGPaTSQ.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:500;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiDyp8kv8JHgFVrJJLmg1hlFd2PQEhcqw.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:600;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiDyp8kv8JHgFVrJJLmr19lFd2PQEhcqw.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:700;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiDyp8kv8JHgFVrJJLmy15lFd2PQEhcqw.woff2') format('woff2');}
+@font-face{font-family:Poppins;font-style:italic;font-weight:900;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/pxiDyp8kv8JHgFVrJJLm81xlFd2PQEhcqw.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:300;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0C4iY1M2xLER.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:400;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4iY1M2xLER.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:500;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjr0C4iY1M2xLER.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:600;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsgH1y4iY1M2xLER.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:700;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1y4iY1M2xLER.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:italic;font-weight:300;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk5hkaVIUwaERZjA.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:italic;font-weight:400;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkaVIUwaERZjA.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:italic;font-weight:500;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk_RkaVIUwaERZjA.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:italic;font-weight:600;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkxhjaVIUwaERZjA.woff2') format('woff2');}
+@font-face{font-family:"Open Sans";font-style:italic;font-weight:700;font-display:fallback;src:url('https://muziekcentrumgoedleven.be/wp-content/uploads/fonts/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0RkyFjaVIUwaERZjA.woff2') format('woff2');}
+</style>
+<style id="uagb-style-conditional-extension">@media (min-width: 1025px){body .uag-hide-desktop.uagb-google-map__wrap,body .uag-hide-desktop{display:none !important}}@media (min-width: 768px) and (max-width: 1024px){body .uag-hide-tab.uagb-google-map__wrap,body .uag-hide-tab{display:none !important}}@media (max-width: 767px){body .uag-hide-mob.uagb-google-map__wrap,body .uag-hide-mob{display:none !important}}</style><link rel="icon" href="https://muziekcentrumgoedleven.be/wp-content/uploads/2020/09/cropped-Schermafbeelding-2020-09-30-om-15.58.04-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://muziekcentrumgoedleven.be/wp-content/uploads/2020/09/cropped-Schermafbeelding-2020-09-30-om-15.58.04-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://muziekcentrumgoedleven.be/wp-content/uploads/2020/09/cropped-Schermafbeelding-2020-09-30-om-15.58.04-180x180.png" />
+<meta name="msapplication-TileImage" content="https://muziekcentrumgoedleven.be/wp-content/uploads/2020/09/cropped-Schermafbeelding-2020-09-30-om-15.58.04-270x270.png" />
+</head>
+
+<body class="wp-singular page-template-default page page-id-258 wp-custom-logo wp-embed-responsive wp-theme-spectra-one wp-child-theme-spectra-one-child">
+<header class="wp-block-group mobile-menu-icons has-outline-background-color has-background is-layout-grid wp-container-core-group-is-layout-95f80d7b wp-block-group-is-layout-grid swt-hide-desktop" style="padding-top:20px;padding-right:20px;padding-bottom:20px;padding-left:20px">
+<div class="wp-block-group has-global-padding is-layout-constrained wp-container-core-group-is-layout-bce01ac7 wp-block-group-is-layout-constrained" style="padding-right:0px;padding-left:0px"><div class="is-default-size wp-block-site-logo"><a href="https://muziekcentrumgoedleven.be/" class="custom-logo-link" rel="home"><img loading="lazy" decoding="async" width="117" height="115" src="https://muziekcentrumgoedleven.be/wp-content/uploads/2024/11/logo_simpel_1_goedleven-3.svg" class="custom-logo" alt="Muziekcentrum Goedleven"></a></div></div>
+
+
+
+<div class="wp-block-group is-content-justification-right is-nowrap is-layout-flex wp-container-core-group-is-layout-159fe673 wp-block-group-is-layout-flex" style="padding-right:0px;padding-left:0px">
+<div class="wp-block-group menu-open-icon has-global-padding is-layout-constrained wp-container-core-group-is-layout-b7b8ae06 wp-block-group-is-layout-constrained" style="border-width:1px;border-radius:10px;padding-top:var(--wp--preset--spacing--xxx-small);padding-right:var(--wp--preset--spacing--xxx-small);padding-bottom:var(--wp--preset--spacing--xxx-small);padding-left:var(--wp--preset--spacing--xxx-small)"></div>
+
+
+
+<div class="wp-block-group menu-close-icon has-global-padding is-layout-constrained wp-container-core-group-is-layout-b7b8ae06 wp-block-group-is-layout-constrained" style="border-width:1px;border-radius:10px;padding-top:var(--wp--preset--spacing--xxx-small);padding-right:var(--wp--preset--spacing--xxx-small);padding-bottom:var(--wp--preset--spacing--xxx-small);padding-left:var(--wp--preset--spacing--xxx-small)"></div>
+</div>
+
+
+
+<div class="wp-block-group mobile-menu has-outline-background-color has-background wp-container-content-de607dbc has-global-padding is-layout-constrained wp-container-core-group-is-layout-67ccbe2e wp-block-group-is-layout-constrained" style="padding-top:40px;padding-right:20px;padding-bottom:40px;padding-left:20px">
+<div class="is-default-size aligncenter wp-block-site-logo"><a href="https://muziekcentrumgoedleven.be/" class="custom-logo-link" rel="home"><img loading="lazy" decoding="async" width="117" height="115" src="https://muziekcentrumgoedleven.be/wp-content/uploads/2024/11/logo_simpel_1_goedleven-3.svg" class="custom-logo" alt="Muziekcentrum Goedleven"></a></div>
+
+<nav style="font-size:24px" class="items-justified-center is-vertical no-wrap wp-block-navigation is-content-justification-center is-nowrap is-layout-flex wp-container-core-navigation-is-layout-b957484c wp-block-navigation-is-layout-flex" aria-label="Header navigatie 2"><ul style="font-size:24px" class="wp-block-navigation__container">
+<li class="wp-block-navigation-item current-menu-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/concertagenda/" aria-current="page"><span class="wp-block-navigation-item__label">Concertagenda</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/repetitieruimte/"><span class="wp-block-navigation-item__label">Repetitieruimte</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/zaalhuur/"><span class="wp-block-navigation-item__label">Zaalhuur</span></a></li>
+</ul></nav>
+
+
+
+<div class="wp-block-buttons is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-a49f0ca2 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://muziekcentrumgoedleven.be/contact/">Contact</a></div>
+</div>
+</div>
+</header>
+
+<div class="wp-site-blocks"><header class="wp-block-template-part">
+<div class="wp-block-uagb-container uag-hide-tab uag-hide-mob uagb-block-6d6f2324 alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap">
+<div class="wp-block-uagb-container uagb-block-5830a3f3 alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap">
+<div class="wp-block-uagb-container uagb-block-1d1cbceb alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap"><div class="wp-block-site-logo"><a href="https://muziekcentrumgoedleven.be/" class="custom-logo-link" rel="home"><img width="106" height="104" src="https://muziekcentrumgoedleven.be/wp-content/uploads/2024/11/logo_simpel_1_goedleven-3.svg" class="custom-logo" alt="Muziekcentrum Goedleven" decoding="async" /></a></div></div></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-5cc3cfe9 alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap"><nav style="font-size:20px;font-style:normal;font-weight:600" class="is-responsive no-wrap wp-block-navigation is-horizontal is-nowrap is-layout-flex wp-container-core-navigation-is-layout-c6276331 wp-block-navigation-is-layout-flex" aria-label="Header navigatie" data-wp-interactive="core/navigation" data-wp-context='{"overlayOpenedBy":{"click":false,"hover":false,"focus":false},"type":"overlay","roleAttribute":"","ariaLabel":"Menu"}'><button aria-haspopup="dialog" aria-label="Menu openen" class="wp-block-navigation__responsive-container-open" data-wp-on--click="actions.openMenuOnClick" data-wp-on--keydown="actions.handleMenuKeydown"><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7.5h16v1.5H4z"></path><path d="M4 15h16v1.5H4z"></path></svg></button>
+				<div class="wp-block-navigation__responsive-container" id="modal-1" data-wp-class--has-modal-open="state.isMenuOpen" data-wp-class--is-menu-open="state.isMenuOpen" data-wp-watch="callbacks.initMenu" data-wp-on--keydown="actions.handleMenuKeydown" data-wp-on--focusout="actions.handleMenuFocusout" tabindex="-1">
+					<div class="wp-block-navigation__responsive-close" tabindex="-1">
+						<div class="wp-block-navigation__responsive-dialog" data-wp-bind--aria-modal="state.ariaModal" data-wp-bind--aria-label="state.ariaLabel" data-wp-bind--role="state.roleAttribute">
+							<button aria-label="Menu sluiten" class="wp-block-navigation__responsive-container-close" data-wp-on--click="actions.closeMenuOnClick"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"></path></svg></button>
+							<div class="wp-block-navigation__responsive-container-content" data-wp-watch="callbacks.focusFirstElement" id="modal-1-content">
+								<ul style="font-size:20px;font-style:normal;font-weight:600" class="wp-block-navigation__container">
+<li class="wp-block-navigation-item current-menu-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/concertagenda/" aria-current="page"><span class="wp-block-navigation-item__label">Concertagenda</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/repetitieruimte/"><span class="wp-block-navigation-item__label">Repetitieruimte</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/zaalhuur/"><span class="wp-block-navigation-item__label">Zaalhuur</span></a></li>
+</ul>
+								
+							</div>
+						</div>
+					</div>
+				</div></nav>
+
+
+
+<div class="wp-block-buttons is-layout-flex wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://muziekcentrumgoedleven.be/contact/">contact</a></div>
+</div>
+</div></div>
+</div></div>
+</div></div>
+</header>
+
+
+<div class="wp-block-uagb-container entry-content uagb-block-017ef547 alignfull uagb-is-root-container"><div style="padding-right:0;padding-left:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;margin-left:0;margin-right:0" class="entry-content alignwide wp-block-post-content has-global-padding is-content-justification-center is-layout-constrained wp-container-core-post-content-is-layout-367661c0 wp-block-post-content-is-layout-constrained">
+<div class="wp-block-uagb-container is-agenda uagb-block-e02766ee alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap">
+<div class="wp-block-uagb-advanced-heading uagb-block-67859ada"><h1 class="uagb-heading-text">Komende Concerten</h1></div>
+
+
+
+<div class="wp-block-query col-2 is-layout-flow wp-block-query-is-layout-flow"><ul class="wp-block-post-template is-layout-flow wp-container-core-post-template-is-layout-1ffe91a5 wp-block-post-template-is-layout-flow"><li class="wp-block-post post-3808 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/04/The-Grave-Brothers-600x399.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"><span class="binnenkort">Binnenkort!</span></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/the-grave-brothers-howlin-bones-uk-renegade-bandits-nl/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">25 september 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/the-grave-brothers-howlin-bones-uk-renegade-bandits-nl/">The Grave Brothers + Howlin&#8217; Bones (UK) + Renegade Bandits (NL)</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/37111/70053/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/the-grave-brothers-howlin-bones-uk-renegade-bandits-nl/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/the-grave-brothers-howlin-bones-uk-renegade-bandits-nl/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3483 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/02/AEnima-plays-AEnima-clubtour-600x400.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/aenima/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">26 september 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/aenima/">Ænima plays Ænima</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/34517/65977/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/aenima/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/aenima/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3852 concert type-concert status-publish has-post-thumbnail hentry pwyc">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/Scherm­afbeelding-2026-08-21-om-18.19.18-600x399.png); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/ghost-camaro/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">9 oktober 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/ghost-camaro/">GHOST CAMARO + WEUSEDTOWEARDICKIES (support)</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Club Black Box</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/ghost-camaro/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/ghost-camaro/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3787 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/04/FUNERAL-DRESS-PERS-1-600x400.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/funeral-dress/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">10 oktober 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/funeral-dress/">FUNERAL DRESS + SEXTC (support) + ABELAER (support)</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/37105/70052/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/funeral-dress/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/funeral-dress/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3857 concert type-concert status-publish has-post-thumbnail hentry pwyc">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/NDAN-600x438.png); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/ndan/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">31 oktober 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/ndan/">&#8216;NDAN</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Club Black Box</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/ndan/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/ndan/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3870 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/Aberdeen-foto-600x442.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/aberdeen-them-bones/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">14 november 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/aberdeen-them-bones/">Aberdeen + Them Bones</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/44347/89431/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/aberdeen-them-bones/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/aberdeen-them-bones/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3876 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/PHOTO-2026-06-22-14-36-16-400x600.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/james-walsh/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">28 november 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/james-walsh/">James Walsh</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/43776/88284/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/james-walsh/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/james-walsh/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-3881 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/Sons-ot-the-Culture-Clash.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">19 december 2026</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/">Sons of the Culture Clash</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/43777/88285/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li><li class="wp-block-post post-9999 concert type-concert status-publish has-post-thumbnail hentry">
+
+<div class="wp-block-uagb-container uagb-layout-grid uagb-block-697399bb">
+<div class="wp-block-uagb-container uagb-block-6ec80bce">
+<div class="wp-block-uagb-container uagb-block-85c7041f" style="background-repeat: no-repeat; background-position: 50% 50%; background-size: cover; background-attachment: scroll; background-image: url(https://muziekcentrumgoedleven.be/wp-content/uploads/2026/08/Sons-ot-the-Culture-Clash.jpg); background-clip: padding-box">
+<div class="wp-block-uagb-container pill uagb-block-8d47b6ba">
+<div class="wp-block-uagb-advanced-heading uagb-block-077c4ec5 tag"><p class="uagb-heading-text"></p></div>
+</div>
+<a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-2cc4c8b5">
+<div class="wp-block-uagb-container uagb-block-30cfbb58">
+<div class="wp-block-uagb-advanced-heading uagb-block-6836795a"><p class="uagb-heading-text">malformed date</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-455b112f"><h5 class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/">MALFORMED DATE BAND</a></h5></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-38c175a5"><p class="uagb-heading-text">Zaal Goedleven</p></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-482baeb7">
+<div class="wp-block-uagb-buttons uagb-buttons__outer-wrap uagb-btn__default-btn uagb-btn-tablet__default-btn uagb-btn-mobile__default-btn uagb-block-1c2896ae"><div class="uagb-buttons__wrap uagb-buttons-layout-wrap ">
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-6281c9cb wp-block-button button-tickets"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://tickets.ticketsgent.be/nl/buyingflow/tickets/43777/88285/" rel="follow noopener" target="_blank" role="button"><div class="uagb-button__link">Tickets</div></a></div></div>
+
+
+
+<div class="wp-block-uagb-buttons-child uagb-buttons__outer-wrap uagb-block-01cc4749 wp-block-button button-pwyc"><div class="uagb-button__wrapper"><a class="uagb-buttons-repeater wp-block-button__link" aria-label="" href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" rel="follow noopener" target="_self" role="button"><div class="uagb-button__link">PWYC</div></a></div></div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-0fa8c0d6 sold-out"><p class="uagb-heading-text">UITVERKOCHT</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4a7c93de">
+<div class="wp-block-uagb-advanced-heading uagb-block-d868318d"><p class="uagb-heading-text"><span style="text-decoration: underline;">Meer info</span></p></div>
+<a href="https://muziekcentrumgoedleven.be/concert/sons-of-the-culture-clash/" class="spectra-container-link-overlay" rel="noopener"> </a></div>
+</div>
+</div>
+</div>
+
+</li></ul>
+
+
+
+</div>
+</div></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-ae4d15ee alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap">
+<div class="wp-block-uagb-container uagb-block-fc33aeea">
+<div class="wp-block-uagb-advanced-heading uagb-block-d3f52ffc"><h2 class="uagb-heading-text">Blijf op de hoogte</h2></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-87f56a7e">
+                <div class='gf_browser_chrome gform_wrapper gravity-theme gform-theme--no-framework' data-form-theme='gravity-theme' data-form-index='0' id='gform_wrapper_1' ><form method='post' enctype='multipart/form-data'  id='gform_1'  action='/concertagenda/?nocache=1789719968' data-formid='1' novalidate><div class='gf_invisible ginput_recaptchav3'  data-tabindex='0'><input id="input_d6940e429b33b630150a5335bca4b629" class="gfield_recaptcha_response" type="hidden" name="input_d6940e429b33b630150a5335bca4b629" value=""/></div>
+                        <div class='gform-body gform_body'><div id='gform_fields_1' class='gform_fields top_label form_sublabel_below description_below validation_below'><div id="field_1_3" class="gfield gfield--type-email gfield--input-type-email gfield--width-full gfield_contains_required field_sublabel_below gfield--no-description field_description_below hidden_label field_validation_below gfield_visibility_visible"  ><label class='gfield_label gform-field-label' for='input_1_3'><span class='gform-field-label__text'>E-mailadres</span><span class="gfield_required"><span class="gfield_required gfield_required_text">(Vereist)</span></span></label><div class='ginput_container ginput_container_email'>
+                            <input name='input_3' id='input_1_3' type='email' value='' class='large'   placeholder='E-mailadres *' aria-required="true" aria-invalid="false"  />
+                        </div></div></div></div>
+        <div class='gform-footer gform_footer top_label'> <button type='submit' id='gform_submit_button_1' class='gform_button button' onclick='gform.submission.handleButtonClick(this);' data-submission-type='submit' >Schrijf je in op de nieuwsbrief</button> 
+            <input type='hidden' class='gform_hidden' name='gform_submission_method' data-js='gform_submission_method_1' value='postback' />
+            <input type='hidden' class='gform_hidden' name='gform_theme' data-js='gform_theme_1' id='gform_theme_1' value='gravity-theme' />
+            <input type='hidden' class='gform_hidden' name='gform_style_settings' data-js='gform_style_settings_1' id='gform_style_settings_1' value='{&quot;inputPrimaryColor&quot;:&quot;#204ce5&quot;}' />
+            <input type='hidden' class='gform_hidden' name='is_submit_1' value='1' />
+            <input type='hidden' class='gform_hidden' name='gform_submit' value='1' />
+            
+            <input type='hidden' class='gform_hidden' name='gform_currency' data-currency='USD' value='5DVU7vCgLwLh4Hmu/37CijDRjoJCB//q6TYjzdJeafZi4UXdXLPWSJUmDKmhfIrwAMvf8LPTh9OFHTtIfawtLSHkj36tuMwsy8CIreciyC9J0DE=' />
+            <input type='hidden' class='gform_hidden' name='gform_unique_id' value='' />
+            <input type='hidden' class='gform_hidden' name='state_1' value='WyJ7XCJnZm9ybV9zdWJtaXNzaW9uX21ldGhvZFwiOltcIjIwODA2NzdjNjdhY2U3OWQzZjNmYWFiZDFhMDllODU0XCIsXCJmOTQzNGY3MjQ2Zjc0NTgyZjA5MDFmZDFlYTFmOGM4MFwiXSxcImdmb3JtX3RoZW1lXCI6XCI1MDdjZjY0NTNmMDM3Yzk5MTg5NjUzNjMxMjEwZTBkM1wiLFwiZ2Zvcm1fc3R5bGVfc2V0dGluZ3NcIjpcIjA0NzBlZDE0MWZlNGQzZmI3M2Q0MzA4ZDI4MDE5N2VlXCIsXCJmb3JtX2lkXCI6XCI4ODUyM2FjYWE3MGRmMTI0YjI1NjkzY2I5YWE3ZjY0YVwiLFwidXJsXCI6W1wiMjhkM2MzNjlhZTMxMmQ1OTE4NDg0NTdiZWExODU5NTNcIixcIjRlNjRjNzVkZDAxODlhNjk0MzliZGJkNTFjMGE0YmRjXCJdLFwic3RhdGVfdGltZXN0YW1wXCI6XCJmMTg4M2IyNWIwMDg5NTQxNjIwNTMxZWRhMjIxNWYxMVwifSIsIjM1YTNiZmNlZGUzYWQ3ZTg4ODk5ZDZkNjc4MzIzNWYzIiwxNzg5NzE5OTcyXQ==' />
+            <input type='hidden' autocomplete='off' class='gform_hidden' name='gform_target_page_number_1' id='gform_target_page_number_1' value='0' />
+            <input type='hidden' autocomplete='off' class='gform_hidden' name='gform_source_page_number_1' id='gform_source_page_number_1' value='1' />
+            <input type='hidden' name='gform_field_values' value='' />
+            
+        </div>
+                        </form>
+                        </div></div>
+</div>
+</div></div>
+</div></div>
+
+
+<footer class="wp-block-template-part">
+<div class="wp-block-uagb-container uagb-block-aa82306d alignfull uagb-is-root-container"><div class="uagb-container-inner-blocks-wrap">
+<div class="wp-block-uagb-container uagb-block-dbbc627e">
+<div class="wp-block-uagb-container uagb-block-af268118">
+<div class="wp-block-uagb-image alignleft uagb-block-8d4424e1 wp-block-uagb-image--layout-default wp-block-uagb-image--effect-static wp-block-uagb-image--align-left"><figure class="wp-block-uagb-image__figure"><a class="" href="https://muziekcentrumgoedleven.be/" target="" rel="noopener"><img decoding="async" src="https://muziekcentrumgoedleven.be/wp-content/uploads/2026/02/Group-6.svg" alt="" class="uag-image-287" width="118" height="68" title="Group (6)" loading="lazy" role="img" /></a></figure></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-02533508"><p class="uagb-heading-text">In <strong>Muziekcentrum Goedleven</strong> vind je 22 volledig uitgeruste repetitieruimtes voor muziek en dans met geluidsinstallatie en opbergruimtes. VZW Goedleven wil ten volle inzetten op muziek- en danseducatie.<br><br>Ben je op zoek naar een veelzijdige zaal voor jouw volgende evenement? <strong>Zaal Goedleven</strong> biedt alles wat je nodig hebt om van jouw concert, PA-repetitie, try-out of privéfeest een succes te maken.</p></div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-caa58a3e">
+<div class="wp-block-uagb-advanced-heading uagb-block-97b773e2"><p class="uagb-heading-text">Locatie</p></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-da3ca472"><p class="uagb-heading-text"><a href="https://www.google.com/maps?ll=51.074414,3.772459&amp;z=17&amp;t=m&amp;hl=en&amp;gl=US&amp;mapclient=embed&amp;cid=9052933348496933439" target="_blank" rel="noreferrer noopener">Goedlevenstraat 179/4 <br>9041 Gent</a></p></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-a3d37b53">
+<div class="wp-block-uagb-container uagb-block-44f63cec"><nav style="font-size:16px" class="has-text-color has-heading-color no-wrap wp-block-navigation is-horizontal is-nowrap is-layout-flex wp-container-core-navigation-is-layout-bf101f8f wp-block-navigation-is-layout-flex" aria-label="Footer menu"><ul style="font-size:16px" class="wp-block-navigation__container">
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/"><span class="wp-block-navigation-item__label">Home</span></a></li>
+<li class="wp-block-navigation-item current-menu-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/concertagenda/" aria-current="page"><span class="wp-block-navigation-item__label">Concertagenda</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/repetitieruimte/"><span class="wp-block-navigation-item__label">Repetitieruimte</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/zaalhuur/"><span class="wp-block-navigation-item__label">Zaalhuur</span></a></li>
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content" href="https://muziekcentrumgoedleven.be/contact/"><span class="wp-block-navigation-item__label">Contact</span></a></li>
+</ul></nav>
+</div>
+
+
+
+<div class="wp-block-uagb-container contact-info uagb-layout-grid uagb-block-b413d1c0">
+<div class="wp-block-uagb-container uagb-block-8086049b">
+<div class="wp-block-uagb-advanced-heading uagb-block-5ea3754b"><h3 class="uagb-heading-text">Concertagenda</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-e9598f8c"><p class="uagb-heading-text">Vragen over onze concerten?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-effaa94b"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-bbed0da4"><span class="uagb-icon-list__label"><strong>Vincent Welvaert</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-d92ee415"><a target="_self" aria-label="zaalgoedleven@gmail.com" rel="noopener noreferrer" href="mailto:zaalgoedleven@gmail.com"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">zaalgoedleven@gmail.com</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-78f403b3"><a target="_self" aria-label="+32 (0) 473 64 21 20" rel="noopener noreferrer" href="tel:+32 473 64 21 20"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 473 64 21 20</span></div>
+</div></div>
+
+
+
+<ul class="wp-block-social-links has-icon-color is-style-logos-only is-nowrap is-layout-flex wp-container-core-social-links-is-layout-fa7f2986 wp-block-social-links-is-layout-flex" style="margin-top:0px;margin-bottom:0px"><li style="color:#0074bd" class="wp-social-link wp-social-link-facebook has-primary-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.facebook.com/zaalgoedleven/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Facebook</span></a></li>
+
+<li style="color:#0074bd" class="wp-social-link wp-social-link-instagram has-primary-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.instagram.com/zaal_goedleven/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12,4.622c2.403,0,2.688,0.009,3.637,0.052c0.877,0.04,1.354,0.187,1.671,0.31c0.42,0.163,0.72,0.358,1.035,0.673 c0.315,0.315,0.51,0.615,0.673,1.035c0.123,0.317,0.27,0.794,0.31,1.671c0.043,0.949,0.052,1.234,0.052,3.637 s-0.009,2.688-0.052,3.637c-0.04,0.877-0.187,1.354-0.31,1.671c-0.163,0.42-0.358,0.72-0.673,1.035 c-0.315,0.315-0.615,0.51-1.035,0.673c-0.317,0.123-0.794,0.27-1.671,0.31c-0.949,0.043-1.233,0.052-3.637,0.052 s-2.688-0.009-3.637-0.052c-0.877-0.04-1.354-0.187-1.671-0.31c-0.42-0.163-0.72-0.358-1.035-0.673 c-0.315-0.315-0.51-0.615-0.673-1.035c-0.123-0.317-0.27-0.794-0.31-1.671C4.631,14.688,4.622,14.403,4.622,12 s0.009-2.688,0.052-3.637c0.04-0.877,0.187-1.354,0.31-1.671c0.163-0.42,0.358-0.72,0.673-1.035 c0.315-0.315,0.615-0.51,1.035-0.673c0.317-0.123,0.794-0.27,1.671-0.31C9.312,4.631,9.597,4.622,12,4.622 M12,3 C9.556,3,9.249,3.01,8.289,3.054C7.331,3.098,6.677,3.25,6.105,3.472C5.513,3.702,5.011,4.01,4.511,4.511 c-0.5,0.5-0.808,1.002-1.038,1.594C3.25,6.677,3.098,7.331,3.054,8.289C3.01,9.249,3,9.556,3,12c0,2.444,0.01,2.751,0.054,3.711 c0.044,0.958,0.196,1.612,0.418,2.185c0.23,0.592,0.538,1.094,1.038,1.594c0.5,0.5,1.002,0.808,1.594,1.038 c0.572,0.222,1.227,0.375,2.185,0.418C9.249,20.99,9.556,21,12,21s2.751-0.01,3.711-0.054c0.958-0.044,1.612-0.196,2.185-0.418 c0.592-0.23,1.094-0.538,1.594-1.038c0.5-0.5,0.808-1.002,1.038-1.594c0.222-0.572,0.375-1.227,0.418-2.185 C20.99,14.751,21,14.444,21,12s-0.01-2.751-0.054-3.711c-0.044-0.958-0.196-1.612-0.418-2.185c-0.23-0.592-0.538-1.094-1.038-1.594 c-0.5-0.5-1.002-0.808-1.594-1.038c-0.572-0.222-1.227-0.375-2.185-0.418C14.751,3.01,14.444,3,12,3L12,3z M12,7.378 c-2.552,0-4.622,2.069-4.622,4.622S9.448,16.622,12,16.622s4.622-2.069,4.622-4.622S14.552,7.378,12,7.378z M12,15 c-1.657,0-3-1.343-3-3s1.343-3,3-3s3,1.343,3,3S13.657,15,12,15z M16.804,6.116c-0.596,0-1.08,0.484-1.08,1.08 s0.484,1.08,1.08,1.08c0.596,0,1.08-0.484,1.08-1.08S17.401,6.116,16.804,6.116z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Instagram</span></a></li></ul>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-00ce1838">
+<div class="wp-block-uagb-advanced-heading uagb-block-6768a6e1"><h3 class="uagb-heading-text">Muziekcentrum Goedleven</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-fdd0a7e0"><p class="uagb-heading-text">Vragen over een repetitiekot?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-b8531597"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-fac81a3a"><span class="uagb-icon-list__label"><strong>Jochen Goethals</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-ed5cdafd"><a target="_self" aria-label="muziekcentrumgoedleven@gmail.com" rel="noopener noreferrer" href="mailto:muziekcentrumgoedleven@gmail.com"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">muziekcentrumgoedleven@gmail.com</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-2ca883a8"><a target="_self" aria-label="+32 (0) 485 86 35 28" rel="noopener noreferrer" href="tel:+32 485 86 35 28"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 485 86 35 28</span></div>
+</div></div>
+
+
+
+<ul class="wp-block-social-links has-icon-color is-style-logos-only is-nowrap is-layout-flex wp-container-core-social-links-is-layout-fa7f2986 wp-block-social-links-is-layout-flex" style="margin-top:0px;margin-bottom:0px"><li style="color:#0074bd" class="wp-social-link wp-social-link-facebook has-primary-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.facebook.com/muziekcentrumgoedleven/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Facebook</span></a></li></ul>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-baf5d3cf">
+<div class="wp-block-uagb-advanced-heading uagb-block-368d55a7"><h3 class="uagb-heading-text">BlackBox of Zaal Goedleven</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-51713ead"><p class="uagb-heading-text">Vragen over zaalhuur?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-974cc147"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-1b06b068"><span class="uagb-icon-list__label"><strong>Vincent Welvaert</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-40485e62"><a target="_self" aria-label="info@toursupport.be" rel="noopener noreferrer" href="mailto:info@toursupport.be"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">info@toursupport.be</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-15ec3fc8"><a target="_self" aria-label="+32 (0) 473 64 21 20" rel="noopener noreferrer" href="tel:+32 473 64 21 20"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 473 64 21 20</span></div>
+</div></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-e5b15b68">
+<div class="wp-block-uagb-advanced-heading uagb-block-b2cb61db"><h3 class="uagb-heading-text">Toursupport.be</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-b7bae0af"><p class="uagb-heading-text">Vragen over een bus of backline?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-0c36c8d5"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-ea7c897c"><span class="uagb-icon-list__label"><strong>Vincent Welvaert</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-0bbaa428"><a target="_self" aria-label="info@toursupport.be" rel="noopener noreferrer" href="mailto:info@toursupport.be"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">info@toursupport.be</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-f695a2a8"><a target="_self" aria-label="+32 (0) 473 64 21 20" rel="noopener noreferrer" href="tel:+32 473 64 21 20"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 473 64 21 20</span></div>
+</div></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-eebf185f">
+<div class="wp-block-uagb-advanced-heading uagb-block-8eb3719e"><h3 class="uagb-heading-text">Popcollege&nbsp;</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-ba55e631"><p class="uagb-heading-text">Vragen over de muziekschool?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-9d2b8b0e"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-ad437a36"><span class="uagb-icon-list__label"><strong>Gunter Deleu</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-19a5f98c"><a target="_self" aria-label="info@popcollege.be" rel="noopener noreferrer" href="mailto:info@popcollege.be"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">info@popcollege.be</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-7f9fa6b2"><a target="_self" aria-label="+32 (0) 492 95 00 65" rel="noopener noreferrer" href="tel:+32 492 95 00 65"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 492 95 00 65</span></div>
+</div></div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-4572e64e">
+<div class="wp-block-uagb-advanced-heading uagb-block-5ca2b035"><h3 class="uagb-heading-text">Danscollege</h3></div>
+
+
+
+<div class="wp-block-uagb-advanced-heading uagb-block-1cc06a83"><p class="uagb-heading-text">Vragen over de dansschool?</p></div>
+
+
+
+<div class="wp-block-uagb-icon-list uagb-block-37fbed4a"><div class="uagb-icon-list__wrap">
+<div class="wp-block-uagb-icon-list-child uagb-block-a68aa2da"><span class="uagb-icon-list__label"><strong>Sarah Brinkman</strong></span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-28d67fc7"><a target="_self" aria-label="danscollegegoedleven@gmail.com" rel="noopener noreferrer" href="mailto:danscollegegoedleven@gmail.com"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 64C490.5 64 512 85.49 512 112C512 127.1 504.9 141.3 492.8 150.4L275.2 313.6C263.8 322.1 248.2 322.1 236.8 313.6L19.2 150.4C7.113 141.3 0 127.1 0 112C0 85.49 21.49 64 48 64H464zM217.6 339.2C240.4 356.3 271.6 356.3 294.4 339.2L512 176V384C512 419.3 483.3 448 448 448H64C28.65 448 0 419.3 0 384V176L217.6 339.2z"></path></svg></span><span class="uagb-icon-list__label">danscollegegoedleven@gmail.com</span></div>
+
+
+
+<div class="wp-block-uagb-icon-list-child uagb-block-c402cd26"><a target="_self" aria-label="+32 (0) 470 24 60 95" rel="noopener noreferrer" href="tel:+32 470 24 60 95"> </a><span class="uagb-icon-list__source-wrap"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"></path></svg></span><span class="uagb-icon-list__label">+32 (0) 470 24 60 95</span></div>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-6b372616">
+<div class="wp-block-uagb-container uagb-block-b71fca02"><p class="creds">© 2026 All rights reserved Toursupport BV</p>
+</div>
+
+
+
+<div class="wp-block-uagb-container uagb-block-48634abc">
+<div class="wp-block-uagb-advanced-heading uagb-block-d8fd7989"><p class="uagb-heading-text"><a href="https://muziekcentrumgoedleven.be/privacy-policy/" data-type="page" data-id="117">Privacy Policy</a> | <a href="https://muziekcentrumgoedleven.be/cookie-policy/" data-type="page" data-id="3695">Cookie Policy</a> | <a href="https://wizarts.be" target="_blank" rel="noreferrer noopener">Website by Wizarts</a></p></div>
+</div>
+</div>
+</div></div>
+</footer></div>
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/spectra-one-child/*","/wp-content/themes/spectra-one/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+
+<!-- Consent Management powered by Complianz | GDPR/CCPA Cookie Consent https://wordpress.org/plugins/complianz-gdpr -->
+<div id="cmplz-cookiebanner-container"><div id="cmplz-cookiebanner-1-optin" class="cmplz-cookiebanner cmplz-hidden banner-1 banner-a optin cmplz-bottom-right cmplz-categories-type-view-preferences" aria-modal="true" data-nosnippet="true" role="dialog" aria-live="polite" aria-labelledby="cmplz-header-1-optin" aria-describedby="cmplz-message-1-optin">
+	<div class="cmplz-header">
+		<div class="cmplz-logo"></div>
+		<div class="cmplz-title" id="cmplz-header-1-optin">Beheer toestemming</div>
+		<div class="cmplz-close" tabindex="0" role="button" aria-label="Close dialog">
+			<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+		</div>
+	</div>
+
+	<div class="cmplz-divider cmplz-divider-header"></div>
+	<div class="cmplz-body">
+		<div class="cmplz-message" id="cmplz-message-1-optin"><p>Om de beste gebruikerservaring te bieden, gebruiken we technologieën zoals cookies om apparaatinformatie op te slaan en/of te raadplegen. Door in te stemmen met deze technologieën kunnen we gegevens zoals surfgedrag of unieke ID's op deze site verwerken. Het niet instemmen of intrekken van uw toestemming kan bepaalde functies en mogelijkheden negatief beïnvloeden.</p></div>
+		<!-- categories start -->
+		<div class="cmplz-categories">
+			<div class="cmplz-category cmplz-functional">
+				<div class="cmplz-category-header">
+					<span class="cmplz-category-title" id="cmplz-title-functional-1-optin">Functional</span>
+					<span class='cmplz-always-active'>
+						<span class="cmplz-banner-checkbox">
+							<input type="checkbox"
+									id="cmplz-functional-optin"
+									data-category="cmplz_functional"
+									class="cmplz-consent-checkbox cmplz-functional"
+									size="40"
+									value="1"/>
+							<label class="cmplz-label" for="cmplz-functional-optin"><span class="screen-reader-text">Functional</span></label>
+						</span>
+						Always active					</span>
+					<button class="cmplz-category-toggle"
+							aria-expanded="false"
+							aria-controls="cmplz-desc-functional-1-optin"
+							aria-labelledby="cmplz-title-functional-1-optin">
+						<span class="cmplz-icon cmplz-open">
+							<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" height="18"><path d="M224 416c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L224 338.8l169.4-169.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-192 192C240.4 412.9 232.2 416 224 416z"/></svg>
+						</span>
+					</button>
+				</div>
+				<div class="cmplz-description" id="cmplz-desc-functional-1-optin" hidden>
+					<span class="cmplz-description-functional">The technical storage or access is strictly necessary for the legitimate purpose of enabling the use of a specific service explicitly requested by the subscriber or user, or for the sole purpose of carrying out the transmission of a communication over an electronic communications network.</span>
+				</div>
+			</div>
+
+			<div class="cmplz-category cmplz-preferences">
+				<div class="cmplz-category-header">
+					<span class="cmplz-category-title" id="cmplz-title-preferences-1-optin">Preferences</span>
+					<span class="cmplz-banner-checkbox">
+						<input type="checkbox"
+								id="cmplz-preferences-optin"
+								data-category="cmplz_preferences"
+								class="cmplz-consent-checkbox cmplz-preferences"
+								size="40"
+								value="1"/>
+						<label class="cmplz-label" for="cmplz-preferences-optin"><span class="screen-reader-text">Preferences</span></label>
+					</span>
+					<button class="cmplz-category-toggle"
+							aria-expanded="false"
+							aria-controls="cmplz-desc-preferences-1-optin"
+							aria-labelledby="cmplz-title-preferences-1-optin">
+						<span class="cmplz-icon cmplz-open">
+							<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" height="18"><path d="M224 416c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L224 338.8l169.4-169.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-192 192C240.4 412.9 232.2 416 224 416z"/></svg>
+						</span>
+					</button>
+				</div>
+				<div class="cmplz-description" id="cmplz-desc-preferences-1-optin" hidden>
+					<span class="cmplz-description-preferences">The technical storage or access is necessary for the legitimate purpose of storing preferences that are not requested by the subscriber or user.</span>
+				</div>
+			</div>
+
+			<div class="cmplz-category cmplz-statistics">
+				<div class="cmplz-category-header">
+					<span class="cmplz-category-title" id="cmplz-title-statistics-1-optin">Statistics</span>
+					<span class="cmplz-banner-checkbox">
+						<input type="checkbox"
+								id="cmplz-statistics-optin"
+								data-category="cmplz_statistics"
+								class="cmplz-consent-checkbox cmplz-statistics"
+								size="40"
+								value="1"/>
+						<label class="cmplz-label" for="cmplz-statistics-optin"><span class="screen-reader-text">Statistics</span></label>
+					</span>
+					<button class="cmplz-category-toggle"
+							aria-expanded="false"
+							aria-controls="cmplz-desc-statistics-1-optin"
+							aria-labelledby="cmplz-title-statistics-1-optin">
+						<span class="cmplz-icon cmplz-open">
+							<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" height="18"><path d="M224 416c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L224 338.8l169.4-169.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-192 192C240.4 412.9 232.2 416 224 416z"/></svg>
+						</span>
+					</button>
+				</div>
+				<div class="cmplz-description" id="cmplz-desc-statistics-1-optin" hidden>
+					<span class="cmplz-description-statistics">The technical storage or access that is used exclusively for statistical purposes.</span>
+					<span class="cmplz-description-statistics-anonymous">The technical storage or access that is used exclusively for anonymous statistical purposes. Without a subpoena, voluntary compliance on the part of your Internet Service Provider, or additional records from a third party, information stored or retrieved for this purpose alone cannot usually be used to identify you.</span>
+				</div>
+			</div>
+
+			<div class="cmplz-category cmplz-marketing">
+				<div class="cmplz-category-header">
+					<span class="cmplz-category-title" id="cmplz-title-marketing-1-optin">Marketing</span>
+					<span class="cmplz-banner-checkbox">
+						<input type="checkbox"
+								id="cmplz-marketing-optin"
+								data-category="cmplz_marketing"
+								class="cmplz-consent-checkbox cmplz-marketing"
+								size="40"
+								value="1"/>
+						<label class="cmplz-label" for="cmplz-marketing-optin"><span class="screen-reader-text">Marketing</span></label>
+					</span>
+					<button class="cmplz-category-toggle"
+							aria-expanded="false"
+							aria-controls="cmplz-desc-marketing-1-optin"
+							aria-labelledby="cmplz-title-marketing-1-optin">
+						<span class="cmplz-icon cmplz-open">
+							<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" height="18"><path d="M224 416c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L224 338.8l169.4-169.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-192 192C240.4 412.9 232.2 416 224 416z"/></svg>
+						</span>
+					</button>
+				</div>
+				<div class="cmplz-description" id="cmplz-desc-marketing-1-optin" hidden>
+					<span class="cmplz-description-marketing">The technical storage or access is required to create user profiles to send advertising, or to track the user on a website or across several websites for similar marketing purposes.</span>
+				</div>
+			</div>
+		</div><!-- categories end -->
+			</div>
+
+	<div class="cmplz-links cmplz-information">
+		<ul>
+			<li><a class="cmplz-link cmplz-manage-options cookie-statement" href="#" data-relative_url="#cmplz-manage-consent-container">Manage options</a></li>
+			<li><a class="cmplz-link cmplz-manage-third-parties cookie-statement" href="#" data-relative_url="#cmplz-cookies-overview">Manage services</a></li>
+			<li><a class="cmplz-link cmplz-manage-vendors tcf cookie-statement" href="#" data-relative_url="#cmplz-tcf-wrapper">Manage {vendor_count} vendors</a></li>
+			<li><a class="cmplz-link cmplz-external cmplz-read-more-purposes tcf" target="_blank" rel="noopener noreferrer nofollow" href="https://cookiedatabase.org/tcf/purposes/" aria-label="Read more about TCF purposes on Cookie Database">Read more about these purposes</a></li>
+		</ul>
+			</div>
+
+	<div class="cmplz-divider cmplz-footer"></div>
+
+	<div class="cmplz-buttons">
+		<button class="cmplz-btn cmplz-accept">Accepteer</button>
+		<button class="cmplz-btn cmplz-deny">Weiger</button>
+		<button class="cmplz-btn cmplz-view-preferences">Bekijk voorkeuren</button>
+		<button class="cmplz-btn cmplz-save-preferences">Opslaan</button>
+		<a class="cmplz-btn cmplz-manage-options tcf cookie-statement" href="#" data-relative_url="#cmplz-manage-consent-container">Bekijk voorkeuren</a>
+			</div>
+
+
+	<div class="cmplz-documents cmplz-links">
+		<ul>
+			<li><a class="cmplz-link cookie-statement" href="#" data-relative_url="">{title}</a></li>
+			<li><a class="cmplz-link privacy-statement" href="#" data-relative_url="">{title}</a></li>
+			<li><a class="cmplz-link impressum" href="#" data-relative_url="">{title}</a></li>
+		</ul>
+			</div>
+</div>
+</div>
+					<div id="cmplz-manage-consent" data-nosnippet="true"><button class="cmplz-btn cmplz-hidden cmplz-manage-consent manage-consent-1" aria-haspopup="dialog" aria-controls="cmplz-cookiebanner-1-optin">Beheer toestemming</button>
+
+</div>    <script>
+	   document.addEventListener('DOMContentLoaded', function() {
+			// Controleer schermgrootte bij laden én bij resizen
+			function init() {
+				//if (window.innerWidth < 976) return;
+
+				const wrapper = document.querySelector('.scroll-wrapper');
+				const scrollLeft = document.querySelector('.scroll-left');
+				const scrollRight = document.querySelector('.scroll-right');
+
+				if (!wrapper || !scrollLeft || !scrollRight) return;
+
+				wrapper.style.overflow = 'hidden';
+
+				function updateScrollAnimation() {
+					const rect = wrapper.getBoundingClientRect();
+					const wrapperCenter = rect.top + (rect.height / 2);
+					const viewportCenter = window.innerHeight / 2;
+
+					const distanceFromCenter = wrapperCenter - viewportCenter;
+					const offset = distanceFromCenter * 0.5;
+
+					scrollLeft.style.transform = `translateX(${offset}px)`;
+					scrollRight.style.transform = `translateX(${-offset}px)`;
+				}
+
+				window.addEventListener('scroll', updateScrollAnimation);
+				updateScrollAnimation();
+			}
+
+			init();
+			window.addEventListener('resize', init);
+		});
+    </script>
+        <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const decoEffect = document.querySelector('.deco-effect');
+        
+        if (!decoEffect) return; // Exit als element niet bestaat
+        
+        const leftImage = decoEffect.querySelector('.img-container > div:first-child');
+        const rightImage = decoEffect.querySelector('.img-container > div:last-child');
+        
+        if (!leftImage || !rightImage) return; // Exit als images niet bestaan
+        
+        function updateImagePositions() {
+            const rect = decoEffect.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const elementCenter = rect.top + rect.height / 2;
+            const screenCenter = windowHeight / 2;
+            
+            // Bereken offset (-1 tot 1, waarbij 0 = perfect gecentreerd)
+            const offset = (screenCenter - elementCenter) / (windowHeight / 2);
+            const maxMove = 30; // percentage beweging
+            
+            // Linker image: beweegt naar beneden (positief)
+            leftImage.style.transform = 'translateY(' + (-offset * maxMove) + '%)';
+            
+            // Rechter image: beweegt naar boven (negatief)
+            rightImage.style.transform = 'translateY(' + (offset * maxMove) + '%)';
+        }
+        
+        window.addEventListener('scroll', updateImagePositions);
+        window.addEventListener('resize', updateImagePositions);
+        updateImagePositions(); // Initial call
+    });
+    </script>
+        <script>
+    document.addEventListener('DOMContentLoaded', function () {
+		if(!document.querySelector('body.home')){return;}
+		
+        const firstConcertThumb = document.querySelector(
+            '.home-loop .wp-block-post:nth-child(1) .achtergrond'
+        );
+        if (!firstConcertThumb) {
+            return;
+        }
+
+        const bgImage = firstConcertThumb.style.backgroundImage;
+
+        if (!bgImage) {
+            return;
+        }
+
+        let targetCard = document.querySelector('#concertagenda-top');
+
+        if (!targetCard) {
+            return;
+        }
+
+        targetCard.style.backgroundImage = bgImage;
+        targetCard.style.backgroundSize = 'cover';
+        targetCard.style.backgroundPosition = 'center';
+        targetCard.style.backgroundRepeat = 'no-repeat';		
+		
+
+        targetCard = document.querySelector('#concertagenda-mid');
+
+        if (!targetCard) {
+            return;
+        }
+
+        targetCard.style.backgroundImage = bgImage;
+        targetCard.style.backgroundSize = 'cover';
+        targetCard.style.backgroundPosition = 'center';
+        targetCard.style.backgroundRepeat = 'no-repeat';
+		
+    });
+    </script>
+    	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			if (!document.querySelector('.zaal-form-trigger')) { return; }
+
+			document.querySelectorAll('.zaal-form-trigger').forEach(function (modal) {		
+				
+				const triggers = modal.querySelectorAll('.wp-block-button a');
+				
+				if (!triggers.length) return;
+
+				triggers.forEach(function (trigger) {
+					trigger.addEventListener('click', function () {
+						setTimeout(function () {
+							let value = '';
+							if (modal.classList.contains('goedleven')) {
+								value = 'Zaal Goedleven'; 
+							} else if (modal.classList.contains('black-box')) {
+								value = 'Club Black Box';
+							}
+							if (value) {
+								const radios = document.querySelectorAll(`#gform_wrapper_5 input[name="input_38"][value="${value}"]`);
+								radios.forEach(function (radio) {
+									radio.checked = true;
+									radio.dispatchEvent(new Event('change', { bubbles: true }));
+								});
+							}
+						}, 50);
+					});
+				});
+			});
+		});
+	</script>
+    <script data-wp-router-options="{&quot;loadOnClientNavigation&quot;:true}" fetchpriority="low" id="@wordpress/block-library/navigation/view-js-module" src="https://muziekcentrumgoedleven.be/wp-includes/js/dist/script-modules/block-library/navigation/view.min.js?ver=1bf28ded04f9f188bdcb" type="module"></script>
+<style id="wp-block-group-inline-css">
+.wp-block-group{box-sizing:border-box}:where(.wp-block-group.wp-block-group-is-layout-constrained){position:relative}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/group/style.min.css */
+</style>
+<style id="wp-block-group-theme-inline-css">
+:where(.wp-block-group.has-background){padding:1.25em 2.375em}
+/*# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/blocks/group/theme.min.css */
+</style>
+<script id="wp-dom-ready-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/dist/dom-ready.min.js?ver=3fe927cab37bf38d6a23"></script>
+<script id="wp-hooks-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255"></script>
+<script id="wp-i18n-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/dist/i18n.min.js?ver=1dfe7db3940c23ea9216"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+//# sourceURL=wp-i18n-js-after
+</script>
+<script id="wp-a11y-js-translations">
+( function( domain, translations ) {
+	var localeData = translations.locale_data[ domain ] || translations.locale_data.messages;
+	localeData[""].domain = domain;
+	wp.i18n.setLocaleData( localeData, domain );
+} )( "default", {"translation-revision-date":"2025-04-14 06:11:02+0000","generator":"GlotPress\/4.0.1","domain":"messages","locale_data":{"messages":{"":{"domain":"messages","plural-forms":"nplurals=2; plural=n != 1;","lang":"nl"},"Notifications":["Meldingen"]}},"comment":{"reference":"wp-includes\/js\/dist\/a11y.js"}} );
+//# sourceURL=wp-a11y-js-translations
+</script>
+<script id="wp-a11y-js" src="https://muziekcentrumgoedleven.be/wp-includes/js/dist/a11y.min.js?ver=31c6cec5a4ff7aff483d"></script>
+<script id="gform_placeholder-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/js/placeholders.jquery.min.js?ver=3.1.1"></script>
+<script id="gform_gravityforms_theme_vendors-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/js/dist/vendor-theme.min.js?ver=0c901cb641ce64b99c20ea1a4d208cc9"></script>
+<script id="gform_gravityforms_theme-js-extra">
+var gform_theme_config = {"common":{"form":{"honeypot":{"version_hash":"054904bce881629e86c469381d7620d1"},"ajax":{"ajaxurl":"https://muziekcentrumgoedleven.be/wp-admin/admin-ajax.php","ajax_submission_nonce":"e61c7e2289","i18n":{"step_announcement":"Stap %1$s van %2$s, %3$s","unknown_error":"Er was een onbekende fout bij het verwerken van je aanvraag. Probeer het opnieuw.","error_403":"De aanvraag is om onbekende veiligheidsredenen geblokkeerd (403-fout). Verwijder alle code-achtige tekst (scripts of databasequery&#039;s) en probeer het opnieuw."}},"product_meta":[],"pagination":{"1":""}}},"hmr_dev":"","public_path":"https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/js/dist/","config_nonce":"db7d147960"};
+//# sourceURL=gform_gravityforms_theme-js-extra
+</script>
+<script id="gform_gravityforms_theme-js" defer='defer' src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/assets/js/dist/scripts-theme.min.js?ver=e27d9712159624c99129c8c208f022ad"></script>
+<script id="uagb-loop-builder-js-extra">
+var uagb_loop_builder = {"ajax_url":"https://muziekcentrumgoedleven.be/wp-admin/admin-ajax.php","post_id":"258","nonce":"02a1048a25","what_post_type":"page"};
+//# sourceURL=uagb-loop-builder-js-extra
+</script>
+<script id="uagb-loop-builder-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/spectra-pro/assets/js/loop-builder.js?ver=1.3.2"></script>
+<script id="uagb-block-positioning-js-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/ultimate-addons-for-gutenberg/assets/js/spectra-block-positioning.min.js?ver=2.20.3"></script>
+<script id="uagb-button-child-js-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/ultimate-addons-for-gutenberg/assets/js/uagb-button-child.js?ver=2.20.3"></script>
+<script id="uag-script-258-js" src="https://muziekcentrumgoedleven.be/wp-content/uploads/uag-plugin/assets/0/uag-js-258.js?ver=1789719953"></script>
+<script id="lightbox-js" src="https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one-child/assets/js/lightbox.js?ver=1771945714"></script>
+<script id="spectra-one-js" src="https://muziekcentrumgoedleven.be/wp-content/themes/spectra-one/assets/js/script.js?ver=1.2.6"></script>
+<script id="gforms_recaptcha_recaptcha-js-extra">
+var gforms_recaptcha_recaptcha_strings = {"nonce":"269a3a5ac3","disconnect":"Disconnecting","change_connection_type":"Resetting","spinner":"https://muziekcentrumgoedleven.be/wp-content/plugins/gravityforms/images/spinner.svg","connection_type":"enterprise","disable_badge":"","change_connection_type_title":"Change Connection Type","change_connection_type_message":"Changing the connection type will delete your current settings.  Do you want to proceed?","disconnect_title":"Disconnect","disconnect_message":"Disconnecting from reCAPTCHA will delete your current settings.  Do you want to proceed?","site_key":"6Lc_fXYsAAAAABR52BMkDnA-ZA0aHlhUpguwLZ5t","key_type":"","ajaxurl":"https://muziekcentrumgoedleven.be/wp-admin/admin-ajax.php"};
+//# sourceURL=gforms_recaptcha_recaptcha-js-extra
+</script>
+<script data-wp-strategy="defer" defer id="gforms_recaptcha_recaptcha-js" src="https://www.google.com/recaptcha/enterprise.js?render=6Lc_fXYsAAAAABR52BMkDnA-ZA0aHlhUpguwLZ5t&#038;ver=2.2.2"></script>
+<script data-wp-strategy="defer" defer id="gforms_recaptcha_frontend-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/gravityformsrecaptcha/js/frontend.min.js?ver=2.2.2"></script>
+<script id="googlesitekit-events-provider-content-events-js-before">
+window._googlesitekit = window._googlesitekit || {};
+window._googlesitekit.contentEvents = {"postID":258,"isSinglePost":false,"hasVimeoEmbed":false};
+//# sourceURL=googlesitekit-events-provider-content-events-js-before
+</script>
+<script id="googlesitekit-events-provider-content-events-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-content-events-bb83c1a0aedefa5d25d1.js" defer></script>
+<script id="cmplz-cookiebanner-js-extra">
+var complianz = {"prefix":"cmplz_","debug":"","user_banner_id":"1","set_cookies":[],"block_ajax_content":"","banner_version":"26","version":"7.5.5","store_consent":"","do_not_track_enabled":"","consenttype":"optin","region":"eu","geoip":"","dismiss_timeout":"","disable_cookiebanner":"","soft_cookiewall":"","dismiss_on_scroll":"","cookie_expiry":"365","url":"https://muziekcentrumgoedleven.be/wp-json/complianz/v1/","locale":"lang=nl&locale=nl_NL","set_cookies_on_root":"","cookie_domain":"","current_policy_id":"30","cookie_path":"/","categories":{"statistics":"statistics","marketing":"marketing"},"tcf_active":"","placeholdertext":"Click to accept {category} cookies and enable this content","css_file":"https://muziekcentrumgoedleven.be/wp-content/uploads/complianz/css/banner-{banner_id}-{type}.css?v=26","page_links":{"eu":{"cookie-statement":{"title":"Cookie Policy","url":"https://muziekcentrumgoedleven.be/cookie-policy/"}}},"tm_categories":"","forceEnableStats":"","preview":"","clean_cookies":"","aria_label":"Click to accept {category} cookies and enable this content","iapi_nav":"fallback"};
+//# sourceURL=cmplz-cookiebanner-js-extra
+</script>
+<script defer id="cmplz-cookiebanner-js" src="https://muziekcentrumgoedleven.be/wp-content/plugins/complianz-gdpr/cookiebanner/js/complianz.min.js?ver=1789379906"></script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s.w.org/images/core/emoji/17.0.2/72x72/","ext":".png","svgUrl":"https://s.w.org/images/core/emoji/17.0.2/svg/","svgExt":".svg","source":{"concatemoji":"https://muziekcentrumgoedleven.be/wp-includes/js/wp-emoji-release.min.js?ver=7.1"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=https://muziekcentrumgoedleven.be/wp-includes/js/wp-emoji-loader.min.js
+</script>
+<script>
+gform.initializeOnLoaded( function() { jQuery(document).on('gform_post_render', function(event, formId, currentPage){if(formId == 1) {if(typeof Placeholders != 'undefined'){
+                        Placeholders.enable();
+                    }} } );jQuery(document).on('gform_post_conditional_logic', function(event, formId, fields, isInit){} ) } );
+</script>
+<script>
+gform.initializeOnLoaded( function() {jQuery(document).trigger("gform_pre_post_render", [{ formId: "1", currentPage: "1", abort: function() { this.preventDefault(); } }]);        if (event && event.defaultPrevented) {                return;        }        const gformWrapperDiv = document.getElementById( "gform_wrapper_1" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_1";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_1" );        let postRenderFired = false;        function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            gform.core.triggerPostRenderEvents( 1, 1 );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );
+</script>
+</body>
+</html>
