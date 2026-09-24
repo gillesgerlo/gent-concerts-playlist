@@ -2,7 +2,10 @@ import json
 import re
 import subprocess
 import sys
+import webbrowser
 from pathlib import Path
+
+YOUTUBE_MUSIC_URL = "https://music.youtube.com"
 
 
 def _extract_headers_from_curl(curl_text: str) -> dict[str, str] | None:
@@ -29,6 +32,20 @@ def _extract_headers_from_curl(curl_text: str) -> dict[str, str] | None:
         return headers
 
     return None
+
+
+def _open_youtube_music_in_chrome() -> None:
+    """Open YouTube Music in Chrome (falls back to the default browser)."""
+    if sys.platform == "darwin":
+        try:
+            subprocess.run(["open", "-a", "Google Chrome", YOUTUBE_MUSIC_URL], check=True)
+            return
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    try:
+        webbrowser.get("chrome").open(YOUTUBE_MUSIC_URL)
+    except webbrowser.Error:
+        webbrowser.open(YOUTUBE_MUSIC_URL)
 
 
 def _open_in_editor(filepath: Path) -> None:
@@ -84,13 +101,14 @@ def prompt_for_har_and_save(auth_path: Path) -> bool:
 
     # Check if curl_command.txt exists and has content
     if curl_file.exists():
-        print(f"\nFound {curl_file} — using it for auth...")
         with open(curl_file) as f:
             curl_text = f.read().strip()
         if not curl_text:
             # File exists but is empty, treat as if it doesn't exist
             curl_text = None
+            curl_text_exists = False
         else:
+            print(f"\nFound {curl_file} — using it for auth...")
             curl_text_exists = True
     else:
         curl_text_exists = False
@@ -104,18 +122,19 @@ def prompt_for_har_and_save(auth_path: Path) -> bool:
         print("""
 Your YouTube Music auth has expired. To fix this, copy your cURL command:
 
-1. Open YouTube Music in your browser: https://music.youtube.com
+1. YouTube Music is opening in Chrome — log in if prompted.
 2. Open DevTools (F12 or right-click > Inspect)
 3. Go to the Network tab
 4. Right-click on any request and select "Copy as cURL"
 5. Paste the FULL cURL command into the text editor that will open
 6. Save the file and return to this terminal
 
-Opening curl_command.txt in your default text editor...
+Opening YouTube Music in Chrome and curl_command.txt in your default text editor...
 """)
 
         # Create the file with instructions
         try:
+            _open_youtube_music_in_chrome()
             curl_file.touch(exist_ok=True)
             # Open the file in the default editor
             _open_in_editor(curl_file)
