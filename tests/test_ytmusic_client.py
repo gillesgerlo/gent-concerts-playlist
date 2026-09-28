@@ -1,7 +1,3 @@
-from pathlib import Path
-
-import pytest
-
 import ytmusic_client
 
 
@@ -12,18 +8,11 @@ class _FakeYTMusicClient:
         self,
         search_results=None,
         artist_by_id=None,
-        playlists=None,
-        playlist_tracks=None,
         album_by_id=None,
     ):
         self.search_results = search_results or []
         self.artist_by_id = artist_by_id or {}
-        self.playlists = playlists or []
-        self.playlist_tracks = playlist_tracks or {}
         self.album_by_id = album_by_id or {}
-        self.created_playlists = []
-        self.added_items = []
-        self.removed_items = []
         self.get_album_calls = []
 
     def search(self, query, filter=None, limit=20):
@@ -36,77 +25,20 @@ class _FakeYTMusicClient:
         self.get_album_calls.append(browseId)
         return self.album_by_id[browseId]
 
-    def get_library_playlists(self):
-        return self.playlists
 
-    def create_playlist(self, title, description):
-        self.created_playlists.append((title, description))
-        return "PLnew123"
-
-    def get_playlist(self, playlistId, limit=None, related=False, suggestions_limit=0):
-        return {"tracks": self.playlist_tracks.get(playlistId, [])}
-
-    def add_playlist_items(self, playlistId, videoIds, duplicates=False):
-        self.added_items.append((playlistId, videoIds, duplicates))
-        return {"status": "STATUS_SUCCEEDED", "playlistEditResults": []}
-
-    def remove_playlist_items(self, playlistId, videos):
-        self.removed_items.append((playlistId, videos))
-        # ytmusicapi's real remove_playlist_items returns the bare status
-        # STRING (response.get("status", response)), not a dict like
-        # add_playlist_items does.
-        return "STATUS_SUCCEEDED"
-
-
-def test_load_client_raises_ytmusic_auth_error_when_auth_file_is_missing(tmp_path):
-    missing_path = tmp_path / "does_not_exist.json"
-
-    with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(missing_path)
-
-
-def test_load_client_raises_ytmusic_auth_error_on_corrupt_json_auth_file(monkeypatch):
-    # A corrupt (non-JSON) auth file makes ytmusicapi raise
-    # json.JSONDecodeError, which is a ValueError subclass, not a
-    # YTMusicUserError. Must still be wrapped into YTMusicAuthError, not
-    # left to crash with a raw traceback.
-    import json
-
-    def _raise_json_decode_error(auth):
-        raise json.JSONDecodeError("Expecting value", "not json", 0)
-
-    monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_json_decode_error)
-
-    with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
-
-
-def test_load_client_raises_ytmusic_auth_error_on_wrong_shaped_auth_file(monkeypatch):
-    # Valid JSON but the wrong shape (e.g. not a header dict) raises
-    # TypeError while ytmusicapi parses the headers. Must also be wrapped
-    # into YTMusicAuthError.
-    def _raise_type_error(auth):
-        raise TypeError("CaseInsensitiveDict() missing required argument")
-
-    monkeypatch.setattr(ytmusic_client, "YTMusic", _raise_type_error)
-
-    with pytest.raises(ytmusic_client.YTMusicAuthError):
-        ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
-
-
-def test_load_client_sets_the_module_client_on_success(monkeypatch):
+def test_load_client_builds_an_unauthenticated_client(monkeypatch):
     captured = {}
 
     class _FakeYTMusicConstructor:
-        def __init__(self, auth):
-            captured["auth"] = auth
+        def __init__(self, *args, **kwargs):
+            captured["args"] = (args, kwargs)
 
     monkeypatch.setattr(ytmusic_client, "YTMusic", _FakeYTMusicConstructor)
 
-    ytmusic_client.load_client(Path("auth/ytmusic_auth.json"))
+    ytmusic_client.load_client()
 
     assert isinstance(ytmusic_client._client, _FakeYTMusicConstructor)
-    assert captured["auth"] == "auth/ytmusic_auth.json"
+    assert captured["args"] == ((), {})  # no auth: lookups are public
 
 
 def test_search_artist_returns_none_when_no_results(monkeypatch):
@@ -410,126 +342,3 @@ def test_get_artist_info_skips_releases_with_no_browse_id_or_no_tracks(monkeypat
     songs, _description = ytmusic_client.get_artist_info("UC_odd_releases", track_limit=2)
 
     assert [s["videoId"] for s in songs] == ["v_good"]
-
-
-def test_get_or_create_playlist_returns_existing_id_when_title_matches(monkeypatch):
-    playlists = [{"playlistId": "PL_existing", "title": "Upcoming Concerts"}]
-    fake_client = _FakeYTMusicClient(playlists=playlists)
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    playlist_id = ytmusic_client.get_or_create_playlist("Upcoming Concerts")
-
-    assert playlist_id == "PL_existing"
-    assert fake_client.created_playlists == []  # must not create one that already exists
-
-
-def test_get_or_create_playlist_creates_when_no_title_matches(monkeypatch):
-    fake_client = _FakeYTMusicClient(playlists=[])
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    playlist_id = ytmusic_client.get_or_create_playlist("Upcoming Concerts")
-
-    assert playlist_id == "PLnew123"
-    assert fake_client.created_playlists == [("Upcoming Concerts", "")]
-
-
-def test_rebuild_playlist_removes_all_current_tracks_then_adds_the_ordered_ids(monkeypatch):
-    current = [
-        {"videoId": "old1", "setVideoId": "sv1"},
-        {"videoId": "old2", "setVideoId": "sv2"},
-    ]
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": current})
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    ytmusic_client.rebuild_playlist("PL1", ["new1", "new2", "new3"])
-
-    assert fake_client.removed_items == [("PL1", current)]
-    assert fake_client.added_items == [("PL1", ["new1", "new2", "new3"], True)]
-
-
-def test_rebuild_playlist_skips_the_remove_call_when_the_playlist_is_already_empty(monkeypatch):
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": []})
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    ytmusic_client.rebuild_playlist("PL1", ["new1"])
-
-    assert fake_client.removed_items == []
-    assert fake_client.added_items == [("PL1", ["new1"], True)]
-
-
-def test_rebuild_playlist_skips_the_add_call_when_there_are_no_target_ids(monkeypatch):
-    current = [{"videoId": "old1", "setVideoId": "sv1"}]
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": current})
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    ytmusic_client.rebuild_playlist("PL1", [])
-
-    assert fake_client.removed_items == [("PL1", current)]
-    assert fake_client.added_items == []
-
-
-def test_rebuild_playlist_makes_no_mutating_calls_and_reports_on_dry_run(monkeypatch, capsys):
-    current = [{"videoId": "old1", "setVideoId": "sv1"}]
-    fake_client = _FakeYTMusicClient(playlist_tracks={"PL1": current})
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    ytmusic_client.rebuild_playlist("PL1", ["new1", "new2"], dry_run=True)
-
-    assert fake_client.removed_items == []
-    assert fake_client.added_items == []
-    out = capsys.readouterr().out
-    assert "[dry-run]" in out
-    assert "would remove 1 tracks" in out
-    assert "re-add 2 in date order" in out
-
-
-def test_rebuild_playlist_fetches_the_current_playlist_exactly_once(monkeypatch):
-    fake_client = _FakeYTMusicClient(
-        playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}
-    )
-    real_get_playlist = fake_client.get_playlist
-    calls = []
-
-    def _counting_get_playlist(*args, **kwargs):
-        calls.append((args, kwargs))
-        return real_get_playlist(*args, **kwargs)
-
-    fake_client.get_playlist = _counting_get_playlist
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    ytmusic_client.rebuild_playlist("PL1", ["new1"])
-
-    assert len(calls) == 1
-
-
-def test_rebuild_playlist_raises_when_the_add_call_is_rejected(monkeypatch):
-    # ytmusicapi returns the response dict instead of raising when an edit is
-    # rejected — a non-SUCCEEDED status must be turned into an exception, or a
-    # rejected re-add after a successful remove leaves the playlist empty.
-    class _RejectingAdd(_FakeYTMusicClient):
-        def add_playlist_items(self, playlistId, videoIds, duplicates=False):
-            self.added_items.append((playlistId, videoIds, duplicates))
-            return {"status": "STATUS_FAILED"}
-
-    fake_client = _RejectingAdd(
-        playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}
-    )
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    with pytest.raises(RuntimeError):
-        ytmusic_client.rebuild_playlist("PL1", ["new1"])
-
-
-def test_rebuild_playlist_raises_when_the_remove_call_is_rejected(monkeypatch):
-    class _RejectingRemove(_FakeYTMusicClient):
-        def remove_playlist_items(self, playlistId, videos):
-            self.removed_items.append((playlistId, videos))
-            return "STATUS_FAILED"
-
-    fake_client = _RejectingRemove(
-        playlist_tracks={"PL1": [{"videoId": "old1", "setVideoId": "sv1"}]}
-    )
-    monkeypatch.setattr(ytmusic_client, "_client", fake_client)
-
-    with pytest.raises(RuntimeError):
-        ytmusic_client.rebuild_playlist("PL1", ["new1"])

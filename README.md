@@ -1,19 +1,19 @@
 # Concerts Playlist
 
-Manually-triggered CLI: for each configured city (Gent and Brugge) it scrapes
+CLI, run daily by GitHub Actions or by hand: for each configured city (Gent and Brugge) it scrapes
 that city's venues for concerts in the next 91 days, and for each new one looks
 up the artist's genre on Last.fm and the event's description on the venue's own
 ticket page, records the artist's top 2 YouTube Music tracks, and logs a row to
-`data/<city>/concerts.csv`. Every run then **empties that city's
-`Upcoming Concerts <City>` YouTube Music playlist and rebuilds it wholesale**
-from the recorded tracks — in concert-date order, dropping concerts whose date
-has already passed. The live playlist is therefore a pure reflection of what
+`data/<city>/concerts.csv`. Every run then **syncs that city's
+`Upcoming Concerts <City>` YouTube Music playlist to exactly** the recorded
+tracks — in concert-date order, dropping concerts whose date has already
+passed (only the differences are edited, to stay within the API quota). The live playlist is therefore a pure reflection of what
 the script has recorded: anything you add to it by hand in the YouTube Music
 app is removed on the next run and does not come back. Each run also
 regenerates one HTML page per city (`index.html` for Gent, `brugge.html` for
 Brugge) — each a sortable table of that city's still-upcoming concerts with
-clickable ticket links, cross-linked to the other city's page — and opens it in
-your browser.
+clickable ticket links, cross-linked to the other city's page — commits and
+pushes it to GitHub Pages, and (on a local run) opens it in your browser.
 
 Concerts are also cross-checked against vndg.be, an independent Gent
 events calendar — see `vndg_crosscheck.py` for what that does and why.
@@ -44,7 +44,7 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
 
 ### One-time migration (existing Gent checkout)
 
-Per-city data moved under `data/<city>/`. The CSV and the playlist tracker are
+Per-city data moved under `data/<city>/`. The CSV and the playlist tracker were
 gitignored, so they only exist in your own checkout at the old top-level paths.
 Move them before your first run after this change, or the run will treat every
 upcoming Gent concert as new and reprocess it:
@@ -57,49 +57,58 @@ mv data/playlist_tracks.json data/gent/playlist_tracks.json
 
 ## Setup
 
-YouTube Music authentication uses ytmusicapi's browser (cookie) auth rather
-than OAuth. ytmusicapi's OAuth flow currently gets rejected by YouTube Music's
-servers with an "invalid argument" 400 error — a known, still-open upstream
-bug ([ytmusicapi#813](https://github.com/sigma67/ytmusicapi/issues/813)) that
-has nothing to do with how the Google Cloud OAuth client is set up. The
-maintainer's own workaround is browser auth, so that's what this project
-uses. The tradeoff: the browser session's cookies can expire and need
-re-pasting periodically (see "Forcing re-authentication" below), where an
-OAuth refresh token would have renewed itself.
+Artist and track lookups use ytmusicapi **unauthenticated** (they're public).
+Playlist edits go through the official **YouTube Data API v3** with an OAuth
+refresh token, which doesn't expire and works headless. (ytmusicapi's own
+OAuth is rejected server-side — [ytmusicapi#813](https://github.com/sigma67/ytmusicapi/issues/813),
+which the maintainer considers unfixable — and its cookie auth expires.)
 
 1. `python3 -m venv .venv && source .venv/bin/activate`
 2. `pip install -r requirements.txt`
 3. Register a free Last.fm API account at https://www.last.fm/api/account/create
    and note the API key.
-4. `cp .env.example .env` and fill in `LASTFM_API_KEY`.
-5. `python main.py` — on first run, the script will prompt you to authenticate.
-   Follow the on-screen instructions to copy your YouTube Music auth headers
-   from DevTools and save them automatically.
+4. Create the YouTube OAuth client (one time), at https://console.cloud.google.com:
+   1. Create a project, then **APIs & Services → Library → YouTube Data API v3 → Enable**.
+   2. **OAuth consent screen**: External, add yourself as a test user, add the
+      `https://www.googleapis.com/auth/youtube` scope, then **Publish app**
+      ("In production"). An unverified app is fine for personal use — you
+      click through a warning once. *Don't leave it in "Testing": Google
+      expires refresh tokens after 7 days there.*
+   3. **Credentials → Create credentials → OAuth client ID → Desktop app.**
+      Note the client ID and secret.
+5. `cp .env.example .env` and fill in `LASTFM_API_KEY`, `YOUTUBE_CLIENT_ID`
+   and `YOUTUBE_CLIENT_SECRET`.
+6. `python scripts/youtube_oauth_login.py` — sign in with the account (or
+   pick the channel) that owns the `Upcoming Concerts <City>` playlists. It
+   writes `YOUTUBE_REFRESH_TOKEN` to `.env`.
+7. `python main.py`
 
-### Forcing re-authentication
+If a run ever says `YouTube authentication failed` (token revoked, password
+change), repeat step 6 — and `gh secret set -f .env` for the scheduled run.
 
-When your YouTube Music auth expires, the script will automatically prompt you to refresh it.
+### Quota
 
-**Recommended method (file-based):**
-1. Open YouTube Music in your browser: https://music.youtube.com
-2. Open DevTools (F12 or right-click → Inspect)
-3. Go to the **Network** tab (refresh the page if it's empty, and log in if needed)
-4. Right-click on any network request and select **Copy as cURL**
-5. Paste the cURL command into a text editor
-6. Save the file as `curl_command.txt` in your project directory
-7. Run `python main.py` — it will automatically extract the auth headers
+The Data API allows 10,000 units/day; each playlist insert or delete costs 50.
+So the playlist is synced by diff — only past concerts are removed and new
+tracks inserted at their date position — which is typically a few hundred to
+~2,000 units a run. `python main.py --dry-run` prints the planned edits and
+their cost. If the quota runs out mid-sync the run warns and the next run
+picks up where it left off.
 
-**Alternative method (manual entry):**
-If you can't save a file, the script will prompt you to paste just the authorization and cookie header values (simpler strings that paste more reliably).
+## Scheduled runs (GitHub Actions)
 
-If you prefer to manually refresh (or the script doesn't prompt you):
+`.github/workflows/update-listing.yml` runs the pipeline daily (and on demand
+from the Actions tab: **Run workflow**). It commits the regenerated pages and
+the `data/<city>/` state (CSV + playlist tracker), which is why those files
+are tracked in git. One-time setup, after step 6 above:
 
 ```
-rm auth/ytmusic_auth.json
-python main.py
+gh secret set -f .env    # LASTFM_API_KEY + the three YOUTUBE_* values
 ```
 
-The script will then guide you through the HAR extraction process.
+Local runs keep working: they `git pull --rebase` before pushing, so a local
+run and the scheduled one don't clash. Do `git pull` before a local run so
+you start from the latest state.
 
 
 ## Local development runs
@@ -115,21 +124,15 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-The `.env`, `auth/ytmusic_auth.json` and `data/<city>/` files are gitignored,
-so a fresh worktree doesn't have them. Copy them over from your main checkout:
+`.env` is gitignored, so copy it over from your main checkout:
 
 ```
 cp ../gent-concerts-playlist/.env .
-cp ../gent-concerts-playlist/auth/ytmusic_auth.json auth/
-mkdir -p data/gent data/brugge
-cp ../gent-concerts-playlist/data/gent/*   data/gent/
-cp ../gent-concerts-playlist/data/brugge/* data/brugge/
 ```
 
-Copying the CSV + tracker makes a dev run a fast incremental (only genuinely
+The `data/<city>/` CSV + tracker come along with the checkout. Keeping them makes a dev run a fast incremental (only genuinely
 new concerts get processed). `rm` them instead if you want to exercise a cold
-full rebuild. Either way it's a private copy — the worktree can't corrupt your
-originals.
+full rebuild (and `git checkout data/` afterwards).
 
 Then:
 

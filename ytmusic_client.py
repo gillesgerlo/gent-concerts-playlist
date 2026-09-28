@@ -1,27 +1,17 @@
 import re
 import unicodedata
-from pathlib import Path
 
 from ytmusicapi import YTMusic
-from ytmusicapi.exceptions import YTMusicUserError
 
+# Unauthenticated: artist search, artist pages and albums are public, so no
+# credentials are needed here. Playlist writes live in youtube_data_client.py
+# (YouTube Data API, OAuth).
 _client: YTMusic | None = None
 
 
-class YTMusicAuthError(Exception):
-    """Raised when the cached browser auth file (auth/ytmusic_auth.json) is
-    missing or fails to load. Fix: re-run `ytmusicapi browser`."""
-
-
-def load_client(auth_path: Path) -> None:
+def load_client() -> None:
     global _client
-    try:
-        _client = YTMusic(auth=str(auth_path))
-    except (YTMusicUserError, ValueError, TypeError) as exc:
-        # YTMusicUserError: missing auth file.
-        # ValueError (json.JSONDecodeError is a subclass): corrupt/non-JSON auth file.
-        # TypeError: valid JSON but the wrong shape (e.g. not a header dict).
-        raise YTMusicAuthError(str(exc)) from exc
+    _client = YTMusic()
 
 
 def _normalize_name(name: str) -> str:
@@ -118,69 +108,3 @@ def get_artist_info(channel_id: str, track_limit: int = 2) -> tuple[list[dict], 
             songs += _tracks_from_releases(albums, track_limit - len(songs))
 
     return songs, description
-
-
-def get_or_create_playlist(title: str) -> str:
-    for playlist in _client.get_library_playlists():
-        if playlist["title"] == title:
-            return playlist["playlistId"]
-
-    return _client.create_playlist(title=title, description="")
-
-
-def rebuild_playlist(
-    playlist_id: str, ordered_video_ids: list[str], dry_run: bool = False
-) -> None:
-    """Make the live playlist a wholesale copy of `ordered_video_ids`.
-
-    Fetches the current playlist exactly once (for the setVideoId values
-    remove_playlist_items needs), removes every current item — tracked or
-    not; anything added outside this script is dropped and does not come
-    back — then re-adds the given IDs in list order.
-
-    dry_run previews the two mutating calls without making either.
-    """
-    current = _client.get_playlist(playlist_id, limit=None).get("tracks", [])
-
-    if dry_run:
-        print(
-            f"[dry-run] would remove {len(current)} tracks, "
-            f"re-add {len(ordered_video_ids)} in date order"
-        )
-        return
-
-    # Both guards are load-bearing: remove_playlist_items raises
-    # YTMusicUserError on an empty list, and add_playlist_items raises it
-    # when given neither videoIds nor source_playlist.
-    if current:
-        _ensure_succeeded(
-            _client.remove_playlist_items(playlist_id, current), "remove_playlist_items"
-        )
-    if ordered_video_ids:
-        _ensure_succeeded(
-            _client.add_playlist_items(playlist_id, ordered_video_ids, duplicates=True),
-            "add_playlist_items",
-        )
-
-
-def _ensure_succeeded(response: object, call: str) -> None:
-    """Raise if a playlist edit did not succeed.
-
-    ytmusicapi's add/remove playlist calls do NOT raise when an edit is
-    rejected — a non-SUCCEEDED status has to be checked by hand, or a
-    rejected re-add after a successful remove would leave the playlist empty
-    while the run reports success. The two calls return different shapes:
-    add_playlist_items returns a dict ``{"status": "...", ...}``, while
-    remove_playlist_items returns the bare status string (or, only when the
-    response carried no status at all, the raw response). Accept SUCCEEDED
-    in either form.
-    """
-    if isinstance(response, str):
-        status = response
-    elif isinstance(response, dict):
-        status = str(response.get("status", ""))
-    else:
-        status = ""
-
-    if "SUCCEEDED" not in status:
-        raise RuntimeError(f"YouTube Music {call} did not succeed: {response!r}")

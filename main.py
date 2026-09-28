@@ -25,18 +25,14 @@ from vndg_crosscheck import (
     index_by_venue,
     suggests_party_or_dj,
 )
-from yt_auth_har import prompt_for_har_and_save
-from ytmusic_client import (
-    YTMusicAuthError,
-    get_artist_info,
+from ytmusic_client import get_artist_info, load_client, search_artist
+from youtube_data_client import (
+    YouTubeAuthError,
+    authenticate,
     get_or_create_playlist,
-    load_client,
     rebuild_playlist,
-    search_artist,
 )
 from playlist_tracker import PlaylistTracker
-
-AUTH_PATH = Path("auth/ytmusic_auth.json")
 
 _SUBTITLE_SEPARATOR_RE = re.compile(r"\s+[–\-/+@]\s+")
 _X_SEPARATOR_RE = re.compile(r"\s+x\s+", re.IGNORECASE)
@@ -109,24 +105,8 @@ def _lookup_event_description(concert: Concert) -> str | None:
     return None
 
 
-def _handle_auth_failure(auth_path: Path) -> bool:
-    """Prompt user to re-authenticate via HAR data. Returns True if successful."""
-    try:
-        response = input(
-            "\nWould you like to refresh your YouTube Music auth now? (y/n): "
-        ).strip().lower()
-    except (EOFError, KeyboardInterrupt):
-        return False
-
-    if response != "y":
-        print("Skipped. You can run the script again after refreshing auth manually.")
-        return False
-
-    return prompt_for_har_and_save(auth_path)
-
-
-def _push_html_to_github(paths: list[Path]) -> None:
-    """Commit and push the updated HTML file(s) to GitHub."""
+def _publish_to_github(paths: list[Path]) -> None:
+    """Commit and push the updated page(s) and city state to GitHub."""
     try:
         for path in paths:
             subprocess.run(["git", "add", str(path)], check=True, capture_output=True)
@@ -134,6 +114,9 @@ def _push_html_to_github(paths: list[Path]) -> None:
             ["git", "commit", "-m", "Update concert listing"],
             check=True, capture_output=True,
         )
+        # Scheduled CI runs and local runs both commit here: rebase onto
+        # whichever pushed last instead of having the push rejected.
+        subprocess.run(["git", "pull", "--rebase", "--autostash"], check=True, capture_output=True)
         subprocess.run(["git", "push"], check=True, capture_output=True)
         print("Published to GitHub Pages")
     except subprocess.CalledProcessError as exc:
@@ -325,16 +308,13 @@ def _select_cities(argv: list[str]) -> list[City]:
 
 def _run_all(selected: list[City], dry_run: bool = False) -> list[City]:
     """Run every selected city; return the ones that completed successfully."""
-    load_client(AUTH_PATH)
+    load_client()
+    authenticate()
     completed: list[City] = []
     for city in selected:
-        # get_or_create_playlist is the first real YouTube Music API call.
-        # Browser auth headers aren't validated when the client is built, so
-        # an expired/invalid cookie isn't detected by load_client at all: it
-        # only surfaces here, and with an exception type that does not
-        # subclass ytmusicapi's own YTMusicError hierarchy. Auth is global,
-        # so this one call is deliberately left OUTSIDE the per-city
-        # try/except: it propagates to main()'s re-auth handler from any city.
+        # Auth is global: a playlist lookup failure here (revoked token,
+        # API disabled) would fail every city the same way, so this call is
+        # deliberately left OUTSIDE the per-city try/except and aborts the run.
         playlist_id = get_or_create_playlist(city.playlist_name)
         try:
             run(city, playlist_id, dry_run)
@@ -361,29 +341,24 @@ def main(argv: list[str] | None = None) -> None:
 
     try:
         completed = _run_all(selected, dry_run)
-    except YTMusicAuthError as exc:
-        print(f"YouTube Music authentication failed: {exc}")
-        if not _handle_auth_failure(AUTH_PATH):
-            sys.exit(1)
-        try:
-            completed = _run_all(selected, dry_run)
-        except Exception as retry_exc:  # noqa: BLE001
-            print(f"Authentication still failed: {retry_exc}")
-            sys.exit(1)
-    except Exception as exc:  # noqa: BLE001 - expired cookie surfaces here as a non-YTMusicError type
-        print(f"YouTube Music authentication failed (during startup): {exc}")
-        if not _handle_auth_failure(AUTH_PATH):
-            sys.exit(1)
-        try:
-            completed = _run_all(selected, dry_run)
-        except Exception as retry_exc:  # noqa: BLE001
-            print(f"Authentication still failed: {retry_exc}")
-            sys.exit(1)
+    except YouTubeAuthError as exc:
+        print(f"YouTube authentication failed: {exc}")
+        print("Fix: run `python scripts/youtube_oauth_login.py` and update YOUTUBE_REFRESH_TOKEN.")
+        sys.exit(1)
+    except Exception as exc:  # noqa: BLE001 - a global YouTube failure must exit non-zero, not traceback
+        print(f"YouTube startup failed: {exc}")
+        sys.exit(1)
 
     # Only cities that got all the way through write_html have an HTML file on
     # disk; `git add` on a missing path aborts the whole commit, which would
     # keep a *successful* city's regenerated page off GitHub Pages.
     written = [city.html_path for city in completed]
+    state = [
+        path
+        for city in completed
+        for path in (city.csv_path, city.tracker_path)
+        if path.exists()
+    ]
     if not written:
         return
     if dry_run:
@@ -395,7 +370,9 @@ def main(argv: list[str] | None = None) -> None:
             f"skipping git push and browser open"
         )
         return
-    _push_html_to_github(written)
+    _publish_to_github(written + state)
+    if os.environ.get("CI"):
+        return  # headless scheduled run: no browser to open
     for path in written:
         webbrowser.open(path.resolve().as_uri())
 

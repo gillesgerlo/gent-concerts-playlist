@@ -13,7 +13,7 @@ def _isolate_side_effects(monkeypatch):
     # each test now supplies its own html path via a fake city, so all that is
     # left to silence here is the browser and the git push.
     monkeypatch.setattr(main.webbrowser, "open", lambda url: None)
-    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: None)
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: None)
 
 
 def test_search_query_strips_trailing_em_dash_subtitle():
@@ -188,7 +188,9 @@ def _run_with_frozen_today(monkeypatch, today):
 def _stub_env_and_auth(monkeypatch):
     monkeypatch.setenv("LASTFM_API_KEY", "key")
     monkeypatch.setattr(main, "load_dotenv", lambda: None)
-    monkeypatch.setattr(main, "load_client", lambda auth_path: None)
+    monkeypatch.setattr(main, "load_client", lambda: None)
+    monkeypatch.setattr(main, "authenticate", lambda: None)
+    monkeypatch.delenv("CI", raising=False)
     monkeypatch.setattr(main, "set_api_key", lambda api_key: None)
     monkeypatch.setattr(main, "get_or_create_playlist", lambda title: "PL1")
     monkeypatch.setattr(main, "rebuild_playlist", lambda playlist_id, ordered_video_ids, dry_run=False: None)
@@ -209,14 +211,13 @@ def test_run_exits_cleanly_when_credentials_are_missing(monkeypatch, capsys):
     assert ".env" in out
 
 
-def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys, tmp_path):
+def test_run_exits_cleanly_when_youtube_auth_fails(monkeypatch, capsys, tmp_path):
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
-    def _fail(auth_path):
-        raise main.YTMusicAuthError("Invalid auth JSON string or file path provided.")
+    def _fail():
+        raise main.YouTubeAuthError("token refresh failed: invalid_grant")
 
-    monkeypatch.setattr(main, "load_client", _fail)
+    monkeypatch.setattr(main, "authenticate", _fail)
     monkeypatch.setattr(main, "CITIES", {"gent": _fake_city(tmp_path, [])})
 
     with pytest.raises(SystemExit) as exc_info:
@@ -224,22 +225,18 @@ def test_run_exits_cleanly_when_ytmusic_auth_fails(monkeypatch, capsys, tmp_path
 
     assert exc_info.value.code == 1
     out = capsys.readouterr().out
-    assert "YouTube Music authentication failed" in out
+    assert "YouTube authentication failed" in out
+    assert "youtube_oauth_login.py" in out  # tells you how to fix it
 
 
 def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypatch, capsys, tmp_path):
-    # An expired/invalid cookie isn't detected by load_client itself (browser
-    # auth headers aren't validated at construction time), it only fails on
-    # the first real API call, which is get_or_create_playlist. That
-    # failure's exception type does not subclass ytmusicapi's own
-    # YTMusicError hierarchy, so this must be caught by a broad Exception
-    # handler in main(), not just YTMusicAuthError.
+    # Auth is global, so a failing playlist lookup is not caught per city: it
+    # must end the run with a non-zero exit (so a scheduled CI run shows red)
+    # rather than a traceback or a silent success.
     _stub_env_and_auth(monkeypatch)
-    monkeypatch.setattr(main, "load_client", lambda auth_path: None)
-    monkeypatch.setattr("builtins.input", lambda _: "n")  # Skip re-auth prompt
 
     def _fail(title):
-        raise RuntimeError("Server returned HTTP 401: Unauthorized")
+        raise RuntimeError("GET playlists failed (403): accessNotConfigured")
 
     monkeypatch.setattr(main, "get_or_create_playlist", _fail)
     monkeypatch.setattr(main, "CITIES", {"gent": _fake_city(tmp_path, [])})
@@ -248,8 +245,7 @@ def test_run_exits_cleanly_when_get_or_create_playlist_fails_at_startup(monkeypa
         main.main(["gent"])
 
     assert exc_info.value.code == 1
-    out = capsys.readouterr().out
-    assert "YouTube Music authentication failed" in out
+    assert "YouTube startup failed" in capsys.readouterr().out
 
 
 def test_main_isolates_a_failing_city_from_the_rest(monkeypatch, tmp_path, capsys):
@@ -345,13 +341,56 @@ def test_main_publishes_only_the_cities_that_completed(monkeypatch, tmp_path, ca
 
     pushed: list[list] = []
     opened: list[str] = []
-    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
     monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
 
     main.main([])
 
-    assert pushed == [[city0.html_path]]  # beta's non-existent page is not staged
+    # beta's non-existent page is not staged, and neither is beta's state:
+    # its run failed, so its CSV/tracker must not be published half-done.
+    # alpha's state goes along with its page (its CSV has no rows, so is absent).
+    assert pushed == [[city0.html_path, city0.tracker_path]]
     assert opened == [city0.html_path.resolve().as_uri()]
+
+
+def test_main_publishes_the_csv_and_tracker_so_a_fresh_ci_checkout_has_them(
+    monkeypatch, tmp_path
+):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+    concert = Concert(
+        venue="Missy Sippy", date=date(2026, 8, 20), band="Some Band",
+        description="", ticket_link="https://example.com",
+    )
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([concert]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
+    pushed: list[list] = []
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
+
+    main.main(["test"])
+
+    assert pushed == [[city.html_path, city.csv_path, city.tracker_path]]
+
+
+def test_main_does_not_open_a_browser_on_a_ci_run(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setenv("CI", "true")
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
+    pushed: list[list] = []
+    opened: list[str] = []
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
+
+    main.main(["test"])
+
+    assert len(pushed) == 1  # still publishes
+    assert opened == []
 
 
 def test_main_skips_the_push_when_no_city_completed(monkeypatch, tmp_path, capsys):
@@ -368,7 +407,7 @@ def test_main_skips_the_push_when_no_city_completed(monkeypatch, tmp_path, capsy
 
     pushed: list[list] = []
     opened: list[str] = []
-    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
     monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
 
     main.main(["test"])  # must not raise, must not sys.exit
@@ -946,7 +985,7 @@ def test_main_dry_run_skips_the_github_push_and_the_browser_open(monkeypatch, tm
 
     pushed: list = []
     opened: list = []
-    monkeypatch.setattr(main, "_push_html_to_github", lambda paths: pushed.append(list(paths)))
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
     monkeypatch.setattr(main.webbrowser, "open", lambda url: opened.append(url))
 
     main.main(["gent", "--dry-run"])
