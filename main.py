@@ -89,7 +89,9 @@ def _lookup_artist_info(band: str) -> list[str]:
     if artist is None:
         return []
     songs, _description = get_artist_info(artist["browseId"], track_limit=2)
-    return [s["videoId"] for s in songs]
+    # Unavailable songs come back with videoId None; they can't be played or
+    # added to a playlist.
+    return [s["videoId"] for s in songs if s.get("videoId")]
 
 
 def _lookup_genre(band: str) -> str | None:

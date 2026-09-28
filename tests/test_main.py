@@ -994,3 +994,15 @@ def test_main_dry_run_skips_the_github_push_and_the_browser_open(monkeypatch, tm
     assert opened == []
     assert city.html_path.exists()  # page still regenerated locally
     assert "dry-run" in capsys.readouterr().out
+
+
+def test_lookup_artist_info_drops_songs_without_a_playable_video(monkeypatch):
+    # YT Music lists unavailable songs with videoId None; recording those put
+    # [None, None] in the tracker and made every playlist sync retry them.
+    monkeypatch.setattr(main, "search_artist", lambda query: {"browseId": "UC1"})
+    monkeypatch.setattr(
+        main, "get_artist_info",
+        lambda browse_id, track_limit=2: ([{"videoId": None}, {"videoId": "ok1"}, {}], None),
+    )
+
+    assert main._lookup_artist_info("The Dead") == ["ok1"]

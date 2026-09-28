@@ -80,6 +80,8 @@ class PlaylistTracker:
                 self.data.items(), key=lambda item: self._key_date(item[0])
             )
             for video_id in ids
+            # Older runs recorded YT Music's unplayable songs as None.
+            if video_id
         )
         return list(dict.fromkeys(ordered))
 

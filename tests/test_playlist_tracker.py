@@ -119,3 +119,12 @@ def test_load_failed_is_true_and_data_empty_for_a_corrupt_tracker_file(tmp_path)
 
     assert t.load_failed is True
     assert t.data == {}
+
+
+def test_ordered_video_ids_skips_empty_ids_recorded_by_older_runs(tmp_path):
+    t = _tracker(tmp_path, {
+        "MaZ|2026-10-31|The Dead": [None, None],
+        "MaZ|2026-11-01|Other": ["v1", ""],
+    })
+
+    assert t.ordered_video_ids() == ["v1"]
