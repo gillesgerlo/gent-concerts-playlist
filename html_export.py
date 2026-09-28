@@ -310,7 +310,8 @@ def render_html(
 
   <footer>
     Built from public venue listings ·
-    <a href="{html.escape(GITHUB_URL)}" target="_blank">source on GitHub</a>
+    <a href="{html.escape(GITHUB_URL)}" target="_blank">source on GitHub</a> ·
+    <a href="privacy.html">privacy policy</a>
   </footer>
 </div>
 <script>

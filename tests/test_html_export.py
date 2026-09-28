@@ -312,3 +312,8 @@ def test_render_html_emits_a_hidden_empty_fallback_when_rows_exist():
     assert '<p class="empty" id="empty-state" hidden>' in html
 
 
+
+
+def test_render_html_links_the_privacy_policy():
+    # Google's OAuth consent screen requires the homepage to link its privacy policy.
+    assert '<a href="privacy.html">privacy policy</a>' in render_html([], "Gent")
