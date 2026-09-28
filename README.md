@@ -84,7 +84,7 @@ which the maintainer considers unfixable — and its cookie auth expires.)
 7. `python main.py`
 
 If a run ever says `YouTube authentication failed` (token revoked, password
-change), repeat step 6 — and `gh secret set -f .env` for the scheduled run.
+change), repeat step 6, then re-run the `gh secret set` loop below for the scheduled run.
 
 ### Quota
 
@@ -103,7 +103,7 @@ the `data/<city>/` state (CSV + playlist tracker), which is why those files
 are tracked in git. One-time setup, after step 6 above:
 
 ```
-gh secret set -f .env    # LASTFM_API_KEY + the three YOUTUBE_* values
+for k in LASTFM_API_KEY YOUTUBE_CLIENT_ID YOUTUBE_CLIENT_SECRET YOUTUBE_REFRESH_TOKEN; do grep "^$k=" .env | cut -d= -f2- | tr -d "'\"" | gh secret set "$k"; done
 ```
 
 Local runs keep working: they `git pull --rebase` before pushing, so a local

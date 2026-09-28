@@ -3,8 +3,8 @@
 Reads YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET from .env (a Google Cloud
 "Desktop app" OAuth client), opens the Google consent page in your browser,
 catches the redirect on a localhost port, and writes YOUTUBE_REFRESH_TOKEN
-into .env. `gh secret set -f .env` then copies it (and the rest of .env)
-into the repo secrets the scheduled workflow reads.
+into .env. The command printed at the end copies it (plus the other secrets
+the scheduled workflow reads) into the GitHub repo secrets.
 
     python scripts/youtube_oauth_login.py
 
@@ -31,6 +31,9 @@ from youtube_data_client import SCOPE, TOKEN_URL  # noqa: E402
 
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 ENV_PATH = Path(".env")
+SECRETS_COMMAND = (
+    'for k in LASTFM_API_KEY YOUTUBE_CLIENT_ID YOUTUBE_CLIENT_SECRET YOUTUBE_REFRESH_TOKEN; do grep "^$k=" .env | cut -d= -f2- | tr -d "\'\\"" | gh secret set "$k"; done'
+)
 
 
 def _wait_for_code(server: http.server.HTTPServer, state: str) -> str:
@@ -106,8 +109,8 @@ def main() -> None:
     ENV_PATH.touch(exist_ok=True)
     set_key(str(ENV_PATH), "YOUTUBE_REFRESH_TOKEN", refresh_token)
     print(f"Saved YOUTUBE_REFRESH_TOKEN to {ENV_PATH}.")
-    print("For the scheduled GitHub workflow, upload .env as repo secrets:")
-    print("    gh secret set -f .env")
+    print("For the scheduled GitHub workflow, upload the secrets it reads:")
+    print("    " + SECRETS_COMMAND)
 
 
 if __name__ == "__main__":
