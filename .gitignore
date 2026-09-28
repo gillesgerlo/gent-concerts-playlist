@@ -4,10 +4,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
-auth/ytmusic_auth.json
-data/*/concerts.csv
-data/*/playlist_tracks.json
-data/playlist_tracks.json
+auth/
+curl_command.txt
 /output/
 /docs/
 CLAUDE.md
