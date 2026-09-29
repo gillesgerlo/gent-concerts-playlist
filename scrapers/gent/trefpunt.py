@@ -24,6 +24,9 @@ def _parse(html: str, today: date) -> list[Concert]:
 
             room_el = meta.find("span", class_="c-label__label")
             room = room_el.get_text(strip=True) if room_el else ""
+            # Labels read "Trefpunt Concertzaal" since 2026-09 (was
+            # "Concertzaal"); strip the prefix so venue names stay stable.
+            room = room.removeprefix("Trefpunt ").strip()
             if room not in CONCERT_ROOMS:
                 continue
 

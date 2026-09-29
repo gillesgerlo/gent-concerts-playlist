@@ -59,6 +59,15 @@ def test_cafe_room_is_included_with_a_distinct_venue_name():
     assert cafe_concert.venue == "Trefpunt - Café"
 
 
+def test_room_labels_prefixed_with_trefpunt_map_to_the_same_venue_names():
+    # Since 2026-09 the site labels rooms "Trefpunt Concertzaal" / "Trefpunt
+    # Café"; venue names must stay identical so CSV dedup still matches.
+    concerts = _parse(PAGE, TODAY)
+    venues = {c.band: c.venue for c in concerts}
+    assert venues["Maandagconcert // Boom Boom Cactus"] == "Trefpunt - Café"
+    assert set(venues.values()) == {"Trefpunt - Concertzaal", "Trefpunt - Café"}
+
+
 def test_bar_edward_room_is_excluded():
     concerts = _parse(PAGE, TODAY)
     bands = [c.band for c in concerts]

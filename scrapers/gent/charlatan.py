@@ -1,4 +1,5 @@
 from datetime import date
+from urllib.parse import urldefrag, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -51,23 +52,35 @@ def _parse(html: str, today: date) -> list[Concert]:
     return concerts
 
 
-def _fetch_page(page: int) -> str:
-    response = requests.get(URL, params={"page": page}, timeout=10)
+def _fetch(url: str) -> str:
+    response = requests.get(url, timeout=10)
     response.raise_for_status()
     response.encoding = 'utf-8'
     return response.text
 
 
 def _fetch_pages() -> list[str]:
+    # Follow the site's own rel=next link rather than building ?page=N: the
+    # site renamed that parameter once (page -> p54_page) and silently served
+    # page 1 for every N. Stop if a page repeats events already seen, so a
+    # future rename can't multiply the listing again.
     pages = []
-    page = 1
-    while page <= MAX_PAGES:
-        html = _fetch_page(page)
-        pages.append(html)
+    seen_events: set[tuple[str, str]] = set()
+    url = URL
+    while url and len(pages) < MAX_PAGES:
+        html = _fetch(url)
         soup = BeautifulSoup(html, "lxml")
-        if not soup.find("a", rel="next"):
+        events = {
+            (card.find("h3", class_="title").get_text(strip=True), card.get_text(" ", strip=True))
+            for card in soup.find_all("li", class_="eventCard")
+            if card.find("h3", class_="title")
+        }
+        if pages and events and events <= seen_events:
             break
-        page += 1
+        pages.append(html)
+        seen_events |= events
+        next_link = soup.find("a", rel="next")
+        url = urldefrag(urljoin(SITE_BASE_URL, next_link["href"]))[0] if next_link else None
     return pages
 
 

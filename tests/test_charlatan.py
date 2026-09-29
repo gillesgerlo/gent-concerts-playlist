@@ -70,24 +70,39 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
     assert len(concerts) == 3
 
 
-def test_fetch_pages_follows_rel_next_until_absent(monkeypatch):
+def test_fetch_pages_follows_the_sites_own_next_link_until_absent(monkeypatch):
+    # The site renamed its page parameter (page -> p54_page) and ignores the
+    # old one, so the next URL must be taken from the link, not constructed.
     import scrapers.gent.charlatan as charlatan
 
-    fetched_pages = []
+    fetched_urls = []
 
-    def fake_fetch_page(page: int) -> str:
-        fetched_pages.append(page)
-        return PAGE1 if page == 1 else PAGE2
+    def fake_fetch(url: str) -> str:
+        fetched_urls.append(url)
+        return PAGE1 if url == charlatan.URL else PAGE2
 
-    monkeypatch.setattr(charlatan, "_fetch_page", fake_fetch_page)
+    monkeypatch.setattr(charlatan, "_fetch", fake_fetch)
     pages = charlatan._fetch_pages()
-    assert fetched_pages == [1, 2]
+    assert fetched_urls == [
+        charlatan.URL,
+        "https://www.charlatan.be/agenda/concert?page=1&p54_page=2",
+    ]
     assert pages == [PAGE1, PAGE2]
 
 
 def test_fetch_pages_stops_after_a_page_with_no_next_link(monkeypatch):
     import scrapers.gent.charlatan as charlatan
 
-    monkeypatch.setattr(charlatan, "_fetch_page", lambda page: PAGE2)
+    monkeypatch.setattr(charlatan, "_fetch", lambda url: PAGE2)
     pages = charlatan._fetch_pages()
     assert pages == [PAGE2]
+
+
+def test_fetch_pages_stops_when_the_next_page_repeats_one_already_seen(monkeypatch):
+    # A next link that serves the same events again (the 2026-09 breakage:
+    # page 1 returned 10x) must end pagination instead of duplicating.
+    import scrapers.gent.charlatan as charlatan
+
+    monkeypatch.setattr(charlatan, "_fetch", lambda url: PAGE1)
+    pages = charlatan._fetch_pages()
+    assert pages == [PAGE1]
