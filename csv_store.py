@@ -35,15 +35,14 @@ class CsvStore:
             header = reader.fieldnames or []
             rows = list(reader)
 
-        # Self-heal an existing file still on an old, pre-vndg-crosscheck
+        # Self-heal an existing file still on an old, legacy-prefix
         # header: append_row always writes CSV_HEADER's full 9 values, but
         # only stamps a header line for a brand-new file, so an existing
         # file would otherwise keep its stale header forever and every
         # future row would silently misalign under csv.DictReader (the
         # three new columns parsed into a restkey list and dropped by
-        # html_export). Rewriting here, once, on load makes
-        # scripts/migrate_vndg_fields.py an optional manual alternative
-        # rather than a load-bearing prerequisite.
+        # html_export). Rewriting here, once, on load means no manual
+        # migration step is needed.
         if _is_legacy_prefix_header(header):
             self._rewrite_with_current_header(rows)
 

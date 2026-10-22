@@ -3,7 +3,6 @@ import re
 import subprocess
 import sys
 import webbrowser
-from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
@@ -18,13 +17,6 @@ from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
 from cities import CITIES, City
 from scrapers.base import Concert
-from vndg_crosscheck import (
-    cross_check,
-    fetch_events,
-    find_year_correction,
-    index_by_venue,
-    suggests_party_or_dj,
-)
 from ytmusic_client import get_artist_info, load_client, search_artist
 from youtube_data_client import (
     YouTubeAuthError,
@@ -143,35 +135,6 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
         except Exception as exc:  # noqa: BLE001 - a single venue must never abort the run
             scrape_failures.append(f"{type(scraper).__name__}: {exc}")
 
-    # vndg.be is an independent, unofficial cross-check (see
-    # vndg_crosscheck.py) -- only used for Gent since it's a Gent-focused
-    # website. A fetch failure must never abort the run.
-    # Uses its own, wider VNDG_CROSSCHECK_WINDOW_DAYS rather than the
-    # display/filter WINDOW_DAYS: find_year_correction() below can only
-    # ever match a same-day/month, different-year pair when the fetch
-    # window is wide enough to span both dates (~365+ days), which
-    # WINDOW_DAYS (91) never is.
-    vndg_index = {}
-    if city.key == "gent":
-        try:
-            vndg_index = index_by_venue(fetch_events(today, config.VNDG_CROSSCHECK_WINDOW_DAYS))
-        except Exception as exc:  # noqa: BLE001 - vndg.be is best-effort, never fatal
-            print(f"Warning: vndg.be cross-check unavailable: {exc}")
-
-    # Correct a same-venue+band year mismatch found within vndg's
-    # crosscheck window (see find_year_correction() in vndg_crosscheck.py)
-    # before filtering, since a corrected year can change whether a
-    # concert falls inside the scrape window at all. This is forward-
-    # looking only and scoped to what vndg happens to independently
-    # corroborate within VNDG_CROSSCHECK_WINDOW_DAYS -- not a general
-    # year-boundary fix, and it does not attempt backward/past-date
-    # correction (that could push a date before `today`, which
-    # filter_upcoming would then drop).
-    all_concerts = [
-        replace(concert, date=find_year_correction(concert, vndg_index) or concert.date)
-        for concert in all_concerts
-    ]
-
     upcoming = filter_upcoming(all_concerts, config.WINDOW_DAYS, today)
     new_concerts = filter_new(upcoming, store)
     print(f"Found {len(upcoming)} concerts, {len(new_concerts)} new.")
@@ -183,7 +146,6 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
     lookup_errors: list[str] = []
     excluded_cover: list[str] = []
     excluded_party: list[str] = []
-    unconfirmed_by_vndg: list[str] = []
     for i, concert in enumerate(new_concerts, start=1):
         print(f"[{i}/{len(new_concerts)}] {concert.band} @ {concert.venue} ({concert.date})")
         # Keyword-only tribute/cover-act check against the band name and the
@@ -205,10 +167,6 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
 
         detection_text = f"{concert.description} {event_description_value or ''}"
 
-        vndg_result = cross_check(concert, vndg_index)
-        if vndg_result.unconfirmed:
-            unconfirmed_by_vndg.append(concert.band)
-
         genre: str | None = None
         genre_errored = False
         try:
@@ -217,7 +175,7 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
             lookup_errors.append(f"{concert.band} (genre): {exc}")
             genre_errored = True
 
-        is_party_event = is_party(concert.band, detection_text) or suggests_party_or_dj(vndg_result)
+        is_party_event = is_party(concert.band, detection_text)
 
         track_ids: list[str] = []
         tracks_errored = False
@@ -289,8 +247,6 @@ def run(city: City, playlist_id: str, dry_run: bool = False) -> None:
         print(f"Excluded as cover/tribute gigs: {', '.join(excluded_cover)}")
     if excluded_party:
         print(f"Party/DJ set, no track lookup: {', '.join(excluded_party)}")
-    if unconfirmed_by_vndg:
-        print(f"Not corroborated by vndg.be (double-check band name): {', '.join(unconfirmed_by_vndg)}")
     if lookup_errors:
         print(f"Lookup errors: {'; '.join(lookup_errors)}")
     if scrape_failures:
