@@ -4,11 +4,9 @@ from datetime import date
 import requests
 from bs4 import BeautifulSoup
 
-from scrapers.base import Concert, resolve_year
+from scrapers.base import HEADERS, Concert, resolve_year
 
 URL = "https://snuffel.be/events/"
-# snuffel.be answers 403 to requests' default "python-requests/x.y" User-Agent.
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; gent-concerts-playlist; +https://github.com/gillesgerlo/gent-concerts-playlist)"}
 VENUE = "Snuffel Hostel"
 
 # The listing cards render the month as an English three-letter abbreviation

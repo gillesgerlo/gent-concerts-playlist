@@ -3,6 +3,10 @@ from datetime import date
 from typing import Protocol, runtime_checkable
 
 
+# Some venue sites (Snuffel, Izzy) answer 403 to requests' default
+# "python-requests/x.y" User-Agent, so scrapers that hit them send this one.
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; gent-concerts-playlist; +https://github.com/gillesgerlo/gent-concerts-playlist)"}
+
 DUTCH_MONTHS = {
     "jan": 1, "feb": 2, "mrt": 3, "apr": 4, "mei": 5, "jun": 6,
     "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12,

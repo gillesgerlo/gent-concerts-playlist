@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
-from scrapers.base import Concert
+from scrapers.base import HEADERS, Concert
 
 URL = "https://www.izzyjazzclub.com/concerts.html"
 VENUE = "Izzy JazzClub"
@@ -55,8 +55,21 @@ def _parse(html: str, today: date) -> list[Concert]:
     return concerts
 
 
+# izzyjazzclub.com drops more than half of all TLS handshakes (measured
+# ~40% success, failures roughly independent), so a single attempt loses
+# the venue most days. Six attempts gets that down to ~5%; each dropped
+# handshake fails within a few seconds, so no extra backoff is needed.
+ATTEMPTS = 6
+
+
 def _fetch_html() -> str:
-    response = requests.get(URL, timeout=10)
+    for attempt in range(1, ATTEMPTS + 1):
+        try:
+            response = requests.get(URL, headers=HEADERS, timeout=10)
+            break
+        except requests.ConnectionError:
+            if attempt == ATTEMPTS:
+                raise
     response.raise_for_status()
     response.encoding = "utf-8"
     return response.text

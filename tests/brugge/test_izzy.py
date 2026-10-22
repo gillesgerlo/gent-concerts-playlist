@@ -53,3 +53,44 @@ def test_scraper_class_wraps_parse_and_fetch(monkeypatch):
 
     monkeypatch.setattr(izzy, "_fetch_html", lambda: FIXTURE)
     assert len(izzy.IzzyScraper().scrape()) == 5
+
+
+def test_fetch_html_sends_a_custom_user_agent_and_retries_dropped_connections(monkeypatch):
+    import requests
+
+    import scrapers.brugge.izzy as izzy
+    from scrapers.base import HEADERS
+
+    calls = []
+
+    class _Response:
+        text = "<html></html>"
+
+        def raise_for_status(self):
+            pass
+
+    def _fake_get(url, headers=None, timeout=None):
+        calls.append(headers)
+        if len(calls) < izzy.ATTEMPTS:
+            raise requests.exceptions.SSLError("handshake dropped")
+        return _Response()
+
+    monkeypatch.setattr(izzy.requests, "get", _fake_get)
+
+    assert izzy._fetch_html() == "<html></html>"
+    assert calls == [HEADERS] * izzy.ATTEMPTS
+
+
+def test_fetch_html_gives_up_after_the_last_attempt(monkeypatch):
+    import pytest
+    import requests
+
+    import scrapers.brugge.izzy as izzy
+
+    def _always_drop(url, headers=None, timeout=None):
+        raise requests.exceptions.SSLError("handshake dropped")
+
+    monkeypatch.setattr(izzy.requests, "get", _always_drop)
+
+    with pytest.raises(requests.ConnectionError):
+        izzy._fetch_html()
