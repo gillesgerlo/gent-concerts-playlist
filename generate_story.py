@@ -14,6 +14,9 @@ from html_export import INSTAGRAM_URL
 
 FONT_PATH = Path(__file__).parent / "assets" / "fonts" / "InterVariable.ttf"
 OUTPUT_DIR = Path("output")
+# Committed + pushed by the daily run (main.py), so today's image for each city
+# is always at a stable URL: stories/<city>.png.
+STORY_DIR = Path("stories")
 
 WIDTH, HEIGHT = 1080, 1920
 MARGIN_X = 90
@@ -138,6 +141,23 @@ def generate(city_key: str, today: date | None = None) -> Path | None:
     img.save(out_path)
     print(f"Wrote {out_path} ({len(rows)} show{'s' if len(rows) != 1 else ''})")
     return out_path
+
+
+def story_path(city: City) -> Path:
+    return STORY_DIR / f"{city.key}.png"
+
+
+def write_daily_story(city: City, today: date) -> Path:
+    """Overwrite `stories/<city>.png` with today's shows, or delete it on a day
+    without any so yesterday's image never lingers. Returns the path either way."""
+    path = story_path(city)
+    rows = _load_today_rows(city.csv_path, today)
+    if not rows:
+        path.unlink(missing_ok=True)
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    render_story(city, rows, today).save(path)
+    return path
 
 
 def main(argv: list[str] | None = None) -> None:

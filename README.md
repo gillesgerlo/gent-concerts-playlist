@@ -27,6 +27,10 @@ Requires Python 3.10+ (the code uses `X | None` union-type syntax).
   HTML regeneration all still happen; the playlist remove/re-add is only
   previewed (it prints what it would do), and the git commit/push to GitHub
   Pages and the browser-open are skipped. See "Local development runs" below.
+- Every run also writes today's Instagram Story image per city to
+  `stories/<city>.png` (overwritten daily, deleted on a day without shows) and
+  pushes it with the pages. `python generate_story.py <city>` still renders a
+  dated one-off into the ignored `output/` folder.
 - Add a new venue by creating a scraper module under `scrapers/<city>/` and
   appending it to that package's `SCRAPERS` list.
 

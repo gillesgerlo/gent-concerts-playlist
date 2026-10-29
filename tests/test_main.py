@@ -1,19 +1,24 @@
 # tests/test_main.py
 from datetime import date
+from pathlib import Path
 
 import pytest
 
 import main
+from generate_story import story_path
 from scrapers.base import Concert
+
+_REAL_PUBLISH_TO_GITHUB = main._publish_to_github  # before the autouse fixture stubs it
 
 
 @pytest.fixture(autouse=True)
-def _isolate_side_effects(monkeypatch):
+def _isolate_side_effects(monkeypatch, tmp_path):
     # main.main() opens a browser tab and pushes to GitHub after every run;
     # each test now supplies its own html path via a fake city, so all that is
     # left to silence here is the browser and the git push.
     monkeypatch.setattr(main.webbrowser, "open", lambda url: None)
     monkeypatch.setattr(main, "_publish_to_github", lambda paths: None)
+    monkeypatch.setattr("generate_story.STORY_DIR", tmp_path / "stories")
 
 
 def test_search_query_strips_trailing_em_dash_subtitle():
@@ -348,7 +353,7 @@ def test_main_publishes_only_the_cities_that_completed(monkeypatch, tmp_path, ca
     # beta's non-existent page is not staged, and neither is beta's state:
     # its run failed, so its CSV/tracker must not be published half-done.
     # alpha's state goes along with its page (its CSV has no rows, so is absent).
-    assert pushed == [[city0.html_path, city0.tracker_path]]
+    assert pushed == [[city0.html_path, city0.tracker_path, story_path(city0)]]
     assert opened == [city0.html_path.resolve().as_uri()]
 
 
@@ -371,7 +376,48 @@ def test_main_publishes_the_csv_and_tracker_so_a_fresh_ci_checkout_has_them(
 
     main.main(["test"])
 
-    assert pushed == [[city.html_path, city.csv_path, city.tracker_path]]
+    assert pushed == [[city.html_path, city.csv_path, city.tracker_path, story_path(city)]]
+
+
+def test_main_publishes_todays_story_image(monkeypatch, tmp_path):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    monkeypatch.setattr(main, "search_artist", lambda band: None)
+    monkeypatch.setattr(main, "genre_for_artist", lambda band: None)
+    concert = Concert(
+        venue="Missy Sippy", date=date(2026, 8, 13), band="Tonight Band",
+        description="", ticket_link="https://example.com",
+    )
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([concert]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
+    pushed: list[list] = []
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
+
+    main.main(["test"])
+
+    assert story_path(city).exists()
+    assert story_path(city) in pushed[0]
+
+
+def test_main_still_publishes_the_listing_when_the_story_image_fails(monkeypatch, tmp_path, capsys):
+    _stub_env_and_auth(monkeypatch)
+    monkeypatch.setattr(main.config, "WINDOW_DAYS", 30)
+    _run_with_frozen_today(monkeypatch, date(2026, 8, 13))
+    city = _fake_city(tmp_path, [("Missy Sippy", _FakeScraper([]))])
+    monkeypatch.setattr(main, "CITIES", {"test": city})
+
+    def _boom(city, today):
+        raise RuntimeError("font missing")
+
+    monkeypatch.setattr(main, "write_daily_story", _boom)
+    pushed: list[list] = []
+    monkeypatch.setattr(main, "_publish_to_github", lambda paths: pushed.append(list(paths)))
+
+    main.main(["test"])
+
+    assert pushed == [[city.html_path, city.tracker_path]]
+    assert "Story image for 'test' failed: font missing" in capsys.readouterr().out
 
 
 def test_main_does_not_open_a_browser_on_a_ci_run(monkeypatch, tmp_path):
@@ -889,3 +935,35 @@ def test_lookup_artist_info_drops_songs_without_a_playable_video(monkeypatch):
     )
 
     assert main._lookup_artist_info("The Dead") == ["ok1"]
+
+
+def test_publish_stages_a_removed_story_and_tolerates_a_never_committed_one(
+    monkeypatch, tmp_path
+):
+    import subprocess
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    run = lambda *args: subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)  # noqa: E731
+    run("init", "-q")
+    run("config", "user.email", "t@example.com")
+    run("config", "user.name", "t")
+    (repo / "kept.png").write_bytes(b"x")
+    (repo / "gone.png").write_bytes(b"x")
+    run("add", ".")
+    run("commit", "-qm", "init")
+    (repo / "gone.png").unlink()
+    (repo / "kept.png").write_bytes(b"y")
+    monkeypatch.chdir(repo)
+    # Stop before pull/push: there is no remote to talk to.
+    real_run = subprocess.run
+    monkeypatch.setattr(
+        main.subprocess, "run",
+        lambda cmd, **kw: None if cmd[1] in ("pull", "push") else real_run(cmd, **kw),
+    )
+
+    _REAL_PUBLISH_TO_GITHUB([Path("kept.png"), Path("gone.png"), Path("never.png")])
+
+    assert run("show", "--name-status", "--format=", "HEAD").stdout.decode().split() == [
+        "D", "gone.png", "M", "kept.png",
+    ]

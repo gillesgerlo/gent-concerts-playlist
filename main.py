@@ -13,6 +13,7 @@ from content_filters import is_party, is_tribute
 from csv_store import CsvStore
 from event_description import fetch_description, truncate_at_word_boundary
 from filtering import filter_new, filter_upcoming
+from generate_story import write_daily_story
 from html_export import write_html
 from lastfm_client import genre_for_artist, set_api_key
 from cities import CITIES, City
@@ -103,7 +104,15 @@ def _publish_to_github(paths: list[Path]) -> None:
     """Commit and push the updated page(s) and city state to GitHub."""
     try:
         for path in paths:
-            subprocess.run(["git", "add", str(path)], check=True, capture_output=True)
+            if path.exists():
+                subprocess.run(["git", "add", str(path)], check=True, capture_output=True)
+            else:
+                # A removed file (e.g. no story today) stages as a deletion;
+                # --ignore-unmatch keeps a never-committed one from failing.
+                subprocess.run(
+                    ["git", "rm", "--cached", "--quiet", "--ignore-unmatch", str(path)],
+                    check=True, capture_output=True,
+                )
         subprocess.run(
             ["git", "commit", "-m", "Update concert listing"],
             check=True, capture_output=True,
@@ -319,6 +328,12 @@ def main(argv: list[str] | None = None) -> None:
     ]
     if not written:
         return
+    stories = []
+    for city in completed:
+        try:
+            stories.append(write_daily_story(city, date.today()))
+        except Exception as exc:  # noqa: BLE001 - a story image must never block the listing push
+            print(f"Story image for '{city.key}' failed: {exc}")
     if dry_run:
         # --dry-run is a full local run: scrape, look things up, regenerate the
         # page(s) on disk and preview the playlist rebuild -- but touch nothing
@@ -328,7 +343,7 @@ def main(argv: list[str] | None = None) -> None:
             f"skipping git push and browser open"
         )
         return
-    _publish_to_github(written + state)
+    _publish_to_github(written + state + stories)
     if os.environ.get("CI"):
         return  # headless scheduled run: no browser to open
     for path in written:

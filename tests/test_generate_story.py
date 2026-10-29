@@ -3,7 +3,7 @@ from dataclasses import replace
 from datetime import date
 
 from cities import CITIES
-from generate_story import MAX_ENTRIES, _list_layout, _load_today_rows, generate
+from generate_story import MAX_ENTRIES, _list_layout, _load_today_rows, generate, write_daily_story
 
 HEADER = ["Venue", "Date", "Band", "Genre", "Event Description", "Ticket/Event Link"]
 
@@ -104,3 +104,28 @@ def test_generate_handles_more_shows_than_fit_on_one_image(tmp_path, monkeypatch
     assert result is not None
     with Image.open(result) as img:
         assert img.size == (WIDTH, HEIGHT)
+
+
+def test_write_daily_story_overwrites_the_stable_city_image(tmp_path, monkeypatch):
+    csv_path = tmp_path / "concerts.csv"
+    _write_csv(csv_path, [["Trefpunt", "2026-08-13", "Today Band", "", "", "http://a"]])
+    city = replace(CITIES["gent"], csv_path=csv_path)
+    monkeypatch.setattr("generate_story.STORY_DIR", tmp_path / "stories")
+
+    result = write_daily_story(city, date(2026, 8, 13))
+
+    assert result == tmp_path / "stories" / "gent.png"
+    assert result.exists()
+
+
+def test_write_daily_story_removes_yesterdays_image_when_no_shows_today(tmp_path, monkeypatch):
+    csv_path = tmp_path / "concerts.csv"
+    _write_csv(csv_path, [["Trefpunt", "2026-08-13", "Yesterday Band", "", "", "http://a"]])
+    city = replace(CITIES["gent"], csv_path=csv_path)
+    monkeypatch.setattr("generate_story.STORY_DIR", tmp_path / "stories")
+    stale = write_daily_story(city, date(2026, 8, 13))
+
+    result = write_daily_story(city, date(2026, 8, 14))
+
+    assert result == stale
+    assert not result.exists()
