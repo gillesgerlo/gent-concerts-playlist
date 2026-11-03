@@ -14,6 +14,7 @@ from .kinky_star import VENUE as KINKY_STAR_VENUE, KinkyStarScraper
 from .missy_sippy import VENUE as MISSY_SIPPY_VENUE, MissySippyScraper
 from .ringo import VENUE as RINGO_VENUE, RingoScraper
 from .trefpunt import VENUE as TREFPUNT_VENUE, TrefpuntScraper
+from .vierde_zaal import VENUE as VIERDE_ZAAL_VENUE, VierdeZaalScraper
 from .viernulvier import VENUE as VIERNULVIER_VENUE, ViernulvierScraper
 from .vieze_gasten import VENUE as VIEZE_GASTEN_VENUE, ViezeGastenScraper
 from .wintercircus import VENUE as WINTERCIRCUS_VENUE, WintercircusScraper
@@ -33,6 +34,7 @@ _DEDICATED: list[tuple[str, Scraper]] = [
     (CHINASTRAAT_VENUE, ChinastraatScraper()),
     (VIEZE_GASTEN_VENUE, ViezeGastenScraper()),
     (GOEDLEVEN_VENUE, GoedlevenScraper()),
+    (VIERDE_ZAAL_VENUE, VierdeZaalScraper()),
 ]
 
 # ChinastraatScraper and GoedlevenScraper each emit concerts under two
