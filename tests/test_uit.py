@@ -133,3 +133,31 @@ def test_fetch_events_raises_a_clear_error_on_a_graphql_error_response(monkeypat
 
     with pytest.raises(RuntimeError, match="Cannot query field"):
         uiv._fetch_events(date(2026, 8, 17), "nis-44021")
+
+
+def test_venue_override_relabels_matching_events_and_leaves_others_alone():
+    def _override(item):
+        return "Renamed Room" if item["name"] == "GDU Open Mic augustus" else None
+
+    concerts = uiv._parse(FIXTURE_ITEMS, KNOWN, venue_override=_override)
+    by_band = {c.band: c for c in concerts}
+    assert by_band["GDU Open Mic augustus"].venue == "Renamed Room"
+    assert by_band["Lunasix @ Ledebergse Feesten 2026"].venue == "Sfeertent Ledeberg"
+
+
+def test_venue_override_that_raises_keeps_the_original_venue():
+    def _boom(item):
+        raise KeyError("prices")
+
+    concerts = uiv._parse(FIXTURE_ITEMS, KNOWN, venue_override=_boom)
+    assert "GDU Open Mic augustus" in [c.band for c in concerts]
+
+
+def test_scraper_passes_its_venue_override_to_parse(monkeypatch):
+    monkeypatch.setattr(uiv, "_fetch_events", lambda today, nis_code: FIXTURE_ITEMS)
+    concerts = uiv.UitScraper("nis-44021", KNOWN, venue_override=lambda item: "X").scrape()
+    assert concerts and {c.venue for c in concerts} == {"X"}
+
+
+def test_query_requests_prices_for_venue_overrides():
+    assert "prices" in uiv.SEARCH_QUERY

@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable
 from datetime import date, datetime, timedelta
 
 import requests
@@ -27,6 +28,7 @@ query GetEventSearch($limit: Float, $offset: Float, $eventTypes: [String!], $nis
         description
         location { name }
         calendar { startDate }
+        prices { value }
       }
     }
   }
@@ -95,7 +97,26 @@ def _fetch_events(today: date, nis_code: str) -> list[dict]:
     return items
 
 
-def _parse(items: list[dict], known_venue_names: tuple[str, ...]) -> list[Concert]:
+# Given a raw UiT event item, return a venue label to use instead of its UiT
+# location name, or None to keep the location name. Lets a city split one UiT
+# location into the rooms it actually hosts (e.g. Brugotta Café vs MaZ).
+VenueOverride = Callable[[dict], "str | None"]
+
+
+def _override_venue(item: dict, location_name: str, venue_override: VenueOverride | None) -> str:
+    if venue_override is None:
+        return location_name
+    try:
+        return venue_override(item) or location_name
+    except Exception:  # noqa: BLE001 - a broken override must not drop the event
+        return location_name
+
+
+def _parse(
+    items: list[dict],
+    known_venue_names: tuple[str, ...],
+    venue_override: VenueOverride | None = None,
+) -> list[Concert]:
     concerts = []
     for item in items:
         try:
@@ -111,7 +132,7 @@ def _parse(items: list[dict], known_venue_names: tuple[str, ...]) -> list[Concer
             description = _strip_html(description_html) if description_html else ""
 
             concerts.append(Concert(
-                venue=location_name,
+                venue=_override_venue(item, location_name, venue_override),
                 date=event_date,
                 band=item["name"],
                 description=description,
@@ -123,10 +144,16 @@ def _parse(items: list[dict], known_venue_names: tuple[str, ...]) -> list[Concer
 
 
 class UitScraper:
-    def __init__(self, nis_code: str, known_venue_names: tuple[str, ...]):
+    def __init__(
+        self,
+        nis_code: str,
+        known_venue_names: tuple[str, ...],
+        venue_override: VenueOverride | None = None,
+    ):
         self.nis_code = nis_code
         self.known_venue_names = known_venue_names
+        self.venue_override = venue_override
 
     def scrape(self) -> list[Concert]:
         items = _fetch_events(date.today(), self.nis_code)
-        return _parse(items, self.known_venue_names)
+        return _parse(items, self.known_venue_names, self.venue_override)

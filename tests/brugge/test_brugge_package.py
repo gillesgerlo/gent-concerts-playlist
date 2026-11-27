@@ -35,3 +35,10 @@ def test_the_uit_catch_all_is_wired_with_the_dedup_names():
     uit_scraper = next(s for name, s in brugge.SCRAPERS if name == "UiTinVlaanderen")
     assert uit_scraper.nis_code == brugge.BRUGGE_NIS_CODE
     assert uit_scraper.known_venue_names == brugge.KNOWN_VENUE_NAMES
+
+
+def test_the_uit_catch_all_relabels_brugotta_cafe_shows():
+    from scrapers.brugge.brugotta import brugotta_venue
+
+    uit_scraper = next(s for name, s in brugge.SCRAPERS if name == "UiTinVlaanderen")
+    assert uit_scraper.venue_override is brugotta_venue

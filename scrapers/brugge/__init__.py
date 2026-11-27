@@ -1,5 +1,6 @@
 from scrapers.base import Scraper
 from scrapers.uit import VENUE as UIT_VENUE, UitScraper
+from .brugotta import brugotta_venue
 from .cactus import VENUE as CACTUS_VENUE, CactusScraper
 from .het_entrepot import VENUE as HET_ENTREPOT_VENUE, HetEntrepotScraper
 from .izzy import VENUE as IZZY_VENUE, IzzyScraper
@@ -20,6 +21,9 @@ _DEDICATED: list[tuple[str, Scraper]] = [
 # same vocabulary as our scraper display labels (it calls Snuffel "De Snuffel"
 # and KAAP's hall "KAAP | De Werf"). _is_known_venue substring-matches both ways.
 #
+# Brugotta Café has no dedicated scraper (ccbrugge.be is behind a bot queue).
+# The catch-all relabels its shows from "MaZ" via brugotta_venue instead.
+#
 # Deliberately absent: "Stadsschouwburg" and "MaZ". Cactus programmes only a
 # couple of its shows in those halls, so excluding them wholesale would suppress
 # ~22 concerts no dedicated scraper covers. The handful of residual
@@ -34,5 +38,5 @@ KNOWN_VENUE_NAMES: tuple[str, ...] = (
 )
 
 SCRAPERS: list[tuple[str, Scraper]] = _DEDICATED + [
-    (UIT_VENUE, UitScraper(BRUGGE_NIS_CODE, KNOWN_VENUE_NAMES)),
+    (UIT_VENUE, UitScraper(BRUGGE_NIS_CODE, KNOWN_VENUE_NAMES, venue_override=brugotta_venue)),
 ]
